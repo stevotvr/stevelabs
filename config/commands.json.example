@@ -1,0 +1,23 @@
+{
+  "shoutout": {
+    "level": 2,
+    "userTimeout": 0,
+    "globalTimeout": 5,
+    "aliases": [ "so" ],
+    "message": "Check out ${1} at twitch.tv/${1}"
+  },
+  "echo": {
+    "level": 3,
+    "userTimeout": 0,
+    "globalTimeout": 0,
+    "aliases": [ ],
+    "message": "${1:}"
+  },
+  "discord": {
+    "level": 0,
+    "userTimeout": 0,
+    "globalTimeout": 15,
+    "aliases": [ ],
+    "message": "You can join us on my Discord server at discord.io/stevotvr"
+  }
+}

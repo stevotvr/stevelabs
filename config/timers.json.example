@@ -1,0 +1,9 @@
+{
+  "timeout": 1500,
+  "chatLines": 0,
+  "messages": [
+    "Message 1",
+    "Message 2",
+    "Message 3"
+  ]
+}

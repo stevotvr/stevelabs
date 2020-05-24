@@ -1,0 +1,20 @@
+{
+  "name": "twitchbot",
+  "version": "1.0.0",
+  "description": "Custom bot for my Twitch channel",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevotvr/twitchbot.git"
+  },
+  "author": "Steve Guidetti",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stevotvr/twitchbot/issues"
+  },
+  "homepage": "https://github.com/stevotvr/twitchbot",
+  "dependencies": {
+    "socket.io": "^2.3.0",
+    "tmi.js": "^1.5.0"
+  }
+}
