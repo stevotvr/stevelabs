@@ -118,6 +118,17 @@ client.on('chat', (channel, userstate, message, self) => {
     return params[start];
   });
 
+  response = response.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
+    switch (fn) {
+      case 'user':
+        return userstate['display-name'];
+      case 'channel':
+        return p.toLowerCase();
+      case 'game':
+        return 'API REQUEST';
+    }
+  });
+
   client.say(channel, response);
 
   timeouts[commandName].global = Date.now() + command.globalTimeout * 1000;
