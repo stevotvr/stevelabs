@@ -58,7 +58,7 @@ for (const k in commands) {
     commands[commands[k].aliases[k2]] = commands[k];
   }
 
-  timeouts[k] = {
+  commands[k].timeouts = {
     "global": 0,
     "user": {}
   };
@@ -84,7 +84,7 @@ client.on('chat', (channel, userstate, message, self) => {
 
   const command = commands[commandName];
 
-  if (Date.now() < Math.max(timeouts[commandName].global, timeouts[commandName].user[userstate.username] || 0)) {
+  if (Date.now() < Math.max(command.timeouts.global, command.timeouts.user[userstate.username] || 0)) {
     return;
   }
 
@@ -131,8 +131,10 @@ client.on('chat', (channel, userstate, message, self) => {
 
   client.say(channel, response);
 
-  timeouts[commandName].global = Date.now() + command.globalTimeout * 1000;
-  timeouts[commandName].user[userstate.username] = Date.now() + command.userTimeout * 1000;
+  command.timeouts.global = Date.now() + command.globalTimeout * 1000;
+  command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
+
+  console.log(commands);
 });
 
 setInterval(() => {
