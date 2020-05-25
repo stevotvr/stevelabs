@@ -1,0 +1,37 @@
+{
+    "cheer": {
+      "message": "${user} cheered!<br>${message}",
+      "graphic": "",
+      "sound": ""
+    },
+    "subscription": {
+      "message": "${user} has subscribed!",
+      "graphic": "",
+      "sound": ""
+    },
+    "resub": {
+      "message": "${user} has resubscribed for ${months} months!",
+      "graphic": "",
+      "sound": ""
+    },
+    "subgift": {
+      "message": "${user} gifted a subscription to ${recipient}!",
+      "graphic": "",
+      "sound": ""
+    },
+    "submysterygift": {
+      "message": "${user} gifted subscriptions to ${subcount} lucky viewers!",
+      "graphic": "",
+      "sound": ""
+    },
+    "raid": {
+      "message": "${user} raided the channel with ${viewers} viewers!",
+      "graphic": "",
+      "sound": ""
+    },
+    "host": {
+      "message": "${user} hosted the channel with ${viewers} viewers!",
+      "graphic": "",
+      "sound": ""
+    }
+  }

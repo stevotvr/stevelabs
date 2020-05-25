@@ -4,6 +4,7 @@ const config = require('./config/config.json');
 const schedule = require('./config/schedule.json');
 const commands = require('./config/commands.json');
 const timers = require('./config/timers.json');
+const alerts = require('./config/alerts.json');
 
 const fs = require('fs');
 const tmi = require('tmi.js');
@@ -137,6 +138,70 @@ client.on('chat', (channel, userstate, message, self) => {
   console.log(commands);
 });
 
+client.on('cheer', (channel, userstate, message) => {
+  sendAlert('cheer', {
+    "user": userstate['display-name'],
+    "message": message,
+  });
+});
+
+client.on('subscription', (channel, username, method, message, userstate) => {
+  sendAlert('subscription', {
+    "user": userstate['display-name']
+  });
+});
+
+client.on('anongiftpaidupgrade', (channel, username, userstate) => {
+  sendAlert('subscription', {
+    "user": userstate['display-name']
+  });
+});
+
+client.on('giftpaidupgrade', (channel, username, sender, userstate) => {
+  sendAlert('subscription', {
+    "user": userstate['display-name']
+  });
+});
+
+client.on('resub', (channel, username, months, message, userstate, methods) => {
+  sendAlert('resub', {
+    "user": userstate['display-name'],
+    "months": months
+  });
+});
+
+client.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
+  sendAlert('subgift', {
+    "user": userstate['display-name'],
+    "recipient": recipient
+  });
+});
+
+client.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
+  sendAlert('submysterygift', {
+    "user": userstate['display-name'],
+    "subcount": numbOfSubs
+  });
+});
+
+client.on('raided', (channel, username, viewers) => {
+  sendAlert('raid', {
+    "user": username,
+    "viewers": viewers
+  });
+});
+
+client.on('hosted', (channel, username, viewers, autohost) => {
+  if (autohost) {
+    return;
+  }
+
+  sendAlert('host', {
+    "user": username,
+    "viewers": viewers
+  });
+});
+
 setInterval(() => {
   if (chatLines < timers.chatLines || Date.now() < nextTimer) {
     return;
@@ -147,6 +212,25 @@ setInterval(() => {
   nextTimer = Date.now() + timers.timeout * 1000;
   chatLines = 0;
 }, 1000);
+
+function sendAlert(type, params) {
+  const alert = alerts[type];
+
+  if (!alert.message && !alert.graphic && !alert.sound) {
+    return;
+  }
+
+  let message = alert.message;
+  if (alert.message) {
+    for (const key in params) {
+      message = message.replace(`\${${key}}`, params[key]);
+    }
+  }
+
+  console.log(message);
+
+  io.emit('alert', message, alert.graphic, alert.sound);
+}
 
 function httpHandler(req, res) {
   res.setHeader('Content-Type', 'application/json');
