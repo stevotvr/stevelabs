@@ -29,26 +29,42 @@ http.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
 });
 
-const client = new tmi.Client({
+const host = new tmi.Client({
   connection: {
     secure: true,
     reconnect: true
   },
   identity: {
-    username: config.twitch.username,
-    password: config.twitch.password
-  },
-  channels: [ `#${config.twitch.channel}` ]
+    username: config.twitch.channel.username,
+    password: config.twitch.channel.password
+  }
 });
 
-client.connect()
+host.connect()
 .then(() => {
-  console.log('connected to Twitch');
+  console.log('connected to Twitch channel');
 }).catch((err) => {
   console.error(err);
 });
 
-const timeouts = {};
+const bot = new tmi.Client({
+  connection: {
+    secure: true,
+    reconnect: true
+  },
+  identity: {
+    username: config.twitch.bot.username,
+    password: config.twitch.bot.password
+  },
+  channels: [ `#${config.twitch.channel.username}` ]
+});
+
+bot.connect()
+.then(() => {
+  console.log('connected to Twitch bot channel');
+}).catch((err) => {
+  console.error(err);
+});
 
 let timerPos = 0;
 let nextTimer = Date.now() + timers.timeout * 1000;
@@ -65,7 +81,7 @@ for (const k in commands) {
   };
 }
 
-client.on('chat', (channel, userstate, message, self) => {
+bot.on('chat', (channel, userstate, message, self) => {
   if (self) {
     return;
   }
@@ -130,68 +146,66 @@ client.on('chat', (channel, userstate, message, self) => {
     }
   });
 
-  client.say(channel, response);
+  bot.say(channel, response);
 
   command.timeouts.global = Date.now() + command.globalTimeout * 1000;
   command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
-
-  console.log(commands);
 });
 
-client.on('cheer', (channel, userstate, message) => {
+host.on('cheer', (channel, userstate, message) => {
   sendAlert('cheer', {
     "user": userstate['display-name'],
     "message": message,
   });
 });
 
-client.on('subscription', (channel, username, method, message, userstate) => {
+host.on('subscription', (channel, username, method, message, userstate) => {
   sendAlert('subscription', {
     "user": userstate['display-name']
   });
 });
 
-client.on('anongiftpaidupgrade', (channel, username, userstate) => {
+host.on('anongiftpaidupgrade', (channel, username, userstate) => {
   sendAlert('subscription', {
     "user": userstate['display-name']
   });
 });
 
-client.on('giftpaidupgrade', (channel, username, sender, userstate) => {
+host.on('giftpaidupgrade', (channel, username, sender, userstate) => {
   sendAlert('subscription', {
     "user": userstate['display-name']
   });
 });
 
-client.on('resub', (channel, username, months, message, userstate, methods) => {
+host.on('resub', (channel, username, months, message, userstate, methods) => {
   sendAlert('resub', {
     "user": userstate['display-name'],
     "months": months
   });
 });
 
-client.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
+host.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
   sendAlert('subgift', {
     "user": userstate['display-name'],
     "recipient": recipient
   });
 });
 
-client.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
+host.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
   sendAlert('submysterygift', {
     "user": userstate['display-name'],
     "subcount": numbOfSubs
   });
 });
 
-client.on('raided', (channel, username, viewers) => {
+host.on('raided', (channel, username, viewers) => {
   sendAlert('raid', {
     "user": username,
     "viewers": viewers
   });
 });
 
-client.on('hosted', (channel, username, viewers, autohost) => {
+host.on('hosted', (channel, username, viewers, autohost) => {
   if (autohost) {
     return;
   }
@@ -207,7 +221,7 @@ setInterval(() => {
     return;
   }
 
-  client.say(config.twitch.channel, timers.messages[timerPos]);
+  bot.say(config.twitch.channel.username, timers.messages[timerPos]);
   timerPos = (timerPos + 1) % timers.messages.length;
   nextTimer = Date.now() + timers.timeout * 1000;
   chatLines = 0;
@@ -226,8 +240,6 @@ function sendAlert(type, params) {
       message = message.replace(`\${${key}}`, params[key]);
     }
   }
-
-  console.log(message);
 
   io.emit('alert', message, alert.graphic, alert.sound);
 }
