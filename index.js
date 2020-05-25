@@ -1,6 +1,7 @@
 'use strict'
 
 const config = require('./config/config.json');
+const schedule = require('./config/schedule.json');
 const commands = require('./config/commands.json');
 const timers = require('./config/timers.json');
 
@@ -135,5 +136,12 @@ setInterval(() => {
 }, 1000);
 
 function httpHandler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.url === '/schedule.json') {
+    res.writeHead(200).end(JSON.stringify(schedule));
+    return;
+  }
+
   res.writeHead(200).end();
 }
