@@ -102,7 +102,7 @@ app.get('/wh/stream', (req, res) => {
   }
 });
 
-app.listen(config.port, config.host, () => {
+http.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
 });
 
