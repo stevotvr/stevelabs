@@ -8,6 +8,10 @@ const alerts = require('./config/alerts.json');
 
 const fs = require('fs');
 const tmi = require('tmi.js');
+const express = require('express');
+const fetch = require('node-fetch');
+
+const app = express();
 
 const http = function() {
   if (config.ssl.enabled) {
@@ -17,15 +21,68 @@ const http = function() {
       ca: fs.readFileSync(config.ssl.cafile)
     };
 
-    return require('https').createServer(options, httpHandler);
+    return require('https').createServer(options, app);
   } else {
-    return require('http').Server(httpHandler);
+    return require('http').Server(app);
   }
 }();
 
 const io = require('socket.io')(http);
 
-http.listen(config.port, config.host, () => {
+const userData = {
+  access_token: '',
+  expires: 0,
+  refresh_token: '',
+  user_id: 0,
+  live: false,
+};
+
+config.redirect = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}/cb`;
+
+app.get('/', (req, res) => {
+  if (userData.access_token) {
+    res.send('Connected');
+  } else {
+    const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.redirect}&response_type=code&scope=user:read:email`;
+    res.send(`<html><body><a href="${url}">Connect</a></body></html>`);
+  }
+});
+
+app.get('/schedule.json', (req, res) => {
+  res.set('Content-Type', 'application/json');
+  res.set('Access-Control-Allow-Origin', '*');
+  res.send(JSON.stringify(schedule));
+});
+
+app.get('/cb', (req, res) => {
+  if (!req.query.code) {
+    res.status(400).end();
+    return;
+  }
+
+  const url = `https://id.twitch.tv/oauth2/token?client_id=${config.twitch.api.client}&client_secret=${config.twitch.api.secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${config.redirect}`;
+
+  fetch(url, {
+    method: 'POST'
+  })
+  .then(res => res.json())
+  .then((auth) => {
+    userData.access_token = auth.access_token;
+    apiRequest('https://api.twitch.tv/helix/users', 'GET', (user) => {
+      if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
+        userData.expires = Date.now() + auth.expires_in * 1000;
+        userData.refresh_token = auth.refresh_token;
+        userData.user_id = user.data[0].id;
+      } else {
+        userData.access_token = '';
+      }
+
+      res.redirect('/');
+    });
+  });
+});
+
+app.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
 });
 
@@ -141,8 +198,8 @@ bot.on('chat', (channel, userstate, message, self) => {
         return userstate['display-name'];
       case 'channel':
         return p.toLowerCase();
-      case 'game':
-        return 'API REQUEST';
+      default:
+        return match;
     }
   });
 
@@ -244,13 +301,18 @@ function sendAlert(type, params) {
   io.emit('alert', message, alert.graphic, alert.sound);
 }
 
-function httpHandler(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.url === '/schedule.json') {
-    res.writeHead(200).end(JSON.stringify(schedule));
+function apiRequest(url, method, cb) {
+  if (!userData.access_token) {
     return;
   }
 
-  res.writeHead(200).end();
+  fetch(url, {
+    method: method,
+    headers: {
+      'Client-ID': config.twitch.api.client,
+      'Authorization': `Bearer ${userData.access_token}`
+    }
+  })
+  .then(res => res.json())
+  .then(json => cb(json));
 }

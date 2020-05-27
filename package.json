@@ -14,6 +14,8 @@
   },
   "homepage": "https://github.com/stevotvr/twitchbot",
   "dependencies": {
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.0",
     "socket.io": "^2.3.0",
     "tmi.js": "^1.5.0"
   }
