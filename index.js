@@ -34,8 +34,10 @@ const userData = {
   expires: 0,
   refresh_token: '',
   user_id: 0,
-  live: false,
+  live: false
 };
+
+let whTimeout = 0;
 
 config.redirect = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}/cb`;
 
@@ -68,11 +70,15 @@ app.get('/cb', (req, res) => {
   .then(res => res.json())
   .then((auth) => {
     userData.access_token = auth.access_token;
-    apiRequest('https://api.twitch.tv/helix/users', 'GET', (user) => {
+    apiRequest('https://api.twitch.tv/helix/users', 'GET')
+    .then(res => res.json())
+    .then((user) => {
       if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
         userData.expires = Date.now() + auth.expires_in * 1000;
         userData.refresh_token = auth.refresh_token;
         userData.user_id = user.data[0].id;
+
+        setWebhook();
       } else {
         userData.access_token = '';
       }
@@ -80,6 +86,20 @@ app.get('/cb', (req, res) => {
       res.redirect('/');
     });
   });
+});
+
+app.get('/wh/stream', (req, res) => {
+  if (req.method === 'GET' && req.query['hub.challenge'] && req.query['hub.mode'] && req.query['hub.mode'] === 'subscribe') {
+    if (req.query['hub.lease_seconds']) {
+      whTimeout = setTimeout(setWebhook, req.query['hub.lease_seconds'] * 1000);
+    }
+
+    res.send(req.query['hub.challenge']);
+  } else {
+    userData.live = !!req.body.data;
+    console.log(userData.live);
+    res.end();
+  }
 });
 
 app.listen(config.port, config.host, () => {
@@ -301,18 +321,36 @@ function sendAlert(type, params) {
   io.emit('alert', message, alert.graphic, alert.sound);
 }
 
-function apiRequest(url, method, cb) {
+function apiRequest(url, method, body) {
   if (!userData.access_token) {
     return;
   }
 
-  fetch(url, {
+  const options =  {
     method: method,
     headers: {
       'Client-ID': config.twitch.api.client,
       'Authorization': `Bearer ${userData.access_token}`
     }
-  })
-  .then(res => res.json())
-  .then(json => cb(json));
+  };
+
+  if (body) {
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
+
+  return fetch(url, options);
+}
+
+function setWebhook(enable = true) {
+  apiRequest('https://api.twitch.tv/helix/webhooks/hub', 'POST', {
+    'hub.callback': `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}/wh/stream`,
+    'hub.mode': enable ? 'subscribe' : 'unsubscribe',
+    'hub.topic': `https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`,
+    'hub.lease_seconds': 86400
+  });
+
+  if (!enable) {
+    clearTimeout(whTimeout);
+  }
 }
