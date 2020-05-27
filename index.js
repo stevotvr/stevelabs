@@ -12,6 +12,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 
 const app = express();
+app.use(express.json());
 
 const http = function() {
   if (config.ssl.enabled) {
@@ -89,17 +90,19 @@ app.get('/cb', (req, res) => {
 });
 
 app.get('/wh/stream', (req, res) => {
-  if (req.method === 'GET' && req.query['hub.challenge'] && req.query['hub.mode'] && req.query['hub.mode'] === 'subscribe') {
+  if (req.query['hub.challenge'] && req.query['hub.mode'] && req.query['hub.mode'] === 'subscribe') {
     if (req.query['hub.lease_seconds']) {
       whTimeout = setTimeout(setWebhook, req.query['hub.lease_seconds'] * 1000);
     }
 
     res.send(req.query['hub.challenge']);
-  } else {
-    userData.live = !!req.body.data;
-    console.log(userData.live);
-    res.end();
   }
+});
+
+app.post('/wh/stream', (req, res) => {
+  userData.live = req.body.data.length > 0;
+  console.log(userData.live);
+  res.end();
 });
 
 http.listen(config.port, config.host, () => {
