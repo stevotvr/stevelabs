@@ -31,11 +31,8 @@ const http = function() {
 const io = require('socket.io')(http);
 
 const userData = {
-  auth: {
-    access_token: '',
-    expires: 0,
-    refresh_token: ''
-  },
+  access_token: '',
+  refresh_token: '',
   user_id: 0,
   live: false
 };
@@ -51,7 +48,7 @@ try {
 loadAuthConfig();
 
 app.get('/', (req, res) => {
-  if (userData.auth.access_token) {
+  if (userData.access_token) {
     res.send('Connected');
   } else {
     const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
@@ -78,9 +75,8 @@ app.get('/cb', (req, res) => {
   })
   .then(res => res.json())
   .then((auth) => {
-    userData.auth.access_token = auth.access_token;
-    userData.auth.expires = Date.now() + auth.expires_in * 1000;
-    userData.auth.refresh_token = auth.refresh_token;
+    userData.access_token = auth.access_token;
+    userData.refresh_token = auth.refresh_token;
     checkUser((valid) => {
       if (valid) {
         saveAuthConfig();
@@ -331,7 +327,7 @@ function sendAlert(type, params) {
 }
 
 function apiRequest(url, method, body) {
-  if (!userData.auth.access_token) {
+  if (!userData.access_token) {
     return;
   }
 
@@ -339,7 +335,7 @@ function apiRequest(url, method, body) {
     method: method,
     headers: {
       'Client-ID': config.twitch.api.client,
-      'Authorization': `Bearer ${userData.auth.access_token}`
+      'Authorization': `Bearer ${userData.access_token}`
     }
   };
 
@@ -348,7 +344,41 @@ function apiRequest(url, method, body) {
     options.body = JSON.stringify(body);
   }
 
-  return fetch(url, options);
+  return new Promise((resolve, reject) => {
+    fetch(url, options)
+      .then((res) => {
+        if (res.code === 401) {
+          fetch('https://id.twitch.tv/oauth2/token', {
+            method: 'POST',
+            body: {
+              grant_type: 'refresh_token',
+              refresh_token: userData.refresh_token,
+              client_id: config.twitch.api.client,
+              client_secret: config.twitch.api.secret
+            }
+          })
+          .then(res => res.json())
+          .then((json) => {
+            if (json.access_token) {
+              userData.access_token = json.access_token;
+              userData.refresh_token = json.refresh_token;
+
+              saveAuthConfig();
+
+              resolve(res);
+            } else {
+              userData.access_token = '';
+              userData.refresh_token = '';
+
+              reject('failed to refresh token');
+            }
+          });
+        } else {
+          resolve(res);
+        }
+      })
+      .catch(err => reject(err));
+  });
 }
 
 function setWebhook(enable = true) {
@@ -384,9 +414,8 @@ function loadAuthConfig() {
     try {
       const auth = JSON.parse(data);
       if (auth.access_token && auth.expires && auth.refresh_token) {
-        userData.auth.access_token = auth.access_token;
-        userData.auth.expires = auth.expires;
-        userData.auth.refresh_token = auth.refresh_token;
+        userData.access_token = auth.access_token;
+        userData.refresh_token = auth.refresh_token;
 
         checkUser((valid) => {
           if (!valid) {
@@ -402,7 +431,7 @@ function loadAuthConfig() {
 }
 
 function checkUser(cb) {
-  if (!userData.auth.access_token) {
+  if (!userData.access_token) {
     cb(false);
     return;
   }
@@ -415,9 +444,8 @@ function checkUser(cb) {
 
       cb(true);
     } else {
-      userData.auth.access_token = '';
-      userData.auth.expires = 0;
-      userData.auth.refresh_token = '';
+      userData.access_token = '';
+      userData.refresh_token = '';
       userData.user_id = 0;
 
       cb(false);
