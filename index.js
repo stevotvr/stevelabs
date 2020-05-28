@@ -333,27 +333,33 @@ function sendAlert(type, params) {
 }
 
 function apiRequest(url, method, body) {
-  if (!userData.access_token) {
-    return;
-  }
-
-  const options =  {
-    method: method,
-    headers: {
-      'Client-ID': config.twitch.api.client,
-      'Authorization': `Bearer ${userData.access_token}`
-    }
-  };
-
-  if (body) {
-    options.headers['Content-Type'] = 'application/json';
-    options.body = JSON.stringify(body);
-  }
-
   return new Promise((resolve, reject) => {
+    if (!userData.access_token) {
+      reject('api request failed due to missing access token');
+      return;
+    }
+
+    const options =  {
+      method: method,
+      headers: {
+        'Client-ID': config.twitch.api.client,
+        'Authorization': `Bearer ${userData.access_token}`
+      }
+    };
+
+    if (body) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(body);
+    }
+
     fetch(url, options)
       .then((res) => {
         if (res.code === 401) {
+          if (!userData.refresh_token) {
+            reject('api request failed due to invalid or expired access token');
+            return;
+          }
+
           fetch('https://id.twitch.tv/oauth2/token', {
             method: 'POST',
             body: {
