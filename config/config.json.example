@@ -1,7 +1,12 @@
 {
   "host": "localhost",
   "port": 3000,
+  "secret": "",
   "twitch": {
+    "api": {
+      "client": "",
+      "secret": ""
+    },
     "channel": {
       "username": "",
       "password": ""
