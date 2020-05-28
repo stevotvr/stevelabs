@@ -297,7 +297,7 @@ host.on('hosted', (channel, username, viewers, autohost) => {
 });
 
 setInterval(() => {
-  if (chatLines < timers.chatLines || Date.now() < nextTimer) {
+  if (!userData.live || chatLines < timers.chatLines || Date.now() < nextTimer) {
     return;
   }
 
