@@ -101,7 +101,7 @@ app.get('/wh/stream', (req, res) => {
 
 app.post('/wh/stream', (req, res) => {
   userData.live = req.body.data.length > 0;
-  console.log(userData.live);
+  console.log(`channel is ${userData.live ? 'LIVE!' : 'offline'}`);
   res.end();
 });
 
@@ -171,6 +171,8 @@ bot.on('chat', (channel, userstate, message, self) => {
   if (message[0] !== '!') {
     return;
   }
+
+  console.log(`${userstate.username}: ${message}`);
 
   const brk = message.indexOf(' ');
   const commandName = message.substring(1, brk === -1 ? undefined : brk);
@@ -322,6 +324,7 @@ function sendAlert(type, params) {
   }
 
   io.emit('alert', message, alert.graphic, alert.sound);
+  console.log(message);
 }
 
 function apiRequest(url, method, body) {
