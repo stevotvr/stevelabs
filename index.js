@@ -117,7 +117,8 @@ const host = new tmi.Client({
   identity: {
     username: config.twitch.channel.username,
     password: config.twitch.channel.password
-  }
+  },
+  channels: [ `#${config.twitch.channel.username}` ]
 });
 
 host.connect()
