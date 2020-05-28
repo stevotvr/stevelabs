@@ -1,4 +1,4 @@
-# Twitch Bot
+# StoveLabs
 
 This is a custom Twitch bot for my channel.
 
