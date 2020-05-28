@@ -128,7 +128,8 @@ host.connect()
 .then(() => {
   console.log('connected to Twitch channel');
 }).catch((err) => {
-  console.error(err);
+  console.warn('failed to connect to Twitch channel');
+  console.log(err);
 });
 
 const bot = new tmi.Client({
@@ -146,7 +147,8 @@ bot.connect()
 .then(() => {
   console.log('connected to Twitch bot channel');
 }).catch((err) => {
-  console.error(err);
+  console.warn('failed to connect to Twitch bot channel');
+  console.log(err);
 });
 
 let timerPos = 0;
@@ -327,7 +329,7 @@ function sendAlert(type, params) {
   }
 
   io.emit('alert', message, alert.graphic, alert.sound);
-  console.log(message);
+  console.log(`alert sent: ${message}`);
 }
 
 function apiRequest(url, method, body) {
@@ -381,7 +383,7 @@ function apiRequest(url, method, body) {
           resolve(res);
         }
       })
-      .catch(err => reject(err));
+      .catch(reject);
   });
 }
 
@@ -391,10 +393,18 @@ function setWebhook(enable = true) {
     'hub.mode': enable ? 'subscribe' : 'unsubscribe',
     'hub.topic': `https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`,
     'hub.lease_seconds': 86400
+  })
+  .then((res) => {
+    console.log(`webhook subscription ${enable ? 'created' : 'destroyed'} successfully`);
+  })
+  .catch((err) => {
+    console.warn(`failed to ${enable ? 'create' : 'destroy'} webhook subscription`);
+    console.log(err);
   });
 
   if (!enable) {
     clearTimeout(whTimeout);
+    whTimeout = 0;
   }
 }
 
@@ -406,7 +416,7 @@ function saveAuthConfig() {
 
   fs.writeFile('./data/auth.json', data, (err) => {
     if (err) {
-      console.log('error saving auth configuration');
+      console.warn('error saving auth configuration');
       console.log(err.message);
       return;
     }
