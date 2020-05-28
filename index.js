@@ -82,10 +82,13 @@ app.get('/cb', (req, res) => {
         saveAuthConfig();
         setWebhook();
       }
-
-      res.redirect('/');
     });
-  });
+  })
+  .catch((err) => {
+    console.warn('failed to authenticate with Twitch');
+    console.log(err);
+  })
+  .finally(() => res.redirect('/'));
 });
 
 app.get('/wh/stream', (req, res) => {
@@ -441,6 +444,8 @@ function checkUser(cb) {
   .then((user) => {
     if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
       userData.user_id = user.data[0].id;
+
+      console.log(`authenticated with Twitch as user ${config.twitch.channel.username}`);
 
       cb(true);
     } else {
