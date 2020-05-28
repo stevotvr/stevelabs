@@ -398,7 +398,10 @@ function setWebhook(enable = true) {
 }
 
 function saveAuthConfig() {
-  const data = JSON.stringify(userData.auth);
+  const data = JSON.stringify({
+    access_token: userData.access_token,
+    refresh_token: userData.refresh_token
+  });
 
   fs.writeFile('./data/auth.json', data, (err) => {
     if (err) {
@@ -416,7 +419,7 @@ function loadAuthConfig() {
     const data = fs.readFileSync('./data/auth.json');
     try {
       const auth = JSON.parse(data);
-      if (auth.access_token && auth.expires && auth.refresh_token) {
+      if (auth.access_token && auth.refresh_token) {
         userData.access_token = auth.access_token;
         userData.refresh_token = auth.refresh_token;
 
