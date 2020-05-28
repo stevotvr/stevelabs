@@ -40,13 +40,13 @@ const userData = {
 
 let whTimeout = 0;
 
-config.redirect = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}/cb`;
+config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
 
 app.get('/', (req, res) => {
   if (userData.access_token) {
     res.send('Connected');
   } else {
-    const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.redirect}&response_type=code&scope=user:read:email`;
+    const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
     res.send(`<html><body><a href="${url}">Connect</a></body></html>`);
   }
 });
@@ -63,7 +63,7 @@ app.get('/cb', (req, res) => {
     return;
   }
 
-  const url = `https://id.twitch.tv/oauth2/token?client_id=${config.twitch.api.client}&client_secret=${config.twitch.api.secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${config.redirect}`;
+  const url = `https://id.twitch.tv/oauth2/token?client_id=${config.twitch.api.client}&client_secret=${config.twitch.api.secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${config.url}/cb`;
 
   fetch(url, {
     method: 'POST'
@@ -350,7 +350,7 @@ function apiRequest(url, method, body) {
 
 function setWebhook(enable = true) {
   apiRequest('https://api.twitch.tv/helix/webhooks/hub', 'POST', {
-    'hub.callback': `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}/wh/stream`,
+    'hub.callback': `${config.url}/wh/stream`,
     'hub.mode': enable ? 'subscribe' : 'unsubscribe',
     'hub.topic': `https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`,
     'hub.lease_seconds': 86400
