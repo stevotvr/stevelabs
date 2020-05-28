@@ -31,9 +31,11 @@ const http = function() {
 const io = require('socket.io')(http);
 
 const userData = {
-  access_token: '',
-  expires: 0,
-  refresh_token: '',
+  auth: {
+    access_token: '',
+    expires: 0,
+    refresh_token: ''
+  },
   user_id: 0,
   live: false
 };
@@ -42,8 +44,14 @@ let whTimeout = 0;
 
 config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
 
+try {
+  fs.mkdirSync('./data');
+} catch {}
+
+loadAuthConfig();
+
 app.get('/', (req, res) => {
-  if (userData.access_token) {
+  if (userData.auth.access_token) {
     res.send('Connected');
   } else {
     const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
@@ -70,18 +78,13 @@ app.get('/cb', (req, res) => {
   })
   .then(res => res.json())
   .then((auth) => {
-    userData.access_token = auth.access_token;
-    apiRequest('https://api.twitch.tv/helix/users', 'GET')
-    .then(res => res.json())
-    .then((user) => {
-      if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
-        userData.expires = Date.now() + auth.expires_in * 1000;
-        userData.refresh_token = auth.refresh_token;
-        userData.user_id = user.data[0].id;
-
+    userData.auth.access_token = auth.access_token;
+    userData.auth.expires = Date.now() + auth.expires_in * 1000;
+    userData.auth.refresh_token = auth.refresh_token;
+    checkUser((valid) => {
+      if (valid) {
+        saveAuthConfig();
         setWebhook();
-      } else {
-        userData.access_token = '';
       }
 
       res.redirect('/');
@@ -328,7 +331,7 @@ function sendAlert(type, params) {
 }
 
 function apiRequest(url, method, body) {
-  if (!userData.access_token) {
+  if (!userData.auth.access_token) {
     return;
   }
 
@@ -336,7 +339,7 @@ function apiRequest(url, method, body) {
     method: method,
     headers: {
       'Client-ID': config.twitch.api.client,
-      'Authorization': `Bearer ${userData.access_token}`
+      'Authorization': `Bearer ${userData.auth.access_token}`
     }
   };
 
@@ -359,4 +362,65 @@ function setWebhook(enable = true) {
   if (!enable) {
     clearTimeout(whTimeout);
   }
+}
+
+function saveAuthConfig() {
+  const data = JSON.stringify(userData.auth);
+
+  fs.writeFile('./data/auth.json', data, (err) => {
+    if (err) {
+      console.log('error saving auth configuration');
+      console.log(err.message);
+      return;
+    }
+
+    console.log('auth configuration saved successfully');
+  })
+}
+
+function loadAuthConfig() {
+  try {
+    const data = fs.readFileSync('./data/auth.json');
+    try {
+      const auth = JSON.parse(data);
+      if (auth.access_token && auth.expires && auth.refresh_token) {
+        userData.auth.access_token = auth.access_token;
+        userData.auth.expires = auth.expires;
+        userData.auth.refresh_token = auth.refresh_token;
+
+        checkUser((valid) => {
+          if (!valid) {
+            console.log('invalid oauth2 tokens');
+          }
+        });
+      }
+    } catch (err) {
+      console.log('error loading auth configuration');
+      console.log(err);
+    }
+  } catch {}
+}
+
+function checkUser(cb) {
+  if (!userData.auth.access_token) {
+    cb(false);
+    return;
+  }
+
+  apiRequest('https://api.twitch.tv/helix/users', 'GET')
+  .then(res => res.json())
+  .then((user) => {
+    if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
+      userData.user_id = user.data[0].id;
+
+      cb(true);
+    } else {
+      userData.auth.access_token = '';
+      userData.auth.expires = 0;
+      userData.auth.refresh_token = '';
+      userData.user_id = 0;
+
+      cb(false);
+    }
+  });
 }
