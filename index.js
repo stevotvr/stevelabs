@@ -77,7 +77,8 @@ app.get('/cb', (req, res) => {
   .then((auth) => {
     userData.access_token = auth.access_token;
     userData.refresh_token = auth.refresh_token;
-    checkUser((valid) => {
+    checkUser()
+    .then((valid) => {
       if (valid) {
         saveAuthConfig();
         setWebhook();
@@ -423,7 +424,8 @@ function loadAuthConfig() {
         userData.access_token = auth.access_token;
         userData.refresh_token = auth.refresh_token;
 
-        checkUser((valid) => {
+        checkUser()
+        .then((valid) => {
           if (!valid) {
             console.log('invalid oauth2 tokens');
           }
@@ -436,27 +438,34 @@ function loadAuthConfig() {
   } catch {}
 }
 
-function checkUser(cb) {
-  if (!userData.access_token) {
-    cb(false);
-    return;
-  }
-
-  apiRequest('https://api.twitch.tv/helix/users', 'GET')
-  .then(res => res.json())
-  .then((user) => {
-    if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
-      userData.user_id = user.data[0].id;
-
-      console.log(`authenticated with Twitch as user ${config.twitch.channel.username}`);
-
-      cb(true);
-    } else {
-      userData.access_token = '';
-      userData.refresh_token = '';
-      userData.user_id = 0;
-
-      cb(false);
+function checkUser() {
+  return new Promise((resolve, reject) => {
+    if (!userData.access_token) {
+      resolve(false);
+      return;
     }
+
+    apiRequest('https://api.twitch.tv/helix/users', 'GET')
+    .then(res => res.json())
+    .then((user) => {
+      if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
+        userData.user_id = user.data[0].id;
+
+        console.log(`authenticated with Twitch as user ${config.twitch.channel.username}`);
+
+        resolve(true);
+      } else {
+        userData.access_token = '';
+        userData.refresh_token = '';
+        userData.user_id = 0;
+
+        resolve(false);
+      }
+    })
+    .catch((err) => {
+      console.warn('api request for user data failed');
+      console.log(err);
+      resolve(false);
+    });
   });
 }
