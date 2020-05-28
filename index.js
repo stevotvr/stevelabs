@@ -136,8 +136,7 @@ const bot = new tmi.Client({
   identity: {
     username: config.twitch.bot.username,
     password: config.twitch.bot.password
-  },
-  channels: [ `#${config.twitch.channel.username}` ]
+  }
 });
 
 bot.connect()
@@ -162,8 +161,8 @@ for (const k in commands) {
   };
 }
 
-bot.on('chat', (channel, userstate, message, self) => {
-  if (self) {
+host.on('chat', (channel, userstate, message, self) => {
+  if (userstate.username === config.twitch.bot.username) {
     return;
   }
 
