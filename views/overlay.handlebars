@@ -9,7 +9,7 @@
     {{#each alerts}}
     <div class="alert" id="{{@key}}">
         {{#if this.graphic}}
-        <video src="../media/{{this.graphic}}"{{#if this.height}} height="{{this.height}}"{{/if}}></video>
+        <video src="../media/{{this.graphic}}"></video>
         {{/if}}
         <p>{{{this.message}}}</p>
         {{#if this.sound}}

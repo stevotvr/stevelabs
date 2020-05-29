@@ -8,22 +8,23 @@ html, body {
 
 body {
     overflow: hidden;
-    background: #0f0;
 }
 
 .alert {
+    bottom: 20%;
     opacity: 0;
     position: absolute;
+    text-align: center;
     transition: opacity 800ms ease-out;
+    width: 100%;
 }
 
 .alert p {
-    text-align: center;
+    color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 26px;
+    font-size: 42px;
     font-weight: bold;
     text-shadow: 0 0 .03em #222;
-    color: #fff;
 }
 
 .alert p span {
