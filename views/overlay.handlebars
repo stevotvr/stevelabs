@@ -1,23 +1,23 @@
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="../overlay.css">
-    <title>StoveLabs Overlay</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../overlay.css">
+	<title>StoveLabs Overlay</title>
 </head>
 <body>
-    {{#each alerts}}
-    <div class="alert" id="{{@key}}">
-        {{#if this.graphic}}
-        <video src="../media/{{this.graphic}}"></video>
-        {{/if}}
-        <p>{{{this.message}}}</p>
-        {{#if this.sound}}
-        <audio src="../media/{{this.sound}}"></audio>
-        {{/if}}
-    </div>
-    {{/each}}
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
-	<script src="../overlay.js"></script>
+	{{#each alerts}}
+	<div class="alert" id="{{@key}}">
+		{{#if this.graphic}}
+		<video src="../media/{{this.graphic}}"></video>
+		{{/if}}
+		<p>{{{this.message}}}</p>
+		{{#if this.sound}}
+		<audio src="../media/{{this.sound}}"></audio>
+		{{/if}}
+	</div>
+	{{/each}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
+<script src="../overlay.js"></script>
 </body>
 </html>
