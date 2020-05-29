@@ -45,6 +45,11 @@ let whTimeout = 0;
 
 config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
 
+for (const key in alerts) {
+  const alert = alerts[key];
+  alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
+}
+
 try {
   fs.mkdirSync('./data');
 } catch {}
@@ -113,7 +118,7 @@ app.post('/wh/stream', (req, res) => {
 });
 
 app.get(`/overlay/${config.secret}`, (req, res) => {
-  res.render('overlay', { layout: false });
+  res.render('overlay', { layout: false, alerts: alerts });
 });
 
 http.listen(config.port, config.host, () => {
@@ -330,17 +335,10 @@ function sendAlert(type, params) {
     return;
   }
 
-  let message = alert.message;
-  if (alert.message) {
-    for (const key in params) {
-      message = message.replace(`\${${key}}`, params[key]);
-    }
-  }
-
   const duration = Math.max(1, alert.duration) * 1000;
 
-  io.emit('alert', message, alert.graphic, alert.sound, duration);
-  console.log(`alert sent: ${message}`);
+  io.emit('alert', type, params, duration);
+  console.log(`alert sent: ${type}`);
 }
 
 function apiRequest(url, method, body) {

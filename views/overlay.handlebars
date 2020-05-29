@@ -3,15 +3,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="../overlay.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
-	<script src="../overlay.js" defer></script>
-    <title>StoveLabs</title>
+    <title>StoveLabs Overlay</title>
 </head>
 <body>
-    <div id="alert-container">
-        <video id="video"></video>
-        <p id="message"></p>
+    {{#each alerts}}
+    <div class="alert" id="{{@key}}">
+        {{#if this.graphic}}
+        <video src="../media/{{this.graphic}}"{{#if this.height}} height="{{this.height}}"{{/if}}></video>
+        {{/if}}
+        <p>{{{this.message}}}</p>
+        {{#if this.sound}}
+        <audio src="../media/{{this.sound}}"></audio>
+        {{/if}}
     </div>
-    <audio id="sound"></audio>
+    {{/each}}
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
+	<script src="../overlay.js"></script>
 </body>
 </html>

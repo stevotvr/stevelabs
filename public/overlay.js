@@ -1,10 +1,5 @@
 var socket = io('//' + window.location.host);
 
-var alertElem = document.getElementById('alert-container');
-var messageElem = document.getElementById('message');
-var videoElem = document.getElementById('video');
-var soundElem = document.getElementById('sound');
-
 socket.on('connect', () => {
   console.log('connected to socket');
 });
@@ -13,25 +8,38 @@ socket.on('disconnect', () => {
   console.log('socket connection lost');
 });
 
-socket.on('alert', (message, graphic, sound, duration) => {
+socket.on('alert', (type, params, duration) => {
+  var alertElem = document.getElementById(type);
+  if (!alertElem) {
+    return;
+  }
+
+  var messageElems = alertElem.getElementsByTagName('p');
+  if (messageElems && messageElems.length) {
+    for (var key in params) {
+      var elems = messageElems[0].getElementsByClassName(key);
+      if (elems) {
+        for (let i = 0; i < elems.length; i++) {
+          elems[i].innerText = params[key];
+        }
+      }
+    }
+  }
+
   alertElem.style.opacity = 1;
   setTimeout(() => {
     alertElem.style.opacity = 0;
   }, duration);
 
-  if (message) {
-    messageElem.innerText = message;
+  var videoElems = alertElem.getElementsByTagName('video');
+  if (videoElems && videoElems.length) {
+    videoElems[0].play();
   }
 
-  if (graphic) {
-    videoElem.src = '../media/' + graphic;
-    videoElem.play();
+  var audioElems = alertElem.getElementsByTagName('audio');
+  if (audioElems && audioElems.length) {
+    audioElems[0].play();
   }
 
-  if (sound) {
-    soundElem.src = '../media/' + sound;
-    soundElem.play();
-  }
-
-  console.log(message, graphic, sound, duration);
+  console.log(type, params, duration);
 });
