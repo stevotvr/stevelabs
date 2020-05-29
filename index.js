@@ -83,18 +83,18 @@ app.get('/cb', (req, res) => {
     method: 'POST'
   })
   .then(res => res.json())
-  .then((auth) => {
+  .then(auth => {
     userData.access_token = auth.access_token;
     userData.refresh_token = auth.refresh_token;
     checkUser()
-    .then((valid) => {
+    .then(valid => {
       if (valid) {
         saveAuthConfig();
         setWebhook();
       }
     });
   })
-  .catch((err) => {
+  .catch(err => {
     console.warn('failed to authenticate with Twitch');
     console.log(err);
   })
@@ -141,7 +141,7 @@ const host = new tmi.Client({
 host.connect()
 .then(() => {
   console.log('connected to Twitch channel');
-}).catch((err) => {
+}).catch(err => {
   console.warn('failed to connect to Twitch channel');
   console.log(err);
 });
@@ -160,7 +160,7 @@ const bot = new tmi.Client({
 bot.connect()
 .then(() => {
   console.log('connected to Twitch bot channel');
-}).catch((err) => {
+}).catch(err => {
   console.warn('failed to connect to Twitch bot channel');
   console.log(err);
 });
@@ -175,8 +175,8 @@ for (const k in commands) {
   }
 
   commands[k].timeouts = {
-    "global": 0,
-    "user": {}
+    global: 0,
+    user: {}
   };
 }
 
@@ -255,54 +255,54 @@ host.on('chat', (channel, userstate, message, self) => {
 
 host.on('cheer', (channel, userstate, message) => {
   sendAlert('cheer', {
-    "user": userstate['display-name'],
-    "message": message,
+    user: userstate['display-name'],
+    message: message,
   });
 });
 
 host.on('subscription', (channel, username, method, message, userstate) => {
   sendAlert('subscription', {
-    "user": userstate['display-name']
+    user: userstate['display-name']
   });
 });
 
 host.on('anongiftpaidupgrade', (channel, username, userstate) => {
   sendAlert('subscription', {
-    "user": userstate['display-name']
+    user: userstate['display-name']
   });
 });
 
 host.on('giftpaidupgrade', (channel, username, sender, userstate) => {
   sendAlert('subscription', {
-    "user": userstate['display-name']
+    user: userstate['display-name']
   });
 });
 
 host.on('resub', (channel, username, months, message, userstate, methods) => {
   sendAlert('resub', {
-    "user": userstate['display-name'],
-    "months": months
+    user: userstate['display-name'],
+    months: months
   });
 });
 
 host.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
   sendAlert('subgift', {
-    "user": userstate['display-name'],
-    "recipient": recipient
+    user: userstate['display-name'],
+    recipient: recipient
   });
 });
 
 host.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
   sendAlert('submysterygift', {
-    "user": userstate['display-name'],
-    "subcount": numbOfSubs
+    user: userstate['display-name'],
+    subcount: numbOfSubs
   });
 });
 
 host.on('raided', (channel, username, viewers) => {
   sendAlert('raid', {
-    "user": username,
-    "viewers": viewers
+    user: username,
+    viewers: viewers
   });
 });
 
@@ -312,8 +312,8 @@ host.on('hosted', (channel, username, viewers, autohost) => {
   }
 
   sendAlert('host', {
-    "user": username,
-    "viewers": viewers
+    user: username,
+    viewers: viewers
   });
 });
 
@@ -362,7 +362,7 @@ function apiRequest(url, method, body) {
     }
 
     fetch(url, options)
-      .then((res) => {
+      .then(res => {
         if (res.code === 401) {
           if (!userData.refresh_token) {
             reject('api request failed due to invalid or expired access token');
@@ -379,7 +379,7 @@ function apiRequest(url, method, body) {
             }
           })
           .then(res => res.json())
-          .then((json) => {
+          .then(json => {
             if (json.access_token) {
               userData.access_token = json.access_token;
               userData.refresh_token = json.refresh_token;
@@ -409,10 +409,10 @@ function setWebhook(enable = true) {
     'hub.topic': `https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`,
     'hub.lease_seconds': 86400
   })
-  .then((res) => {
+  .then(res => {
     console.log(`webhook subscription ${enable ? 'created' : 'destroyed'} successfully`);
   })
-  .catch((err) => {
+  .catch(err => {
     console.warn(`failed to ${enable ? 'create' : 'destroy'} webhook subscription`);
     console.log(err);
   });
@@ -429,7 +429,7 @@ function saveAuthConfig() {
     refresh_token: userData.refresh_token
   });
 
-  fs.writeFile('./data/auth.json', data, (err) => {
+  fs.writeFile('./data/auth.json', data, err => {
     if (err) {
       console.warn('error saving auth configuration');
       console.log(err.message);
@@ -450,7 +450,7 @@ function loadAuthConfig() {
         userData.refresh_token = auth.refresh_token;
 
         checkUser()
-        .then((valid) => {
+        .then(valid => {
           if (!valid) {
             console.log('invalid oauth2 tokens');
           }
@@ -472,7 +472,7 @@ function checkUser() {
 
     apiRequest('https://api.twitch.tv/helix/users', 'GET')
     .then(res => res.json())
-    .then((user) => {
+    .then(user => {
       if (user.data && user.data[0] && user.data[0].login === config.twitch.channel.username) {
         userData.user_id = user.data[0].id;
 
@@ -487,7 +487,7 @@ function checkUser() {
         resolve(false);
       }
     })
-    .catch((err) => {
+    .catch(err => {
       console.warn('api request for user data failed');
       console.log(err);
       resolve(false);
