@@ -1,0 +1,17 @@
+* {
+    margin: 0;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    overflow: hidden;
+}
+
+#alert-container {
+    opacity: 0;
+    text-align: center;
+    transition: opacity 800ms ease-out;
+}

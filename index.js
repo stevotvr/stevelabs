@@ -16,6 +16,7 @@ const app = express();
 app.engine('handlebars', handlebars());
 app.set('view engine', 'handlebars');
 app.use(express.json());
+app.use(express.static('public'));
 
 const http = function() {
   if (config.ssl.enabled) {
@@ -111,8 +112,13 @@ app.post('/wh/stream', (req, res) => {
   res.end();
 });
 
+app.get(`/overlay/${config.secret}`, (req, res) => {
+  res.render('overlay', { layout: false });
+});
+
 http.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
+  console.log(`overlay url: ${config.url}/overlay/${config.secret}`);
 });
 
 const host = new tmi.Client({
@@ -320,7 +326,7 @@ setInterval(() => {
 function sendAlert(type, params) {
   const alert = alerts[type];
 
-  if (!alert.message && !alert.graphic && !alert.sound) {
+  if ((!alert.message && !alert.graphic && !alert.sound) || !alert.duration) {
     return;
   }
 
@@ -331,7 +337,9 @@ function sendAlert(type, params) {
     }
   }
 
-  io.emit('alert', message, alert.graphic, alert.sound);
+  const duration = Math.max(1, alert.duration) * 1000;
+
+  io.emit('alert', message, alert.graphic, alert.sound, duration);
   console.log(`alert sent: ${message}`);
 }
 

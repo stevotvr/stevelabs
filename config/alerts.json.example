@@ -2,36 +2,43 @@
     "cheer": {
       "message": "${user} cheered!<br>${message}",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "subscription": {
       "message": "${user} has subscribed!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "resub": {
       "message": "${user} has resubscribed for ${months} months!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "subgift": {
       "message": "${user} gifted a subscription to ${recipient}!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "submysterygift": {
       "message": "${user} gifted subscriptions to ${subcount} lucky viewers!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "raid": {
       "message": "${user} raided the channel with ${viewers} viewers!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     },
     "host": {
       "message": "${user} hosted the channel with ${viewers} viewers!",
       "graphic": "",
-      "sound": ""
+      "sound": "",
+      "duration": 5
     }
   }
