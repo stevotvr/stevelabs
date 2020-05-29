@@ -10,8 +10,11 @@ const fs = require('fs');
 const tmi = require('tmi.js');
 const express = require('express');
 const fetch = require('node-fetch');
+const handlebars = require('express-handlebars');
 
 const app = express();
+app.engine('handlebars', handlebars());
+app.set('view engine', 'handlebars');
 app.use(express.json());
 
 const http = function() {
@@ -49,10 +52,10 @@ loadAuthConfig();
 
 app.get('/', (req, res) => {
   if (userData.access_token) {
-    res.send('Connected');
+    res.render('index');
   } else {
     const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
-    res.send(`<html><body><a href="${url}">Connect</a></body></html>`);
+    res.render('index', { connectUrl: url });
   }
 });
 
