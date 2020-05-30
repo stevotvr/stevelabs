@@ -105,7 +105,7 @@ app.get('/cb', (req, res) => {
 
 app.get('/wh/stream', (req, res) => {
   if (req.query['hub.challenge'] && req.query['hub.mode']) {
-    console.log(`stream webhook subscription ${req.query['hud.mode']}ed successfully`);
+    console.log(`stream webhook subscription ${req.query['hub.mode']}ed successfully`);
     if (req.query['hub.mode'] === 'subscribe') {
       if (req.query['hub.lease_seconds']) {
         streamWhTimeout = setTimeout(setStreamWebhook, req.query['hub.lease_seconds'] * 1000);
@@ -126,7 +126,7 @@ app.post('/wh/stream', (req, res) => {
 
 app.get('/wh/follows', (req, res) => {
   if (req.query['hub.challenge'] && req.query['hub.mode']) {
-    console.log(`follows webhook subscription ${req.query['hud.mode']}ed successfully`);
+    console.log(`follows webhook subscription ${req.query['hub.mode']}ed successfully`);
     if (req.query['hub.mode'] === 'subscribe') {
       if (req.query['hub.lease_seconds']) {
         followWhTimeout = setTimeout(setFollowsWebhook, req.query['hub.lease_seconds'] * 1000);
