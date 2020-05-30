@@ -5,6 +5,12 @@
     "sound": "",
     "duration": 5
   },
+  "follower": {
+    "message": "${user} is now following!",
+    "graphic": "",
+    "sound": "",
+    "duration": 5
+  },
   "subscription": {
     "message": "${user} has subscribed!",
     "graphic": "",
