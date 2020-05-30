@@ -7,6 +7,7 @@ html, body {
 }
 
 body {
+  display: block !important;
   overflow: hidden;
 }
 
