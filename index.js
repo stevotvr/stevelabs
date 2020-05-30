@@ -17,6 +17,7 @@ const app = express();
 app.engine('handlebars', handlebars());
 app.set('view engine', 'handlebars');
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const http = function() {
@@ -148,6 +149,14 @@ app.post('/wh/follows', (req, res) => {
 
 app.get('/overlay', (req, res) => {
   res.render('overlay', { layout: false, alerts: alerts });
+});
+
+app.post('/test', (req, res) => {
+  if (req.body.alert) {
+    sendAlert(req.body.type, req.body);
+  }
+
+  res.redirect('/');
 });
 
 http.listen(config.port, config.host, () => {

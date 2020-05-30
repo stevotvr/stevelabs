@@ -1,5 +1,11 @@
 {{#if connectUrl}}
 <a href="{{connectUrl}}">Connect to Twitch</a>
 {{else}}
-Connected to Twitch
+<p>Connected to Twitch</p>
+<form action="test" method="POST">
+	<input type="hidden" name="alert" value="1">
+	<input type="hidden" name="type" value="follower">
+	<input type="hidden" name="user" value="test">
+	<input type="submit" value="New Follower">
+</form>
 {{/if}}
