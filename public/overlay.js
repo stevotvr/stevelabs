@@ -1,4 +1,6 @@
-"use strict"
+'use strict'
+
+const alertQueue = [];
 
 const socket = io('//' + window.location.host);
 
@@ -11,6 +13,26 @@ socket.on('disconnect', () => {
 });
 
 socket.on('alert', (type, params, duration) => {
+  alertQueue.push({
+    type: type,
+    params: params,
+    duration: duration
+  });
+
+  if (alertQueue.length === 1) {
+    showNextAlert();
+  }
+
+  console.log(type, params, duration);
+});
+
+function showNextAlert() {
+  if (!alertQueue.length) {
+    return;
+  }
+
+  const { type, params, duration } = alertQueue[0];
+
   const alertElem = document.getElementById(type);
   if (!alertElem) {
     return;
@@ -31,6 +53,10 @@ socket.on('alert', (type, params, duration) => {
   alertElem.style.opacity = 1;
   setTimeout(() => {
     alertElem.style.opacity = 0;
+    setTimeout(() => {
+      alertQueue.shift();
+      showNextAlert();
+    }, 1000);
   }, duration);
 
   const videoElems = alertElem.getElementsByTagName('video');
@@ -42,6 +68,4 @@ socket.on('alert', (type, params, duration) => {
   if (audioElems && audioElems.length) {
     audioElems[0].play();
   }
-
-  console.log(type, params, duration);
-});
+}
