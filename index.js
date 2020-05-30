@@ -483,7 +483,9 @@ function loadAuthConfig() {
 
         checkUser()
         .then(valid => {
-          if (!valid) {
+          if (valid) {
+            setWebhooks();
+          } else {
             console.log('invalid oauth2 tokens');
           }
         });
