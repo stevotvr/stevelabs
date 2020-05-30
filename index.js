@@ -135,13 +135,13 @@ app.post('/wh/follows', (req, res) => {
   res.end();
 });
 
-app.get(`/overlay/${config.secret}`, (req, res) => {
+app.get('/overlay', (req, res) => {
   res.render('overlay', { layout: false, alerts: alerts });
 });
 
 http.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
-  console.log(`overlay url: ${config.url}/overlay/${config.secret}`);
+  console.log(`overlay url: ${config.url}/overlay`);
 });
 
 const host = new tmi.Client({
