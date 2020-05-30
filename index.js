@@ -103,9 +103,14 @@ app.get('/cb', (req, res) => {
 });
 
 app.get('/wh/stream', (req, res) => {
-  if (req.query['hub.challenge'] && req.query['hub.mode'] && req.query['hub.mode'] === 'subscribe') {
-    if (req.query['hub.lease_seconds']) {
-      streamWhTimeout = setTimeout(setWebhooks, req.query['hub.lease_seconds'] * 1000);
+  if (req.query['hub.challenge'] && req.query['hub.mode']) {
+    console.log(`stream webhook subscription ${req.query['hud.mode']}ed successfully`);
+    if (req.query['hub.mode'] === 'subscribe') {
+      if (req.query['hub.lease_seconds']) {
+        streamWhTimeout = setTimeout(setStreamWebhook, req.query['hub.lease_seconds'] * 1000);
+      }
+    } else {
+      clearTimeout(streamWhTimeout);
     }
 
     res.send(req.query['hub.challenge']);
@@ -119,9 +124,14 @@ app.post('/wh/stream', (req, res) => {
 });
 
 app.get('/wh/follows', (req, res) => {
-  if (req.query['hub.challenge'] && req.query['hub.mode'] && req.query['hub.mode'] === 'subscribe') {
-    if (req.query['hub.lease_seconds']) {
-      followWhTimeout = setTimeout(setWebhooks, req.query['hub.lease_seconds'] * 1000);
+  if (req.query['hub.challenge'] && req.query['hub.mode']) {
+    console.log(`follows webhook subscription ${req.query['hud.mode']}ed successfully`);
+    if (req.query['hub.mode'] === 'subscribe') {
+      if (req.query['hub.lease_seconds']) {
+        followWhTimeout = setTimeout(setFollowsWebhook, req.query['hub.lease_seconds'] * 1000);
+      }
+    } else {
+      clearTimeout(followWhTimeout);
     }
 
     res.send(req.query['hub.challenge']);
@@ -421,38 +431,37 @@ function apiRequest(url, method, body) {
 }
 
 function setWebhooks(enable = true) {
+  setStreamWebhook(enable);
+  setFollowsWebhook(enable);
+}
+
+function setStreamWebhook(enable = true) {
+  setWebhook(`https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`, 'stream', enable);
+
+  if (!enable) {
+    clearTimeout(streamWhTimeout);
+  }
+}
+
+function setFollowsWebhook(enable = true) {
+  setWebhook(`https://api.twitch.tv/helix/users/follows?first=1&to_id=${userData.user_id}`, 'follows', enable);
+
+  if (!enable) {
+    clearTimeout(followWhTimeout);
+  }
+}
+
+function setWebhook(topic, cb, enable) {
   apiRequest('https://api.twitch.tv/helix/webhooks/hub', 'POST', {
-    'hub.callback': `${config.url}/wh/stream`,
+    'hub.callback': `${config.url}/wh/${cb}`,
     'hub.mode': enable ? 'subscribe' : 'unsubscribe',
-    'hub.topic': `https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`,
+    'hub.topic': topic,
     'hub.lease_seconds': 86400
-  })
-  .then(res => {
-    console.log(`stream webhook subscription ${enable ? 'created' : 'destroyed'} successfully`);
   })
   .catch(err => {
     console.warn(`failed to ${enable ? 'create' : 'destroy'} stream webhook subscription`);
     console.log(err);
   });
-
-  apiRequest('https://api.twitch.tv/helix/webhooks/hub', 'POST', {
-    'hub.callback': `${config.url}/wh/follows`,
-    'hub.mode': enable ? 'subscribe' : 'unsubscribe',
-    'hub.topic': `https://api.twitch.tv/helix/users/follows?first=1&to_id=${userData.user_id}`,
-    'hub.lease_seconds': 86400
-  })
-  .then(res => {
-    console.log(`follows webhook subscription ${enable ? 'created' : 'destroyed'} successfully`);
-  })
-  .catch(err => {
-    console.warn(`failed to ${enable ? 'create' : 'destroy'} follows webhook subscription`);
-    console.log(err);
-  });
-
-  if (!enable) {
-    clearTimeout(streamWhTimeout);
-    clearTimeout(followWhTimeout);
-  }
 }
 
 function saveAuthConfig() {
