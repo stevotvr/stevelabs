@@ -11,6 +11,7 @@ const tmi = require('tmi.js');
 const express = require('express');
 const fetch = require('node-fetch');
 const handlebars = require('express-handlebars');
+const { URLSearchParams } = require('url');
 
 const app = express();
 app.engine('handlebars', handlebars());
@@ -391,7 +392,7 @@ function apiRequest(url, method, body) {
 
     fetch(url, options)
       .then(res => {
-        if (res.code === 401) {
+        if (res.status === 401) {
           if (!userData.refresh_token) {
             reject('api request failed due to invalid or expired access token');
             return;
@@ -399,12 +400,12 @@ function apiRequest(url, method, body) {
 
           fetch('https://id.twitch.tv/oauth2/token', {
             method: 'POST',
-            body: {
+            body: new URLSearchParams({
               grant_type: 'refresh_token',
               refresh_token: userData.refresh_token,
               client_id: config.twitch.api.client,
               client_secret: config.twitch.api.secret
-            }
+            })
           })
           .then(res => res.json())
           .then(json => {
