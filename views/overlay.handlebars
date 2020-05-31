@@ -8,8 +8,11 @@
 <body style="display: none;">
 	{{#each alerts}}
 	<div class="alert" id="{{@key}}">
-		{{#if this.graphic}}
-		<video src="media/{{this.graphic}}"></video>
+		{{#if this.video}}
+		<video src="media/{{this.video}}"></video>
+		{{/if}}
+		{{#if this.image}}
+		<img src="media/{{this.image}}">
 		{{/if}}
 		<p>{{{this.message}}}</p>
 		{{#if this.sound}}

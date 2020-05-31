@@ -50,6 +50,18 @@ config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config
 
 for (const key in alerts) {
   const alert = alerts[key];
+  if (alert.graphic) {
+    const ext = alert.graphic.substring(alert.graphic.lastIndexOf('.') + 1).toLowerCase();
+    switch (ext) {
+      case 'mp4':
+      case 'mov':
+      case 'webm':
+        alert.video = alert.graphic;
+        break;
+      default:
+        alert.image = alert.graphic;
+    }
+  }
   alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
 }
 
