@@ -72,12 +72,16 @@ try {
 loadAuthConfig();
 
 app.get('/', (req, res) => {
+  const params = {};
   if (userData.access_token) {
-    res.render('index');
+    if (config.debug) {
+      params.alerts = alerts;
+    }
   } else {
-    const url = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
-    res.render('index', { connectUrl: url });
+    params.connectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${config.twitch.api.client}&redirect_uri=${config.url}/cb&response_type=code&scope=user:read:email`;
   }
+
+  res.render('index', params);
 });
 
 app.get('/schedule.json', (req, res) => {
