@@ -154,7 +154,7 @@ app.get('/overlay', (req, res) => {
       donordrive: {
         instance: config.donordrive.instance,
         participant: config.donordrive.participant,
-        alertduration: alerts.charitydonation.duration
+        alertduration: alerts.charitydonation.duration * 1000
       }
     }),
     alerts: alerts
