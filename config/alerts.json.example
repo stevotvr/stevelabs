@@ -1,6 +1,6 @@
 {
   "cheer": {
-    "message": "${user} cheered!<br>${message}",
+    "message": "${user} cheered ${amount} bits!",
     "graphic": "",
     "sound": "",
     "duration": 5

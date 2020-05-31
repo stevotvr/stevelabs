@@ -320,13 +320,15 @@ host.on('chat', (channel, userstate, message, self) => {
 host.on('cheer', (channel, userstate, message) => {
   sendAlert('cheer', {
     user: userstate['display-name'],
-    message: message,
+    amount: userstate.bits,
+    message: message
   });
 });
 
 host.on('subscription', (channel, username, method, message, userstate) => {
   sendAlert('subscription', {
-    user: userstate['display-name']
+    user: userstate['display-name'],
+    message: message
   });
 });
 
@@ -345,7 +347,8 @@ host.on('giftpaidupgrade', (channel, username, sender, userstate) => {
 host.on('resub', (channel, username, months, message, userstate, methods) => {
   sendAlert('resub', {
     user: userstate['display-name'],
-    months: months
+    months: months,
+    message: message
   });
 });
 
