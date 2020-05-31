@@ -72,11 +72,13 @@ function showNextAlert() {
 
   const videoElems = alertElem.getElementsByTagName('video');
   if (videoElems && videoElems.length) {
+    videoElems[0].currentTime = 0;
     videoElems[0].play();
   }
 
   const audioElems = alertElem.getElementsByTagName('audio');
   if (audioElems && audioElems.length) {
+    audioElems[0].currentTime = 0;
     audioElems[0].play();
   }
 }
