@@ -16,6 +16,10 @@
       "password": ""
     }
   },
+  "donordrive": {
+    "instance": "",
+    "participant": 0
+  },
   "ssl": {
     "enabled": false,
     "keyfile": "",

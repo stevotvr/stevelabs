@@ -46,5 +46,11 @@
     "graphic": "",
     "sound": "",
     "duration": 5
+  },
+  "charitydonation": {
+    "message": "${user} donated ${amount} to charity!",
+    "graphic": "",
+    "sound": "",
+    "duration": 5
   }
 }
