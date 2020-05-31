@@ -1,18 +1,25 @@
 'use strict'
 
+/**
+ * Setup
+ */
+
+// User configurations
+const alerts = require('./config/alerts.json');
+const commands = require('./config/commands.json');
 const config = require('./config/config.json');
 const schedule = require('./config/schedule.json');
-const commands = require('./config/commands.json');
 const timers = require('./config/timers.json');
-const alerts = require('./config/alerts.json');
 
-const fs = require('fs');
-const tmi = require('tmi.js');
+// Modules
 const express = require('express');
 const fetch = require('node-fetch');
+const fs = require('fs');
 const handlebars = require('express-handlebars');
+const tmi = require('tmi.js');
 const { URLSearchParams } = require('url');
 
+// Set up the Express application
 const app = express();
 app.engine('handlebars', handlebars());
 app.set('view engine', 'handlebars');
@@ -20,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+// Create the HTTP server
 const http = function() {
   if (config.ssl.enabled) {
     const options = {
@@ -34,8 +42,16 @@ const http = function() {
   }
 }();
 
+// Create the socket
 const io = require('socket.io')(http);
 
+// Start listening to HTTP requests
+http.listen(config.port, config.host, () => {
+  console.log(`listening on ${config.host}:${config.port}`);
+  console.log(`overlay url: ${config.url}/overlay`);
+});
+
+// Runtime user configuration
 const userData = {
   access_token: '',
   refresh_token: '',
@@ -43,11 +59,43 @@ const userData = {
   live: false
 };
 
+// Timer variables
+let timerPos = 0;
+let nextTimer = Date.now() + timers.timeout * 1000;
+let chatLines = 0;
+
+// Set up timers
+setInterval(() => {
+  if (!userData.live || chatLines < timers.chatLines || Date.now() < nextTimer) {
+    return;
+  }
+
+  bot.say(config.twitch.channel.username, timers.messages[timerPos]);
+  timerPos = (timerPos + 1) % timers.messages.length;
+  nextTimer = Date.now() + timers.timeout * 1000;
+  chatLines = 0;
+}, 1000);
+
+// Timeout handles
 let streamWhTimeout = 0;
 let followWhTimeout = 0;
 
+// Construct the base URL for the application
 config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
 
+// Process the commands configurations
+for (const k in commands) {
+  for (const k2 in commands[k].aliases) {
+    commands[commands[k].aliases[k2]] = commands[k];
+  }
+
+  commands[k].timeouts = {
+    global: 0,
+    user: {}
+  };
+}
+
+// Process the alerts configurations
 for (const key in alerts) {
   const alert = alerts[key];
   if (alert.graphic) {
@@ -62,15 +110,25 @@ for (const key in alerts) {
         alert.image = alert.graphic;
     }
   }
+
   alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
 }
 
+// Create the data directory
 try {
   fs.mkdirSync('./data');
-} catch {}
+} catch {
+  // Do nothing; directory probably exists
+}
 
+// Load data from disk
 loadAuthConfig();
 
+/**
+ * Hook HTTP server requests
+ */
+
+ // Index page; shows the Twitch auth link
 app.get('/', (req, res) => {
   const params = {};
   if (userData.access_token) {
@@ -84,12 +142,14 @@ app.get('/', (req, res) => {
   res.render('index', params);
 });
 
+// Serve the schedule data to offsite AJAX scripts
 app.get('/schedule.json', (req, res) => {
   res.set('Content-Type', 'application/json');
   res.set('Access-Control-Allow-Origin', '*');
   res.send(JSON.stringify(schedule));
 });
 
+// The Twitch auth callback
 app.get('/cb', (req, res) => {
   if (!req.query.code) {
     res.status(400).end();
@@ -120,6 +180,7 @@ app.get('/cb', (req, res) => {
   .finally(() => res.redirect('/'));
 });
 
+// The streams webhook registration callback
 app.get('/wh/stream', (req, res) => {
   if (req.query['hub.challenge'] && req.query['hub.mode']) {
     console.log(`stream webhook subscription ${req.query['hub.mode']}ed successfully`);
@@ -135,12 +196,14 @@ app.get('/wh/stream', (req, res) => {
   }
 });
 
+// The streams webhook
 app.post('/wh/stream', (req, res) => {
   userData.live = req.body.data.length > 0;
   console.log(`channel is ${userData.live ? 'LIVE!' : 'offline'}`);
   res.end();
 });
 
+// The follows webhook registration callback
 app.get('/wh/follows', (req, res) => {
   if (req.query['hub.challenge'] && req.query['hub.mode']) {
     console.log(`follows webhook subscription ${req.query['hub.mode']}ed successfully`);
@@ -156,6 +219,7 @@ app.get('/wh/follows', (req, res) => {
   }
 });
 
+// The follows webhook
 app.post('/wh/follows', (req, res) => {
   sendAlert('follower', {
     user: req.body.data[0].from_name
@@ -163,6 +227,7 @@ app.post('/wh/follows', (req, res) => {
   res.end();
 });
 
+// The overlay page
 app.get('/overlay', (req, res) => {
   res.render('overlay', {
     layout: false,
@@ -177,6 +242,7 @@ app.get('/overlay', (req, res) => {
   });
 });
 
+// The form action for the test buttons
 app.post('/test', (req, res) => {
   if (req.body.alert) {
     sendAlert(req.body.type, req.body);
@@ -185,11 +251,11 @@ app.post('/test', (req, res) => {
   res.redirect('/');
 });
 
-http.listen(config.port, config.host, () => {
-  console.log(`listening on ${config.host}:${config.port}`);
-  console.log(`overlay url: ${config.url}/overlay`);
-});
+/**
+ * Twitch chat client setup
+ */
 
+// Create the client that listens to the stream channel
 const host = new tmi.Client({
   connection: {
     secure: true,
@@ -202,6 +268,7 @@ const host = new tmi.Client({
   channels: [ `#${config.twitch.channel.username}` ]
 });
 
+// Connect to the channel
 host.connect()
 .then(() => {
   console.log('connected to Twitch channel');
@@ -210,6 +277,7 @@ host.connect()
   console.log(err);
 });
 
+// Create the client that sends messages via the bot user
 const bot = new tmi.Client({
   connection: {
     secure: true,
@@ -221,6 +289,7 @@ const bot = new tmi.Client({
   }
 });
 
+// Connect to the bot
 bot.connect()
 .then(() => {
   console.log('connected to Twitch bot channel');
@@ -229,21 +298,11 @@ bot.connect()
   console.log(err);
 });
 
-let timerPos = 0;
-let nextTimer = Date.now() + timers.timeout * 1000;
-let chatLines = 0;
+/**
+ * Hook channel events
+ */
 
-for (const k in commands) {
-  for (const k2 in commands[k].aliases) {
-    commands[commands[k].aliases[k2]] = commands[k];
-  }
-
-  commands[k].timeouts = {
-    global: 0,
-    user: {}
-  };
-}
-
+ // Chat message
 host.on('chat', (channel, userstate, message, self) => {
   if (userstate.username === config.twitch.bot.username) {
     return;
@@ -317,6 +376,7 @@ host.on('chat', (channel, userstate, message, self) => {
   command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
 });
 
+// Cheer event
 host.on('cheer', (channel, userstate, message) => {
   sendAlert('cheer', {
     user: userstate['display-name'],
@@ -325,6 +385,7 @@ host.on('cheer', (channel, userstate, message) => {
   });
 });
 
+// New subscriber event
 host.on('subscription', (channel, username, method, message, userstate) => {
   sendAlert('subscription', {
     user: userstate['display-name'],
@@ -332,18 +393,21 @@ host.on('subscription', (channel, username, method, message, userstate) => {
   });
 });
 
+// User renews anonymous gift subscription event
 host.on('anongiftpaidupgrade', (channel, username, userstate) => {
   sendAlert('subscription', {
     user: userstate['display-name']
   });
 });
 
+// User renews gift subscription event
 host.on('giftpaidupgrade', (channel, username, sender, userstate) => {
   sendAlert('subscription', {
     user: userstate['display-name']
   });
 });
 
+// User renews subscription event
 host.on('resub', (channel, username, months, message, userstate, methods) => {
   sendAlert('resub', {
     user: userstate['display-name'],
@@ -352,6 +416,7 @@ host.on('resub', (channel, username, months, message, userstate, methods) => {
   });
 });
 
+// User gifts subscription to user event
 host.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
   sendAlert('subgift', {
     user: userstate['display-name'],
@@ -359,6 +424,7 @@ host.on('subgift', (channel, username, streakMonths, recipient, methods, usersta
   });
 });
 
+// User gifts subscriptions to random users event
 host.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
   sendAlert('submysterygift', {
     user: userstate['display-name'],
@@ -366,6 +432,7 @@ host.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) =>
   });
 });
 
+// Raid event
 host.on('raided', (channel, username, viewers) => {
   sendAlert('raid', {
     user: username,
@@ -373,6 +440,7 @@ host.on('raided', (channel, username, viewers) => {
   });
 });
 
+// Host event
 host.on('hosted', (channel, username, viewers, autohost) => {
   if (autohost) {
     return;
@@ -384,17 +452,16 @@ host.on('hosted', (channel, username, viewers, autohost) => {
   });
 });
 
-setInterval(() => {
-  if (!userData.live || chatLines < timers.chatLines || Date.now() < nextTimer) {
-    return;
-  }
+/**
+ * Functions
+ */
 
-  bot.say(config.twitch.channel.username, timers.messages[timerPos]);
-  timerPos = (timerPos + 1) % timers.messages.length;
-  nextTimer = Date.now() + timers.timeout * 1000;
-  chatLines = 0;
-}, 1000);
-
+/**
+ * Send a new alert to the overlay page.
+ *
+ * @param {string} type The type of alert to send
+ * @param {object} params The alert parameters
+ */
 function sendAlert(type, params) {
   const alert = alerts[type];
 
@@ -408,6 +475,13 @@ function sendAlert(type, params) {
   console.log(`alert sent: ${type}`);
 }
 
+/**
+ * Query the Twitch API.
+ *
+ * @param {string} url The URL to query
+ * @param {string} method GET or POST
+ * @param {object} body Object to send as the JSON body
+ */
 function apiRequest(url, method, body) {
   return new Promise((resolve, reject) => {
     if (!userData.access_token) {
@@ -469,11 +543,22 @@ function apiRequest(url, method, body) {
   });
 }
 
+/**
+ * Create or destroy all webhooks.
+ *
+ * @param {bool} enable Whether to enable the webhooks
+ */
 function setWebhooks(enable = true) {
   setStreamWebhook(enable);
   setFollowsWebhook(enable);
 }
 
+/**
+ * Create or destroy the stream webhook.
+ * This webhook notifies us of changes to the stream.
+ *
+ * @param {bool} enable Whether to enable the webhook
+ */
 function setStreamWebhook(enable = true) {
   setWebhook(`https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`, 'stream', enable);
 
@@ -482,6 +567,12 @@ function setStreamWebhook(enable = true) {
   }
 }
 
+/**
+ * Create or destroy the follows webhook.
+ * This webhook notifies us of new followers.
+ *
+ * @param {bool} enable Whether to enable the webhook
+ */
 function setFollowsWebhook(enable = true) {
   setWebhook(`https://api.twitch.tv/helix/users/follows?first=1&to_id=${userData.user_id}`, 'follows', enable);
 
@@ -490,6 +581,13 @@ function setFollowsWebhook(enable = true) {
   }
 }
 
+/**
+ * Subscribe or unsubscribe to a Twitch webhook.
+ *
+ * @param {string} topic The topic to which to subscribe or unsubscribe
+ * @param {string} cb The name of the callback
+ * @param {bool} enable Whether to enable the webhook
+ */
 function setWebhook(topic, cb, enable) {
   apiRequest('https://api.twitch.tv/helix/webhooks/hub', 'POST', {
     'hub.callback': `${config.url}/wh/${cb}`,
@@ -503,6 +601,9 @@ function setWebhook(topic, cb, enable) {
   });
 }
 
+/**
+ * Save the Twitch authentication tokens to disk.
+ */
 function saveAuthConfig() {
   const data = JSON.stringify({
     access_token: userData.access_token,
@@ -520,6 +621,9 @@ function saveAuthConfig() {
   })
 }
 
+/**
+ * Load the Twitch authentication tokens from disk.
+ */
 function loadAuthConfig() {
   try {
     const data = fs.readFileSync('./data/auth.json');
@@ -545,6 +649,9 @@ function loadAuthConfig() {
   } catch {}
 }
 
+/**
+ * Verify authentication tokens and load user data.
+ */
 function checkUser() {
   return new Promise((resolve, reject) => {
     if (!userData.access_token) {

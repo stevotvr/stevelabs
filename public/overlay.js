@@ -1,28 +1,45 @@
 'use strict'
 
+/**
+ * Setup
+ */
+
+// Queue of events ready to be displayed
 const alertQueue = [];
 
+// Create the socket connection
 const socket = io('//' + window.location.host);
 
+/**
+ * Hook socket events
+ */
+
+// Socket connected event
 socket.on('connect', () => {
   console.log('connected to socket');
 });
 
+// Socket disconnected event
 socket.on('disconnect', () => {
   console.log('socket connection lost');
 });
 
+// New alert event
 socket.on('alert', (type, params, duration) => {
   addAlert(type, params, duration);
 });
 
-let latestDonation = null;
+/**
+ * Functions
+ */
 
-if (config.donordrive.instance && config.donordrive.participant) {
-  queryDonorDrive();
-  setInterval(queryDonorDrive, 15000);
-}
-
+/**
+ * Add a new alert to the queue.
+ *
+ * @param {string} type The type of event
+ * @param {object} params The event parameters
+ * @param {int} duration The event duration in milliseconds
+ */
 function addAlert(type, params, duration) {
   alertQueue.push({
     type: type,
@@ -37,6 +54,9 @@ function addAlert(type, params, duration) {
   console.log(type, params, duration);
 }
 
+/**
+ * Show the next alert in the queue.
+ */
 function showNextAlert() {
   if (!alertQueue.length) {
     return;
@@ -83,6 +103,22 @@ function showNextAlert() {
   }
 }
 
+/**
+ * DonorDrive
+ */
+
+// The ID of the latest donation
+let latestDonation = null;
+
+// Start querying the DonorDrive API
+if (config.donordrive.instance && config.donordrive.participant) {
+  queryDonorDrive();
+  setInterval(queryDonorDrive, 15000);
+}
+
+/**
+ * Query the DonorDrive API
+ */
 function queryDonorDrive() {
   fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
   .then(res => res.json())
