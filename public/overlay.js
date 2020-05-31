@@ -87,11 +87,20 @@ function queryDonorDrive() {
   .then(json => {
     console.log(latestDonation);
     if (json.length) {
-      if (latestDonation !== null && latestDonation !== json[0].donationID) {
-        addAlert('charitydonation', {
-          user: json[0].displayName,
-          amount: `\$${json[0].amount}`
-        }, config.donordrive.alertduration);
+      if (latestDonation !== null) {
+        let i = 0;
+        while (latestDonation !== json[i].donationID) {
+          i++;
+        }
+
+        i--;
+
+        for (; i >= 0; i--) {
+          addAlert('charitydonation', {
+            user: json[i].displayName,
+            amount: `\$${json[i].amount}`
+          }, config.donordrive.alertduration);
+        }
       }
 
       latestDonation = json[0].donationID;
