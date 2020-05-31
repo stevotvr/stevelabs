@@ -221,9 +221,14 @@ app.get('/wh/follows', (req, res) => {
 
 // The follows webhook
 app.post('/wh/follows', (req, res) => {
-  sendAlert('follower', {
-    user: req.body.data[0].from_name
-  });
+  if (req.body.data) {
+    for (let i = req.body.data.length - 1; i >= 0; i--) {
+      sendAlert('follower', {
+        user: req.body.data[i].from_name
+      });
+    };
+  }
+
   res.end();
 });
 
