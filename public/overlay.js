@@ -13,6 +13,17 @@ socket.on('disconnect', () => {
 });
 
 socket.on('alert', (type, params, duration) => {
+  addAlert(type, params, duration);
+});
+
+let latestDonation = null;
+
+if (config.donordrive.instance && config.donordrive.participant) {
+  queryDonorDrive();
+  setInterval(queryDonorDrive, 15000);
+}
+
+function addAlert(type, params, duration) {
   alertQueue.push({
     type: type,
     params: params,
@@ -24,7 +35,7 @@ socket.on('alert', (type, params, duration) => {
   }
 
   console.log(type, params, duration);
-});
+}
 
 function showNextAlert() {
   if (!alertQueue.length) {
@@ -68,4 +79,28 @@ function showNextAlert() {
   if (audioElems && audioElems.length) {
     audioElems[0].play();
   }
+}
+
+function queryDonorDrive() {
+  fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
+  .then(res => res.json())
+  .then(json => {
+    console.log(latestDonation);
+    if (json.length) {
+      if (latestDonation !== null && latestDonation !== json[0].donationID) {
+        addAlert('charitydonation', {
+          user: json[0].displayName,
+          amount: `\$${json[0].amount}`
+        }, config.donordrive.alertduration);
+      }
+
+      latestDonation = json[0].donationID;
+    } else {
+      latestDonation = '';
+    }
+  })
+  .catch(err => {
+    console.warn('failed to query DonorDrive');
+    console.log(err);
+  });
 }

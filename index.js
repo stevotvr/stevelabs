@@ -46,8 +46,6 @@ const userData = {
 let streamWhTimeout = 0;
 let followWhTimeout = 0;
 
-let latestDonation = null;
-
 config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
 
 for (const key in alerts) {
@@ -60,11 +58,6 @@ try {
 } catch {}
 
 loadAuthConfig();
-
-if (config.donordrive.instance && config.donordrive.participant) {
-  queryDonorDrive();
-  setInterval(queryDonorDrive, 15000);
-}
 
 app.get('/', (req, res) => {
   if (userData.access_token) {
@@ -155,7 +148,17 @@ app.post('/wh/follows', (req, res) => {
 });
 
 app.get('/overlay', (req, res) => {
-  res.render('overlay', { layout: false, alerts: alerts });
+  res.render('overlay', {
+    layout: false,
+    config: JSON.stringify({
+      donordrive: {
+        instance: config.donordrive.instance,
+        participant: config.donordrive.participant,
+        alertduration: alerts.charitydonation.duration
+      }
+    }),
+    alerts: alerts
+  });
 });
 
 app.post('/test', (req, res) => {
@@ -552,29 +555,5 @@ function checkUser() {
       console.log(err);
       resolve(false);
     });
-  });
-}
-
-function queryDonorDrive() {
-  fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
-  .then(res => res.json())
-  .then(json => {
-    console.log(latestDonation);
-    if (json.length) {
-      if (latestDonation !== null && latestDonation !== json[0].donationID) {
-        sendAlert('charitydonation', {
-          user: json[0].displayName,
-          amount: `\$${json[0].amount}`
-        });
-      }
-
-      latestDonation = json[0].donationID;
-    } else {
-      latestDonation = '';
-    }
-  })
-  .catch(err => {
-    console.warn('failed to query DonorDrive');
-    console.log(err);
   });
 }
