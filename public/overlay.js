@@ -1,3 +1,12 @@
+/**
+ * This file is part of StoveLabs.
+ *
+ * @copyright (c) 2020, Steve Guidetti, https://github.com/stevotvr
+ * @license MIT
+ *
+ * For full license information, see the LICENSE.txt file included with the source.
+ */
+
 'use strict'
 
 /**
