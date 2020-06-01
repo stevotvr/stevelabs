@@ -1,23 +1,23 @@
 [
   {
-    "day":1,
-    "hour":19,
-    "minute":0,
-    "length":120,
-    "game":"Batman: Arkham City (PC)"
+    "day": 1,
+    "hour": 19,
+    "minute": 0,
+    "length": 120,
+    "game": "Batman: Arkham City (PC)"
   },
   {
-    "day":3,
-    "hour":19,
-    "minute":0,
-    "length":120,
-    "game":"Batman: Arkham City (PC)"
+    "day": 3,
+    "hour": 19,
+    "minute": 0,
+    "length": 120,
+    "game": "Batman: Arkham City (PC)"
   },
   {
-    "day":5,
-    "hour":19,
-    "minute":0,
-    "length":120,
-    "game":"Batman: Arkham City (PC)"
+    "day": 5,
+    "hour": 19,
+    "minute": 0,
+    "length": 120,
+    "game": "Batman: Arkham City (PC)"
   }
 ]
