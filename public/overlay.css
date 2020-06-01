@@ -31,7 +31,3 @@ body {
 .alert p span {
   color: #f00;
 }
-
-.alert p .message {
-  font-family: 'Courier New', Courier, monospace;
-}
