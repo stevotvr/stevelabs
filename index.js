@@ -541,7 +541,8 @@ function apiRequest(url, method, body) {
 
               saveAuthConfig();
 
-              resolve(res);
+              fetch(url, options)
+              .then(res => resolve(res));
             } else {
               userData.access_token = '';
               userData.refresh_token = '';
