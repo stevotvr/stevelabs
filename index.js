@@ -92,6 +92,9 @@ const whTimeouts = {
   follows: 0
 };
 
+// Set of processed wenhook notification IDs
+const whProcessed = new Set();
+
 // Webhook creation function
 const whCreateFuncs = {
   stream: setStreamWebhook,
@@ -221,6 +224,11 @@ app.post('/wh/:cb', (req, res) => {
     return;
   }
 
+  if (!req.headers['twitch-notification-id'] || whProcessed.has(req.headers['twitch-notification-id'])) {
+    req.end();
+    return;
+  }
+
   switch (req.params.cb) {
     case 'stream':
       userData.live = req.body.data && req.body.data.length > 0;
@@ -238,6 +246,8 @@ app.post('/wh/:cb', (req, res) => {
 
       break;
   }
+
+  whProcessed.add(req.headers['twitch-notification-id']);
 
   res.end();
 });
