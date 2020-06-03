@@ -21,6 +21,7 @@ const schedule = require('./config/schedule.json');
 const timers = require('./config/timers.json');
 
 // Modules
+const crypto = require('crypto');
 const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
@@ -32,7 +33,7 @@ const { URLSearchParams } = require('url');
 const app = express();
 app.engine('handlebars', handlebars());
 app.set('view engine', 'handlebars');
-app.use(express.json());
+app.use(express.json({ verify: verifyRequest }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
@@ -86,8 +87,16 @@ setInterval(() => {
 }, 1000);
 
 // Timeout handles
-let streamWhTimeout = 0;
-let followWhTimeout = 0;
+const whTimeouts = {
+  stream: 0,
+  follows: 0
+};
+
+// Webhook creation function
+const whCreateFuncs = {
+  stream: setStreamWebhook,
+  follows: setFollowsWebhook
+};
 
 // Construct the base URL for the application
 config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
@@ -189,53 +198,45 @@ app.get('/cb', (req, res) => {
   .finally(() => res.redirect('/'));
 });
 
-// The streams webhook registration callback
-app.get('/wh/stream', (req, res) => {
+// The webhook registration callback
+app.get('/wh/:cb', (req, res) => {
   if (req.query['hub.challenge'] && req.query['hub.mode']) {
-    console.log(`stream webhook subscription ${req.query['hub.mode']}ed successfully`);
+    console.log(`${req.params.cb} webhook subscription ${req.query['hub.mode']}ed successfully`);
     if (req.query['hub.mode'] === 'subscribe') {
       if (req.query['hub.lease_seconds']) {
-        streamWhTimeout = setTimeout(setStreamWebhook, req.query['hub.lease_seconds'] * 1000);
+        whTimeouts[req.params.cb] = setTimeout(whCreateFuncs[req.params.cb], req.query['hub.lease_seconds'] * 1000);
       }
     } else {
-      clearTimeout(streamWhTimeout);
+      clearTimeout(whTimeouts[req.params.cb]);
     }
 
     res.send(req.query['hub.challenge']);
   }
 });
 
-// The streams webhook
-app.post('/wh/stream', (req, res) => {
-  userData.live = req.body.data.length > 0;
-  console.log(`channel is ${userData.live ? 'LIVE!' : 'offline'}`);
-  res.end();
-});
-
-// The follows webhook registration callback
-app.get('/wh/follows', (req, res) => {
-  if (req.query['hub.challenge'] && req.query['hub.mode']) {
-    console.log(`follows webhook subscription ${req.query['hub.mode']}ed successfully`);
-    if (req.query['hub.mode'] === 'subscribe') {
-      if (req.query['hub.lease_seconds']) {
-        followWhTimeout = setTimeout(setFollowsWebhook, req.query['hub.lease_seconds'] * 1000);
-      }
-    } else {
-      clearTimeout(followWhTimeout);
-    }
-
-    res.send(req.query['hub.challenge']);
+// The webhook callback
+app.post('/wh/:cb', (req, res) => {
+  if (!req.verified) {
+    res.sendStatus(403).end();
+    return;
   }
-});
 
-// The follows webhook
-app.post('/wh/follows', (req, res) => {
-  if (req.body.data) {
-    for (let i = req.body.data.length - 1; i >= 0; i--) {
-      sendAlert('follower', {
-        user: req.body.data[i].from_name
-      });
-    };
+  switch (req.params.cb) {
+    case 'stream':
+      userData.live = req.body.data && req.body.data.length > 0;
+      console.log(`channel is ${userData.live ? 'LIVE!' : 'offline'}`);
+
+      break;
+    case 'follows':
+      if (req.body.data) {
+        for (let i = req.body.data.length - 1; i >= 0; i--) {
+          sendAlert('follower', {
+            user: req.body.data[i].from_name
+          });
+        };
+      }
+
+      break;
   }
 
   res.end();
@@ -608,7 +609,8 @@ function setWebhook(topic, cb, enable) {
     'hub.callback': `${config.url}/wh/${cb}`,
     'hub.mode': enable ? 'subscribe' : 'unsubscribe',
     'hub.topic': topic,
-    'hub.lease_seconds': 86400
+    'hub.lease_seconds': 86400,
+    'hub.secret': config.secret
   })
   .catch(err => {
     console.warn(`failed to ${enable ? 'create' : 'destroy'} stream webhook subscription`);
@@ -697,4 +699,20 @@ function checkUser() {
       resolve(false);
     });
   });
+}
+
+/**
+ * Verify a signed request.
+ *
+ * @param {express.Request} req The request object
+ * @param {express.response} res The response object
+ * @param {Buffer} buf Buffer containing the raw request body
+ * @param {string} encoding The encoding of the request
+ */
+function verifyRequest(req, res, buf, encoding) {
+  req.verified = false;
+  if (req.headers['x-hub-signature']) {
+    const hash = crypto.createHmac('sha256', config.secret).update(buf).digest('hex');
+    req.verified = req.headers['x-hub-signature'] === `sha256=${hash}`;
+  }
 }
