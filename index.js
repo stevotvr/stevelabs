@@ -552,6 +552,8 @@ function apiRequest(url, method, body) {
 
               saveAuthConfig();
 
+              options.headers['Authorization'] = `Bearer ${userData.access_token}`;
+
               fetch(url, options)
               .then(res => resolve(res));
             } else {
