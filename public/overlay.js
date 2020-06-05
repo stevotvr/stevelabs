@@ -126,7 +126,6 @@ function queryDonorDrive() {
   fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
   .then(res => res.json())
   .then(json => {
-    console.log(latestDonation);
     if (json.length) {
       if (latestDonation !== null) {
         let i = 0;
