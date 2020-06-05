@@ -1,4 +1,18 @@
 {
+  "tip": {
+    "level": 0,
+    "userTimeout": 30,
+    "globalTimeout": 0,
+    "aliases": [ ],
+    "message": "${func tip}"
+  },
+  "addtip": {
+    "level": 1,
+    "userTimeout": 300,
+    "globalTimeout": 30,
+    "aliases": [ ],
+    "message": "${func addtip}"
+  },
   "shoutout": {
     "level": 2,
     "userTimeout": 0,
