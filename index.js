@@ -273,6 +273,11 @@ app.get('/overlay', (req, res) => {
 
 // The form action for the test buttons
 app.post('/test', (req, res) => {
+  if (!config.debug) {
+    res.sendStatus(403).end();
+    return;
+  }
+
   if (req.body.alert) {
     sendAlert(req.body.type, req.body);
   }
