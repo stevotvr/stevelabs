@@ -167,13 +167,6 @@ app.get('/', (req, res) => {
   res.render('index', params);
 });
 
-// Serve the schedule data to offsite AJAX scripts
-app.get('/schedule.json', (req, res) => {
-  res.set('Content-Type', 'application/json');
-  res.set('Access-Control-Allow-Origin', '*');
-  res.send(JSON.stringify(schedule));
-});
-
 // The Twitch auth callback
 app.get('/cb', (req, res) => {
   if (!req.query.code) {
@@ -257,18 +250,38 @@ app.post('/wh/:cb', (req, res) => {
 });
 
 // The overlay page
-app.get('/overlay', (req, res) => {
-  res.render('overlay', {
+app.get('/overlay/:name', (req, res) => {
+  const options = {
     layout: false,
-    config: JSON.stringify({
+    config: {
       donordrive: {
         instance: config.donordrive.instance,
         participant: config.donordrive.participant,
         alertduration: alerts.charitydonation.duration * 1000
       }
-    }),
+    },
     alerts: alerts
-  });
+  };
+
+  switch (req.params.name) {
+    case 'intro':
+      options.countdown = true;
+      options.tips = true;
+      options.config.schedule = schedule;
+      options.config.tips = tipsData;
+      break;
+    case 'change':
+      options.tips = true;
+      options.config.tips = tipsData;
+      break;
+    case 'outro':
+      options.nextstream = true;
+      options.config.schedule = schedule;
+      break;
+  }
+
+  options.config = JSON.stringify(options.config);
+  res.render('overlay', options);
 });
 
 // The form action for the test buttons

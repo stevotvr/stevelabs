@@ -160,3 +160,115 @@ function queryDonorDrive() {
     console.log(err);
   });
 }
+
+/**
+ * Overlays
+ */
+
+// The interval for the tips display in milliseconds
+const tipInterval = 15000;
+
+// The tips display
+const tipsElem = document.getElementById('tips');
+if (tipsElem && config.tips) {
+  let index = 0;
+
+  tipsElem.innerText = 'Loading tips...';
+  tipsElem.style.opacity = 1;
+
+  setInterval(() => {
+    tipsElem.style.opacity = 0;
+    setTimeout(() => {
+      tipsElem.innerText = `TIP: ${config.tips[index++ % config.tips.length].message}`;
+      tipsElem.style.opacity = 1;
+    }, 500);
+  }, tipInterval);
+}
+
+// The stream countdown
+const countdownElem = document.getElementById('countdown');
+if (countdownElem && config.schedule) {
+  const next = getNextScheduled(config.schedule, true);
+
+  setInterval(() => {
+    const now = new Date();
+    const diff = Math.floor((next.date.getTime() - now.getTime()) / 1000);
+
+    let timeLeft = 'Soon...';
+    if (diff >= 0) {
+      timeLeft = Math.floor(diff / 60) + ':' + Number(diff % 60).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+    }
+
+    countdownElem.innerHTML = `Starting: ${timeLeft}<br>${next.game}`;
+  }, 100);
+}
+
+// The next stream display
+const nextStreamElem = document.getElementById('nextstream');
+if (nextStreamElem && config.schedule) {
+  const next = getNextScheduled(config.schedule);
+
+  const dateOptions = {
+    weekday: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  };
+  const dateFormatted = next.date.toLocaleDateString('en-US', dateOptions);
+
+  nextStreamElem.innerHTML = `Next Stream:<br>${dateFormatted}<br>${next.game}`;
+}
+
+/**
+ * Parse the dates in the schedule data.
+ *
+ * @param {array} schedule The schedule data
+ * @param {boolean} useEnd Whether to use the end times of the streams
+ */
+function loadDates(schedule, useEnd) {
+
+  const now = new Date();
+
+  for (let i = schedule.length - 1; i >= 0; i--) {
+
+    const date = new Date();
+
+    const hour = useEnd ? schedule[i].hour + Math.floor(schedule[i].length / 60) : schedule[i].hour;
+    const minute = useEnd ? schedule[i].minute + schedule[i].length % 60 : schedule[i].minute;
+
+    if (now.getDay() > schedule[i].day || (now.getDay() == schedule[i].day && (now.getHours() > hour || (now.getHours() == hour && now.getMinutes() > minute)))) {
+      date.setDate(now.getDate() + (7 - now.getDay() + schedule[i].day));
+    } else {
+      date.setDate(now.getDate() + (schedule[i].day - now.getDay()));
+    }
+
+    date.setHours(schedule[i].hour);
+    date.setMinutes(schedule[i].minute);
+    date.setSeconds(0);
+
+    schedule[i].date = date;
+    schedule[i].end = new Date(date.getTime() + (schedule[i].length * 60000));
+  }
+}
+
+/**
+ * Get the next scheduled stream.
+ *
+ * @param {array} schedule The schedule data
+ * @param {boolean} useEnd Whether to use the end times of the streams
+ */
+function getNextScheduled(schedule, useEnd = false) {
+  if (schedule[0].date === undefined) {
+    loadDates(schedule, useEnd);
+  }
+
+  let next = schedule[0];
+
+  for (let i = schedule.length - 1; i >= 0; i--) {
+    if ((useEnd && schedule[i].end < next.end) || (!useEnd && schedule[i].date < next.date)) {
+      next = schedule[i];
+    }
+  }
+
+  return next;
+}
