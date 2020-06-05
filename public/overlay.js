@@ -10,37 +10,31 @@
 'use strict'
 
 /**
- * Setup
+ * Alerts
  */
 
 // Queue of events ready to be displayed
 const alertQueue = [];
 
-// Create the socket connection
-const socket = io('//' + window.location.host);
+if (config.alerts) {
+  // Create the socket connection
+  const socket = io('//' + window.location.host);
 
-/**
- * Hook socket events
- */
+  // Socket connected event
+  socket.on('connect', () => {
+    console.log('connected to socket');
+  });
 
-// Socket connected event
-socket.on('connect', () => {
-  console.log('connected to socket');
-});
+  // Socket disconnected event
+  socket.on('disconnect', () => {
+    console.log('socket connection lost');
+  });
 
-// Socket disconnected event
-socket.on('disconnect', () => {
-  console.log('socket connection lost');
-});
-
-// New alert event
-socket.on('alert', (type, params, duration) => {
-  addAlert(type, params, duration);
-});
-
-/**
- * Functions
- */
+  // New alert event
+  socket.on('alert', (type, params, duration) => {
+    addAlert(type, params, duration);
+  });
+}
 
 /**
  * Add a new alert to the queue.
@@ -120,7 +114,7 @@ function showNextAlert() {
 let latestDonation = null;
 
 // Start querying the DonorDrive API
-if (config.donordrive.instance && config.donordrive.participant) {
+if (config.donordrive && config.donordrive.instance && config.donordrive.participant) {
   queryDonorDrive();
   setInterval(queryDonorDrive, 15000);
 }

@@ -250,34 +250,35 @@ app.post('/wh/:cb', (req, res) => {
 });
 
 // The overlay page
-app.get('/overlay/:name', (req, res) => {
+app.get('/overlay', (req, res) => {
   const options = {
     layout: false,
-    config: {
-      donordrive: {
-        instance: config.donordrive.instance,
-        participant: config.donordrive.participant,
-        alertduration: alerts.charitydonation.duration * 1000
-      }
-    },
-    alerts: alerts
+    config: { }
   };
 
-  switch (req.params.name) {
-    case 'intro':
+  if (req.query.alerts) {
+    options.alerts = alerts;
+    options.config.alerts = true;
+    options.config.donordrive = {
+      instance: config.donordrive.instance,
+      participant: config.donordrive.participant,
+      alertduration: alerts.charitydonation.duration * 1000
+    };
+  }
+
+  if (req.query.countdown) {
       options.countdown = true;
-      options.tips = true;
       options.config.schedule = schedule;
-      options.config.tips = tipsData;
-      break;
-    case 'change':
-      options.tips = true;
-      options.config.tips = tipsData;
-      break;
-    case 'outro':
+  }
+
+  if (req.query.nextstream) {
       options.nextstream = true;
       options.config.schedule = schedule;
-      break;
+  }
+
+  if (req.query.tips) {
+      options.tips = true;
+      options.config.tips = tipsData;
   }
 
   options.config = JSON.stringify(options.config);
