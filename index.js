@@ -69,6 +69,9 @@ const userData = {
   live: false
 };
 
+// Tips data
+const tipsData = [];
+
 // Timer variables
 let timerPos = 0;
 let nextTimer = Date.now() + timers.timeout * 1000;
@@ -144,6 +147,7 @@ try {
 
 // Load data from disk
 loadAuthConfig();
+loadTips();
 
 /**
  * Hook HTTP server requests
@@ -327,7 +331,40 @@ bot.connect()
  * Hook channel events
  */
 
- // Chat message
+// Chat command functions
+const chatCommands = {
+  tip: (user, args, response) => {
+    if (!tipsData.length) {
+      response.message = `Sorry, ${user}, we're all out of tips!`;
+    }
+
+    const i = Math.floor(Math.random() * tipsData.length);
+    response.message = `TIP #${i + 1}: ${tipsData[i].message}`;
+  },
+  addtip: (user, args, response) => {
+    const message = args.join(' ');
+
+    if (message.length < 2) {
+      response.message = `${user} Your tip message is too short (2 characters min, yours was ${message.length})`;
+      response.success = false;
+    } else if (message.length > 80) {
+      response.message = `${user} Your tip message is too long (80 characters max, yours was ${message.length})`;
+      response.success = false;
+    } else {
+      tipsData.push({
+        date: Date.now(),
+        user: user,
+        message: message
+      });
+
+      saveTips();
+
+      response.message = `Tip #${tipsData.length} has been added to the list`;
+    }
+  }
+}
+
+// Chat message
 host.on('chat', (channel, userstate, message, self) => {
   if (userstate.username === config.twitch.bot.username) {
     return;
@@ -384,21 +421,44 @@ host.on('chat', (channel, userstate, message, self) => {
     return params[start];
   });
 
+  let success = true;
+
   response = response.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
     switch (fn) {
       case 'user':
         return userstate['display-name'];
       case 'channel':
         return p.toLowerCase();
+      case 'func':
+        if (p && chatCommands[p]) {
+          const res = {
+            message: '',
+            success: true
+          };
+
+          chatCommands[p](userstate.username, params.slice(1), res);
+
+          if (!res.success) {
+            success = false;
+          }
+
+          return res.message;
+        }
+
+        return '';
       default:
         return match;
     }
   });
 
-  bot.say(channel, response);
+  if (response.length) {
+    bot.say(channel, response);
+  }
 
-  command.timeouts.global = Date.now() + command.globalTimeout * 1000;
-  command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
+  if (success) {
+    command.timeouts.global = Date.now() + command.globalTimeout * 1000;
+    command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
+  }
 });
 
 // Cheer event
@@ -673,6 +733,49 @@ function loadAuthConfig() {
       }
     } catch (err) {
       console.log('error loading auth configuration');
+      console.log(err);
+    }
+  } catch {}
+}
+
+/**
+ * Save tips data to disk.
+ */
+function saveTips() {
+  const data = JSON.stringify(tipsData);
+
+  fs.writeFile('./data/tips.json', data, err => {
+    if (err) {
+      console.warn('error saving tips');
+      console.log(err.message);
+      return;
+    }
+
+    console.log('tips saved successfully');
+  });
+}
+
+/**
+ * Load tips data from disk.
+ */
+function loadTips() {
+  try {
+    const data = fs.readFileSync('./data/tips.json');
+    try {
+      const tips = JSON.parse(data);
+      if (tips instanceof Array) {
+        tips.forEach(e => {
+          if (e.date && e.user && e.message) {
+            tipsData.push({
+              date: e.date,
+              user: e.user,
+              message: e.message
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('error loading tips');
       console.log(err);
     }
   } catch {}
