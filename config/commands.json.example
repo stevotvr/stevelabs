@@ -4,34 +4,34 @@
     "userTimeout": 30,
     "globalTimeout": 0,
     "aliases": [ ],
-    "message": "${func tip}"
+    "command": "tip"
   },
   "addtip": {
     "level": 1,
     "userTimeout": 300,
     "globalTimeout": 30,
     "aliases": [ ],
-    "message": "${func addtip}"
+    "command": "addtip"
   },
   "shoutout": {
     "level": 2,
     "userTimeout": 0,
     "globalTimeout": 5,
     "aliases": [ "so" ],
-    "message": "Check out ${1} at twitch.tv/${1}"
+    "command": "say Check out ${1} at twitch.tv/${channel ${1}}"
   },
   "echo": {
     "level": 3,
     "userTimeout": 0,
     "globalTimeout": 0,
     "aliases": [ ],
-    "message": "${1:}"
+    "command": "say ${1:}"
   },
   "discord": {
     "level": 0,
     "userTimeout": 0,
     "globalTimeout": 15,
     "aliases": [ ],
-    "message": "You can join us on my Discord server at discord.io/stovegarden"
+    "command": "say You can join us on my Discord server at discord.io/stovegarden"
   }
 }

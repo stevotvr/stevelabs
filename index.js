@@ -352,8 +352,11 @@ bot.connect()
 
 // Chat command functions
 const chatCommands = {
+  say: (user, args, response) => {
+    response.message = args.join(' ');
+  },
   tip: (user, args, response) => {
-    if (!tipsData.length) {
+      if (!tipsData.length) {
       response.message = `Sorry, ${user}, we're all out of tips!`;
     }
 
@@ -397,14 +400,16 @@ host.on('chat', (channel, userstate, message, self) => {
 
   console.log(`${userstate.username}: ${message}`);
 
-  const brk = message.indexOf(' ');
-  const commandName = message.substring(1, brk === -1 ? undefined : brk);
-
-  if (commands[commandName] === undefined) {
-    return;
+  let command = false;
+  for (const key in commands) {
+    if (key === message.substr(1, key.length)) {
+      command = commands[key];
+    }
   }
 
-  const command = commands[commandName];
+  if (!command) {
+    return;
+  }
 
   if (Date.now() < Math.max(command.timeouts.global, command.timeouts.user[userstate.username] || 0)) {
     return;
@@ -424,7 +429,7 @@ host.on('chat', (channel, userstate, message, self) => {
   }
 
   const params = message.trim().substring(1).split(/\s+/);
-  let response = command.message.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
+  let parsed = command.command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
     if (range) {
       if (end) {
         if (end >= 0) {
@@ -440,41 +445,34 @@ host.on('chat', (channel, userstate, message, self) => {
     return params[start];
   });
 
-  let success = true;
-
-  response = response.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
+  parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
     switch (fn) {
       case 'user':
         return userstate['display-name'];
       case 'channel':
         return p.toLowerCase();
-      case 'func':
-        if (p && chatCommands[p]) {
-          const res = {
-            message: '',
-            success: true
-          };
-
-          chatCommands[p](userstate.username, params.slice(1), res);
-
-          if (!res.success) {
-            success = false;
-          }
-
-          return res.message;
-        }
-
-        return '';
       default:
         return match;
     }
   });
 
-  if (response.length) {
-    bot.say(channel, response);
+  parsed = parsed.split(/\s+/);
+  if (!parsed.length || chatCommands[parsed[0]] === undefined) {
+    return;
   }
 
-  if (success) {
+  const response = {
+    success: true,
+    message: ''
+  };
+
+  chatCommands[parsed[0]](userstate.username, parsed.slice(1), response);
+
+  if (response.message.length) {
+    bot.say(channel, response.message);
+  }
+
+  if (response.success) {
     command.timeouts.global = Date.now() + command.globalTimeout * 1000;
     command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
   }
