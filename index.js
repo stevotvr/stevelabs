@@ -188,6 +188,7 @@ app.get('/cb', (req, res) => {
       if (valid) {
         saveAuthConfig();
         setWebhooks();
+        checkStream();
       }
     });
   })
@@ -743,6 +744,7 @@ function loadAuthConfig() {
         .then(valid => {
           if (valid) {
             setWebhooks();
+            checkStream();
           } else {
             console.log('invalid oauth2 tokens');
           }
@@ -830,6 +832,26 @@ function checkUser() {
       console.log(err);
       resolve(false);
     });
+  });
+}
+
+/**
+ * Update the current status of the stream.
+ */
+function checkStream() {
+  if (!userData.user_id) {
+    return;
+  }
+
+  apiRequest(`https://api.twitch.tv/helix/streams?user_id=${userData.user_id}`, 'GET')
+  .then(res => res.json())
+  .then(chan => {
+    userData.live = chan.data && chan.data.length > 0;
+    console.log(`channel is ${userData.live ? 'LIVE!' : 'offline'}`);
+  })
+  .catch(err => {
+    console.warn('api request for channel data failed');
+    console.log(err);
   });
 }
 
