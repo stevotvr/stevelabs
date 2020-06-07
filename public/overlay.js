@@ -175,6 +175,13 @@ const tipsElem = document.getElementById('tips');
 if (tipsElem && config.tips) {
   let index = 0;
 
+  for (let i = config.tips.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i);
+    const temp = config.tips[i];
+    config.tips[i] = config.tips[j];
+    config.tips[j] = temp;
+  }
+
   tipsElem.innerText = 'Loading tips...';
   tipsElem.style.opacity = 1;
 
