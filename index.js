@@ -18,6 +18,7 @@ const alerts = require('./config/alerts.json');
 const commands = require('./config/commands.json');
 const config = require('./config/config.json');
 const schedule = require('./config/schedule.json');
+const sfx = require('./config/sfx.json');
 const timers = require('./config/timers.json');
 
 // Modules
@@ -268,18 +269,23 @@ app.get('/overlay', (req, res) => {
   }
 
   if (req.query.countdown) {
-      options.countdown = true;
-      options.config.schedule = schedule;
+    options.countdown = true;
+    options.config.schedule = schedule;
   }
 
   if (req.query.nextstream) {
-      options.nextstream = true;
-      options.config.schedule = schedule;
+    options.nextstream = true;
+    options.config.schedule = schedule;
   }
 
   if (req.query.tips) {
-      options.tips = true;
-      options.config.tips = tipsData;
+    options.tips = true;
+    options.config.tips = tipsData;
+  }
+
+  if (req.query.sfx) {
+    options.sfx = sfx;
+    options.config.sfx = true;
   }
 
   options.config = JSON.stringify(options.config);
@@ -355,6 +361,13 @@ bot.connect()
 const chatCommands = {
   say: (user, args, response) => {
     response.message = args.join(' ');
+  },
+  sfx: (user, args, response) => {
+    if (sfx[args[0]] === undefined) {
+      response.success = false;
+    }
+
+    io.emit('sfx', args[0]);
   },
   tip: (user, args, response) => {
       if (!tipsData.length) {

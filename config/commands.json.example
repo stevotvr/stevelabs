@@ -33,5 +33,19 @@
     "globalTimeout": 15,
     "aliases": [ ],
     "command": "say You can join us on my Discord server at discord.io/stovegarden"
+  },
+  "holdon": {
+    "level": 0,
+    "userTimeout": 60,
+    "globalTimeout": 15,
+    "aliases": [ ],
+    "command": "sfx holdon"
+  },
+  "clap": {
+    "level": 0,
+    "userTimeout": 60,
+    "globalTimeout": 15,
+    "aliases": [ ],
+    "command": "sfx golfclap"
   }
 }

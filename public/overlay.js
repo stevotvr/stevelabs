@@ -10,13 +10,10 @@
 'use strict'
 
 /**
- * Alerts
+ * Socket
  */
 
-// Queue of events ready to be displayed
-const alertQueue = [];
-
-if (config.alerts) {
+if (config.alerts || config.sfx) {
   // Create the socket connection
   const socket = io('//' + window.location.host);
 
@@ -34,7 +31,19 @@ if (config.alerts) {
   socket.on('alert', (type, params, duration) => {
     addAlert(type, params, duration);
   });
+
+  // New sfx event
+  socket.on('sfx', (key) => {
+    addSound(key);
+  });
 }
+
+/**
+ * Alerts
+ */
+
+// Queue of events ready to be displayed
+const alertQueue = [];
 
 /**
  * Add a new alert to the queue.
@@ -264,4 +273,51 @@ function getNextScheduled(schedule, useEnd = false) {
   }
 
   return next;
+}
+
+/**
+ * Sound effects
+ */
+
+// Queue of sounds ready to be played
+const soundQueue = [];
+
+/**
+ * Add a new sound to the queue.
+ *
+ * @param {string} key The sound effect key
+ */
+function addSound(key) {
+  soundQueue.push(key);
+
+  if (soundQueue.length === 1) {
+    playNextSound();
+  }
+
+  console.log('sfx', key);
+}
+
+/**
+ * Play the next sound in the queue.
+ */
+function playNextSound() {
+  if (!soundQueue.length) {
+    return;
+  }
+
+  const soundElem = document.getElementById(`sfx_${soundQueue[0]}`);
+  if (!soundElem) {
+    return;
+  }
+
+  soundElem.currentTime = 0;
+  soundElem.play();
+
+  soundElem.onended = (() => {
+    return () => {
+      soundElem.onended = null;
+      soundQueue.shift();
+      playNextSound();
+    };
+  })();
 }
