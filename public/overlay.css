@@ -56,7 +56,7 @@ body > * {
 }
 
 #loading img {
-  animation: rotation 7s infinite linear;
+  animation: rotation 10s infinite linear;
   position: absolute;
   bottom: 62px;
   right: 26px;
@@ -65,8 +65,10 @@ body > * {
 #loadingtext {
   bottom: 78px;
   font-size: 48px;
-  left: 1570px;
+  right: 0;
   position: absolute;
+  text-align: left;
+  width: 350px;
 }
 
 #loadingtext:after {
