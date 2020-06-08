@@ -27,6 +27,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const handlebars = require('express-handlebars');
+const sqlite3 = require('sqlite3');
 const tmi = require('tmi.js');
 const { URLSearchParams } = require('url');
 
@@ -56,6 +57,31 @@ const http = function() {
 // Create the socket
 const io = require('socket.io')(http);
 
+// Create the database connection
+const db = new sqlite3.Database('./data/stovelabs.db', err => {
+  if (err) {
+    console.warn('database connection failed');
+    console.log(err);
+
+    return;
+  }
+
+  db.serialize(() => {
+    db.run('CREATE TABLE IF NOT EXISTS auth (access_token TEXT, refresh_token TEXT)')
+      .run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, user TEXT, message TEXT)', err => {
+        if (err) {
+          console.warn('error creating database schema');
+          console.log(err);
+
+          return;
+        };
+
+        loadAuthConfig();
+      });
+  });
+
+});
+
 // Start listening to HTTP requests
 http.listen(config.port, config.host, () => {
   console.log(`listening on ${config.host}:${config.port}`);
@@ -69,9 +95,6 @@ const userData = {
   user_id: 0,
   live: false
 };
-
-// Tips data
-const tipsData = [];
 
 // Timer variables
 let timerPos = 0;
@@ -145,10 +168,6 @@ try {
 } catch {
   // Do nothing; directory probably exists
 }
-
-// Load data from disk
-loadAuthConfig();
-loadTips();
 
 /**
  * Hook HTTP server requests
@@ -278,18 +297,37 @@ app.get('/overlay', (req, res) => {
     options.config.schedule = schedule;
   }
 
-  if (req.query.tips) {
-    options.tips = true;
-    options.config.tips = tipsData;
-  }
-
   if (req.query.sfx) {
     options.sfx = sfx;
     options.config.sfx = true;
   }
 
-  options.config = JSON.stringify(options.config);
-  res.render('overlay', options);
+  new Promise((resolve, reject) => {
+    if (req.query.tips) {
+      options.config.tips = [];
+      options.tips = true;
+      db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
+        if (err) {
+          console.warn('error loading tip data');
+          console.log(err);
+
+          return;
+        }
+
+        rows.forEach(row => {
+          options.config.tips.push(row.message);
+        });
+
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  })
+  .then(() => {
+    options.config = JSON.stringify(options.config);
+    res.render('overlay', options);
+  });
 });
 
 // The form action for the test buttons
@@ -359,43 +397,58 @@ bot.connect()
 
 // Chat command functions
 const chatCommands = {
-  say: (user, args, response) => {
-    response.message = args.join(' ');
+  say: (user, args, resolve, reject) => {
+    resolve(args.join(' '));
   },
-  sfx: (user, args, response) => {
+  sfx: (user, args, resolve, reject) => {
     if (sfx[args[0]] === undefined) {
-      response.success = false;
+      reject();
+
+      return;
     }
 
     io.emit('sfx', args[0]);
-  },
-  tip: (user, args, response) => {
-      if (!tipsData.length) {
-      response.message = `Sorry, ${user}, we're all out of tips!`;
-    }
 
-    const i = Math.floor(Math.random() * tipsData.length);
-    response.message = `TIP #${i + 1}: ${tipsData[i].message}`;
+    resolve();
   },
-  addtip: (user, args, response) => {
+  tip: (user, args, resolve, reject) => {
+    db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', (err, row) => {
+      if (err) {
+        console.warn('error getting tip data');
+        console.log(err);
+
+        reject();
+
+        return;
+      }
+
+      if (row) {
+        resolve(`TIP #${row.id}: ${row.message}`);
+      } else {
+        resolve(`Sorry, ${user}, we're all out of tips!`);
+      }
+    });
+  },
+  addtip: (user, args, resolve, reject) => {
     const message = args.join(' ');
 
     if (message.length < 2) {
-      response.message = `${user} Your tip message is too short (2 characters min, yours was ${message.length})`;
-      response.success = false;
+      reject(`${user} Your tip message is too short (2 characters min, yours was ${message.length})`);
     } else if (message.length > 80) {
-      response.message = `${user} Your tip message is too long (80 characters max, yours was ${message.length})`;
-      response.success = false;
+      reject(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
     } else {
-      tipsData.push({
-        date: Date.now(),
-        user: user,
-        message: message
+      db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
+        if (err) {
+          console.warn('error saving tip data');
+          console.log(err);
+
+          reject();
+
+          return;
+        }
+
+        resolve(`Tip #${this.lastID} has been added to the list`);
       });
-
-      saveTips();
-
-      response.message = `Tip #${tipsData.length} has been added to the list`;
     }
   }
 }
@@ -475,21 +528,22 @@ host.on('chat', (channel, userstate, message, self) => {
     return;
   }
 
-  const response = {
-    success: true,
-    message: ''
-  };
+  new Promise((resolve, reject) => {
+    chatCommands[parsed[0]](userstate.username, parsed.slice(1), resolve, reject);
+  })
+  .then(response => {
+    if (response.length) {
+      bot.say(channel, response);
+    }
 
-  chatCommands[parsed[0]](userstate.username, parsed.slice(1), response);
-
-  if (response.message.length) {
-    bot.say(channel, response.message);
-  }
-
-  if (response.success) {
     command.timeouts.global = Date.now() + command.globalTimeout * 1000;
     command.timeouts.user[userstate.username] = Date.now() + command.userTimeout * 1000;
-  }
+  })
+  .catch(response => {
+    if (response.length) {
+      bot.say(channel, response);
+    }
+  });
 });
 
 // Cheer event
@@ -725,92 +779,47 @@ function setWebhook(topic, cb, enable) {
  * Save the Twitch authentication tokens to disk.
  */
 function saveAuthConfig() {
-  const data = JSON.stringify({
-    access_token: userData.access_token,
-    refresh_token: userData.refresh_token
+  db.serialize(() => {
+    db.run('DELETE FROM auth')
+      .run('INSERT INTO auth (access_token, refresh_token) VALUES (?, ?)', userData.access_token, userData.refresh_token, err => {
+        if (err) {
+          console.warn('error saving auth configuration');
+          console.log(err);
+
+          return;
+        }
+
+        console.log('auth configuration saved successfully');
+      });
   });
-
-  fs.writeFile('./data/auth.json', data, err => {
-    if (err) {
-      console.warn('error saving auth configuration');
-      console.log(err.message);
-      return;
-    }
-
-    console.log('auth configuration saved successfully');
-  })
 }
 
 /**
  * Load the Twitch authentication tokens from disk.
  */
 function loadAuthConfig() {
-  try {
-    const data = fs.readFileSync('./data/auth.json');
-    try {
-      const auth = JSON.parse(data);
-      if (auth.access_token && auth.refresh_token) {
-        userData.access_token = auth.access_token;
-        userData.refresh_token = auth.refresh_token;
-
-        checkUser()
-        .then(valid => {
-          if (valid) {
-            setWebhooks();
-            checkStream();
-          } else {
-            console.log('invalid oauth2 tokens');
-          }
-        });
-      }
-    } catch (err) {
+  db.get('SELECT * FROM auth', (err, row) => {
+    if (err) {
       console.log('error loading auth configuration');
       console.log(err);
-    }
-  } catch {}
-}
-
-/**
- * Save tips data to disk.
- */
-function saveTips() {
-  const data = JSON.stringify(tipsData);
-
-  fs.writeFile('./data/tips.json', data, err => {
-    if (err) {
-      console.warn('error saving tips');
-      console.log(err.message);
       return;
     }
 
-    console.log('tips saved successfully');
-  });
-}
+    if (row) {
+      userData.access_token = row.access_token;
+      userData.refresh_token = row.refresh_token;
 
-/**
- * Load tips data from disk.
- */
-function loadTips() {
-  try {
-    const data = fs.readFileSync('./data/tips.json');
-    try {
-      const tips = JSON.parse(data);
-      if (tips instanceof Array) {
-        tips.forEach(e => {
-          if (e.date && e.user && e.message) {
-            tipsData.push({
-              date: e.date,
-              user: e.user,
-              message: e.message
-            });
-          }
-        });
-      }
-    } catch (err) {
-      console.warn('error loading tips');
-      console.log(err);
+      checkUser()
+      .then(valid => {
+        if (valid) {
+          setWebhooks();
+          checkStream();
+        } else {
+          console.log('invalid oauth2 tokens');
+        }
+      });
     }
-  } catch {}
+  });
 }
 
 /**

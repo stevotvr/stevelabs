@@ -175,20 +175,13 @@ const tipsElem = document.getElementById('tips');
 if (tipsElem && config.tips) {
   let index = 0;
 
-  for (let i = config.tips.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * i);
-    const temp = config.tips[i];
-    config.tips[i] = config.tips[j];
-    config.tips[j] = temp;
-  }
-
   tipsElem.innerText = 'Loading tips...';
   tipsElem.style.opacity = 1;
 
   setInterval(() => {
     tipsElem.style.opacity = 0;
     setTimeout(() => {
-      tipsElem.innerText = `TIP: ${config.tips[index++ % config.tips.length].message}`;
+      tipsElem.innerText = `TIP: ${config.tips[index++ % config.tips.length]}`;
       tipsElem.style.opacity = 1;
     }, 500);
   }, tipInterval);
