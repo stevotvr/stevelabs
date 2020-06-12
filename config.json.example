@@ -1,0 +1,11 @@
+{
+  "debug": false,
+  "host": "localhost",
+  "port": 3000,
+  "ssl": {
+    "enabled": false,
+    "keyfile": "",
+    "cert": "",
+    "cafile": ""
+  }
+}
