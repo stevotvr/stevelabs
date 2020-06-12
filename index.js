@@ -243,7 +243,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         });
 
         db.serialize(() => {
-          db.run('CREATE TABLE IF NOT EXISTS commands (key TEXT PRIMARY KEY, level INTEGER, user_timeout INTEGER, global_timeout INTEGER, aliases TEXT, command TEXT)')
+          db.run('CREATE TABLE IF NOT EXISTS commands (key TEXT PRIMARY KEY, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)')
             .all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM commands', (err, rows) => {
               if (err) {
                 console.warn('error loading commands from the database');
@@ -276,7 +276,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         });
 
         db.serialize(() => {
-          db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER, message TEXT)')
+          db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, message TEXT NOT NULL)')
             .all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
               if (err) {
                 console.warn('error loading timers from the database');
@@ -292,7 +292,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         });
 
         db.serialize(() => {
-          db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER, hour INTEGER, minute INTEGER, length INTEGER, game TEXT)')
+          db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER NOT NULL DEFAULT 0, hour INTEGER NOT NULL DEFAULT 0, minute INTEGER NOT NULL DEFAULT 0, length INTEGER NOT NULL DEFAULT 0, game TEXT NOT NULL DEFAULT \'\')')
             .all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
               if (err) {
                 console.warn('error loading schedule from the database');
@@ -306,7 +306,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         });
 
         db.serialize(() => {
-          db.run('CREATE TABLE IF NOT EXISTS sfx (key TEXT PRIMARY KEY, file TEXT)')
+          db.run('CREATE TABLE IF NOT EXISTS sfx (key TEXT PRIMARY KEY, file TEXT NOT NULL)')
             .all('SELECT key, file FROM sfx', (err, rows) => {
               if (err) {
                 console.warn('error loading sfx from the database');
@@ -323,7 +323,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
             });
         });
 
-        db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, user TEXT, message TEXT)');
+        db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
       });
     });
   });
