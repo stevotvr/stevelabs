@@ -466,6 +466,7 @@ function setupHttpRoutes() {
 
     if (req.query.countdown) {
       options.countdown = true;
+      options.countdown_audio = settings.countdown_audio;
       options.config.schedule = schedule;
     }
 

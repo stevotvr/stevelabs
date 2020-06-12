@@ -9,6 +9,9 @@
 <body style="display: none;">
 	{{#if countdown}}
 	<div id="countdown"></div>
+	{{#if countdown_audio}}
+	<audio src="media/{{countdown_audio}}" id="music" loop></audio>
+	{{/if}}
 	{{/if}}
 	{{#if nextstream}}
 	<div id="nextstream"></div>

@@ -192,6 +192,16 @@ const countdownElem = document.getElementById('countdown');
 if (countdownElem && config.schedule) {
   const next = getNextScheduled(config.schedule, true);
 
+  const musicElem = document.getElementById('music');
+  if (musicElem) {
+    musicElem.onloadedmetadata = () => {
+      const diff = (next.date.getTime() - Date.now()) / 1000;
+      musicElem.currentTime = musicElem.duration - (diff % musicElem.duration);
+      musicElem.volume = .5;
+      musicElem.play();
+    };
+  }
+
   setInterval(() => {
     const now = new Date();
     const diff = Math.floor((next.date.getTime() - now.getTime()) / 1000);
@@ -199,6 +209,8 @@ if (countdownElem && config.schedule) {
     let timeLeft = 'Soon...';
     if (diff >= 0) {
       timeLeft = Math.floor(diff / 60) + ':' + Number(diff % 60).toLocaleString('en-US', { minimumIntegerDigits: 2 });
+    } else if (musicElem) {
+      musicElem.loop = false;
     }
 
     countdownElem.innerHTML = `Starting: ${timeLeft}<br>${next.game}`;
