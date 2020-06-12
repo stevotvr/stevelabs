@@ -25,6 +25,7 @@ const handlebars = require('express-handlebars');
 const sqlite3 = require('sqlite3');
 const tmi = require('tmi.js');
 const { URLSearchParams } = require('url');
+const { isNumber } = require('util');
 
 // Set up the Express application
 const app = express();
@@ -150,6 +151,64 @@ const chatCommands = {
         resolve(`Tip #${this.lastID} has been added to the list`);
       });
     }
+  },
+  raffle: (user, args, resolve, reject) => {
+    if (!settings.raffle_active) {
+      reject();
+    }
+
+    db.run('INSERT OR IGNORE INTO raffle (user, tickets) VALUES (?, ?)', [ user, 1 ], err => {
+      if (err) {
+        console.warn('error saving raffle data');
+        console.log(err);
+
+        reject();
+      } else {
+        resolve(args.join(' '));
+      }
+    });
+  },
+  endraffle: (user, args, resolve, reject) => {
+    if (!settings.raffle_active) {
+      reject();
+
+      return;
+    }
+
+    db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
+      if (err) {
+        console.warn('error retrieving raffle data');
+        console.log(err);
+
+        reject();
+      } else {
+        settings.raffle_active = false;
+        saveConfig();
+
+        resolve(row ? args.join(' ').replace('${winner}', row.user) : '');
+      }
+    });
+  },
+  startraffle: (user, args, resolve, reject) => {
+    if (settings.raffle_active) {
+      reject();
+
+      return;
+    }
+
+    db.get('DELETE FROM raffle', err => {
+      if (err) {
+        console.warn('error deleting raffle data');
+        console.log(err);
+
+        reject();
+      } else {
+        settings.raffle_active = true;
+        saveConfig();
+
+        resolve(args.join(' '));
+      }
+    });
   }
 };
 
@@ -173,7 +232,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         }
 
         rows.forEach(row => {
-          settings[row.key] = row.value
+          settings[row.key] = isNaN(row.value) ? row.value : Number.parseInt(row.value);
         });
 
         if (!settings.secret) {
@@ -257,7 +316,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
                   level: row.level,
                   user_timeout: row.user_timeout,
                   global_timeout: row.global_timeout,
-                  aliases: row.aliases.split(','),
+                  aliases: row.aliases ? row.aliases.split(',') : [],
                   command: row.command
                 };
               });
@@ -324,6 +383,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         });
 
         db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
+        db.run('CREATE TABLE IF NOT EXISTS raffle (user TEXT PRIMARY KEY, tickets INTEGER NOT NULL DEFAULT 1)');
       });
     });
   });
@@ -653,7 +713,7 @@ function setupTwitchClients() {
       chatCommands[parsed[0]](userstate.username, parsed.slice(1), resolve, reject);
     })
     .then(response => {
-      if (response.length) {
+      if (response) {
         bot.say(channel, response);
       }
 
@@ -661,7 +721,7 @@ function setupTwitchClients() {
       command.timeouts.user[userstate.username] = Date.now() + command.user_timeout * 1000;
     })
     .catch(response => {
-      if (response.length) {
+      if (response) {
         bot.say(channel, response);
       }
     });
