@@ -77,11 +77,6 @@ const runtimeConfig = {
   live: false
 };
 
-// Timer variables
-let timerPos = 0;
-let nextTimer = Infinity;
-let chatLines = 0;
-
 // Create the data directory
 try {
   fs.mkdirSync('./data');
@@ -345,8 +340,6 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
               }
 
               rows.forEach(row => timers.push(row.message));
-
-              nextTimer = Date.now() + settings.timer_timeout * 1000;
             });
         });
 
@@ -394,17 +387,9 @@ http.listen(config.port, config.host, () => {
   console.log(`overlay url: ${config.url}/overlay`);
 });
 
-// Set up timers
-setInterval(() => {
-  if (!timers || !runtimeConfig.live || chatLines < settings.timer_chat_lines || Date.now() < nextTimer) {
-    return;
-  }
-
-  bot.say(settings.twitch_channel_username, timers[timerPos]);
-  timerPos = (timerPos + 1) % timers.length;
-  nextTimer = Date.now() + settings.timer_timeout * 1000;
-  chatLines = 0;
-}, 1000);
+/**
+ * Functions
+ */
 
 /**
  * Set up HTTP server routes.
@@ -587,6 +572,11 @@ function setupHttpRoutes() {
  * Set up Twitch chat clients.
  */
 function setupTwitchClients() {
+  // Timer variables
+  let timerPos = 0;
+  let nextTimer = Date.now() + settings.timer_timeout * 1000;
+  let chatLines = 0;
+
   // Create the client that listens to the stream channel
   const host = new tmi.Client({
     connection: {
@@ -802,11 +792,19 @@ function setupTwitchClients() {
       viewers: viewers
     });
   });
-}
 
-/**
- * Functions
- */
+  // Set up timers
+  setInterval(() => {
+    if (!timers || !runtimeConfig.live || chatLines < settings.timer_chat_lines || Date.now() < nextTimer) {
+      return;
+    }
+
+    bot.say(settings.twitch_channel_username, timers[timerPos]);
+    timerPos = (timerPos + 1) % timers.length;
+    nextTimer = Date.now() + settings.timer_timeout * 1000;
+    chatLines = 0;
+  }, 1000);
+}
 
 /**
  * Send a new alert to the overlay page.
