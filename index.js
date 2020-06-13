@@ -232,7 +232,7 @@ const db = new sqlite3.Database('./data/stovelabs.db', err => {
         }
 
         rows.forEach(row => {
-          settings[row.key] = isNaN(row.value) ? row.value : Number.parseInt(row.value);
+          settings[row.key] = isNaN(row.value) ? row.value : +row.value;
         });
 
         if (!settings.secret) {
