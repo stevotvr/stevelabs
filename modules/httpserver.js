@@ -289,7 +289,7 @@ class HttpServer {
   verifyRequest(req, res, buf, encoding) {
     req.verified = false;
     if (req.headers['x-hub-signature']) {
-      const hash = crypto.createHmac('sha256', settings.secret).update(buf).digest('hex');
+      const hash = crypto.createHmac('sha256', this.app.settings.secret).update(buf).digest('hex');
       req.verified = req.headers['x-hub-signature'] === `sha256=${hash}`;
     }
   }
