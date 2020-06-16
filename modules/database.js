@@ -75,6 +75,7 @@ class Database {
                 .run('raid', '${user} raided the channel with ${viewers} viewers!')
                 .run('host', '${user} hosted the channel with ${viewers} viewers!')
                 .run('charitydonation', '${user} donated ${amount} to charity!')
+                .run('rafflewinner', '${user} won the raffle!')
                 .finalize()
                 .all('SELECT key, message, graphic, sound, duration FROM alerts', (err, rows) => {
                   if (err) {
