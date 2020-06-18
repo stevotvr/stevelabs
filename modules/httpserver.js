@@ -41,7 +41,7 @@ class HttpServer {
     this.express = express();
     this.express.engine('handlebars', handlebars());
     this.express.set('view engine', 'handlebars');
-    this.express.use(express.json({ verify: this.verifyRequest }));
+    this.express.use(express.json({ verify: (req, res, buf) => this.verifyRequest(app.settings.secret, req, buf) }));
     this.express.use(express.urlencoded({ extended: true }));
     this.express.use(express.static('public'));
 
@@ -281,15 +281,14 @@ class HttpServer {
   /**
    * Verify a signed request.
    *
+   * @param {string} secret The secret used for signing requests
    * @param {express.Request} req The request object
-   * @param {express.response} res The response object
    * @param {Buffer} buf Buffer containing the raw request body
-   * @param {string} encoding The encoding of the request
    */
-  verifyRequest(req, res, buf, encoding) {
+  verifyRequest(secret, req, buf) {
     req.verified = false;
     if (req.headers['x-hub-signature']) {
-      const hash = crypto.createHmac('sha256', this.app.settings.secret).update(buf).digest('hex');
+      const hash = crypto.createHmac('sha256', secret).update(buf).digest('hex');
       req.verified = req.headers['x-hub-signature'] === `sha256=${hash}`;
     }
   }
