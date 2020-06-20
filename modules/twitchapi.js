@@ -51,7 +51,7 @@ class TwitchApi {
       const options =  {
         method: method,
         headers: {
-          'Client-ID': settings.twitch_api_client,
+          'Client-ID': app.config.oauth.client,
           'Authorization': `Bearer ${settings.oauth_access_token}`
         }
       };
@@ -74,8 +74,8 @@ class TwitchApi {
               body: new URLSearchParams({
                 grant_type: 'refresh_token',
                 refresh_token: settings.oauth_refresh_token,
-                client_id: settings.twitch_api_client,
-                client_secret: settings.twitch_api_secret
+                client_id: app.config.oauth.client,
+                client_secret: app.config.oauth.secret
               })
             })
             .then(res => res.json())

@@ -95,7 +95,7 @@ class HttpServer {
     // The login page
     this.express.get('/login', (req, res) => {
       if (req.query.code) {
-        const url = `https://id.twitch.tv/oauth2/token?client_id=${app.settings.twitch_api_client}&client_secret=${app.settings.twitch_api_secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${app.config.url}/login`;
+        const url = `https://id.twitch.tv/oauth2/token?client_id=${app.config.oauth.client}&client_secret=${app.config.oauth.secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${app.config.url}/login`;
 
         fetch(url, {
           method: 'POST'
@@ -132,7 +132,7 @@ class HttpServer {
           res.sendStatus(503);
         });
       } else {
-        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.settings.twitch_api_client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email` })
+        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email` })
       }
     });
 
