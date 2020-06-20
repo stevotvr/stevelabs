@@ -59,9 +59,9 @@ class App {
   }
 
   /**
-   * Save the configuration to the database.
+   * Save the settings to the database.
    */
-  saveConfig() {
+  saveSettings() {
     const stmt = this.db.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
     for (const key in this.settings) {

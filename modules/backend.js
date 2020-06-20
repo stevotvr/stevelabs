@@ -129,7 +129,7 @@ class Backend {
           }
         }
 
-        this.app.saveConfig();
+        this.app.saveSettings();
 
         resolve();
       },
@@ -200,7 +200,7 @@ class Backend {
       timers: (resolve, req) => {
         this.app.settings.timer_timeout = req.body.timer_timeout;
         this.app.settings.timer_chat_lines = req.body.timer_chat_lines;
-        this.app.saveConfig();
+        this.app.saveSettings();
 
         this.db.run('DELETE FROM timers', err => {
           if (err) {
@@ -359,7 +359,7 @@ class Backend {
       raffle: (resolve, req) => {
         if (req.body.save) {
           this.app.settings.raffle_active = !!req.body.raffle_active;
-          this.app.saveConfig();
+          this.app.saveSettings();
         }
 
         if (typeof req.body.delete === "object") {

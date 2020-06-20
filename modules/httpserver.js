@@ -108,7 +108,7 @@ class HttpServer {
           .then(valid => {
             if (valid) {
               app.settings.web_token = crypto.randomBytes(64).toString('hex');
-              app.saveConfig();
+              app.saveSettings();
 
               res.cookie('token', app.settings.web_token, {
                 maxAge: 7776000000,

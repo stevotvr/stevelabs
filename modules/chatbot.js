@@ -122,7 +122,7 @@ class ChatBot {
             reject();
           } else {
             this.app.settings.raffle_active = false;
-            this.app.saveConfig();
+            this.app.saveSettings();
 
             this.app.http.sendAlert('rafflewinner', row.user);
             resolve(row ? args.join(' ').replace('${winner}', row.user) : '');
@@ -144,7 +144,7 @@ class ChatBot {
             reject();
           } else {
             this.app.settings.raffle_active = true;
-            this.app.saveConfig();
+            this.app.saveSettings();
 
             resolve(args.join(' '));
           }

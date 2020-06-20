@@ -96,7 +96,7 @@ class TwitchApi {
               }
             })
             .finally(() => {
-              app.saveConfig();
+              app.saveSettings();
             });
           } else {
             resolve(res);
@@ -193,7 +193,7 @@ class TwitchApi {
           settings.oauth_refresh_token = '';
           app.userid = 0;
 
-          app.saveConfig();
+          app.saveSettings();
 
           resolve(false);
         }
