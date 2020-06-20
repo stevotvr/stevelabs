@@ -1,0 +1,45 @@
+<h2>Sound Efforts</h2>
+<form method="post">
+	<fieldset>
+		<legend>Add Sound</legend>
+		<table>
+			<tr>
+				<th>Key</th>
+				<th>File</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="key"></td>
+				<td><input type="text" name="file"></td>
+			</tr>
+		</table>
+		<fieldset>
+			<input type="submit" name="add" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post">
+	<fieldset>
+		<legend>Edit Sounds</legend>
+		<table>
+			<tr>
+				<th>Key</th>
+				<th>File</th>
+				<th>Delete</th>
+			</tr>
+			{{#each data.sfx}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					<input type="text" name="update[{{this.id}}][key]" value="{{this.key}}">
+				</td>
+				<td><input type="text" name="update[{{this.id}}][file]" value="{{this.file}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset>
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>

@@ -1,0 +1,16 @@
+<h2>Timers</h2>
+<form method="post">
+	<fieldset>
+		<legend>Settings</legend>
+		<label>Interval: <input type="number" name="timer_timeout" min="1" value="{{data.timer_timeout}}"></label>
+		<label>Chat Lines: <input type="number" name="timer_chat_lines" min="0" value="{{data.timer_chat_lines}}"></label>
+	</fieldset>
+	<fieldset>
+		<legend>Messages</legend>
+		<textarea name="messages" cols="100" rows="10">{{data.messages}}</textarea>
+	</fieldset>
+	<fieldset>
+		<input type="reset" value="Reset">
+		<input type="submit" value="Save">
+	</fieldset>
+</form>

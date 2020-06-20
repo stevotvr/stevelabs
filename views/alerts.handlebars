@@ -1,0 +1,25 @@
+<h2>Alerts</h2>
+<form method="post">
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Message</th>
+			<th>Graphic</th>
+			<th>Sound</th>
+			<th>Duration</th>
+		</tr>
+		{{#each data.alerts}}
+		<tr>
+			<td>{{this.key}}</td>
+			<td><input type="text" name="update[{{this.key}}][message]" value="{{this.message}}"></td>
+			<td><input type="text" name="update[{{this.key}}][graphic]" value="{{this.graphic}}"></td>
+			<td><input type="text" name="update[{{this.key}}][sound]" value="{{this.sound}}"></td>
+			<td><input type="number" name="update[{{this.key}}][duration]" value="{{this.duration}}"></td>
+		</tr>
+		{{/each}}
+	</table>
+	<fieldset>
+		<input type="reset" value="Reset">
+		<input type="submit" value="Save">
+	</fieldset>
+</form>

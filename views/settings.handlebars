@@ -1,0 +1,30 @@
+<h2>Settings</h2>
+<form method="post">
+	<fieldset>
+		<legend>Twitch API</legend>
+		<label>Client ID: <input type="text" name="twitch_api_client" value="{{data.twitch_api_client}}"></label>
+		<label>Client Secret: <input type="password" name="twitch_api_secret" value="{{data.twitch_api_secret}}"></label>
+	</fieldset>
+	<fieldset>
+		<legend>Twitch Channels</legend>
+		<fieldset>
+			<legend>Host Channel</legend>
+			<label>Username: <input type="text" name="twitch_channel_username" value="{{data.twitch_channel_username}}"></label>
+			<label>Password: <input type="password" name="twitch_channel_password" value="{{data.twitch_channel_password}}"></label>
+		</fieldset>
+		<fieldset>
+			<legend>Bot Channel</legend>
+			<label>Username: <input type="text" name="twitch_bot_username" value="{{data.twitch_bot_username}}"></label>
+			<label>Password: <input type="password" name="twitch_bot_password" value="{{data.twitch_bot_password}}"></label>
+		</fieldset>
+	</fieldset>
+	<fieldset>
+		<legend>DonorDrive</legend>
+		<label>Instance Name: <input type="text" name="donordrive_instance" value="{{data.donordrive_instance}}"></label>
+		<label>Participant ID: <input type="number" name="donordrive_participant" value="{{data.donordrive_participant}}"></label>
+	</fieldset>
+	<fieldset>
+		<input type="reset" value="Reset">
+		<input type="submit" value="Save">
+	</fieldset>
+</form>

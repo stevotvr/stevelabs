@@ -1,0 +1,49 @@
+<h2>Tips</h2>
+<form method="post">
+	<fieldset>
+		<legend>Add Tip</legend>
+		<table>
+			<tr>
+				<th>User</th>
+				<th>Message</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="user"></td>
+				<td><input type="text" name="message"></td>
+			</tr>
+		</table>
+		<fieldset>
+			<input type="submit" name="add" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post">
+	<fieldset>
+		<legend>Edit Tips</legend>
+		<table>
+			<tr>
+				<th>ID</th>
+				<th>Time</th>
+				<th>User</th>
+				<th>Message</th>
+				<th>Delete</th>
+			</tr>
+			{{#each data.tips}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					{{this.id}}
+				</td>
+				<td>{{this.date}}</td>
+				<td><input type="text" name="update[{{this.id}}][user]" value="{{this.user}}"></td>
+				<td><input type="text" name="update[{{this.id}}][message]" value="{{this.message}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset>
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>

@@ -9,6 +9,7 @@
 
 'use strict'
 
+const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const express = require('express');
 const fetch = require('node-fetch');
@@ -37,13 +38,22 @@ class HttpServer {
       follows: app.api.setFollowsWebhook
     };
 
+    const hbs = handlebars.create({
+      helpers: {
+        eq: function(p1, p2, options) {
+          return p1 === p2 ? options.fn(this) : options.inverse(this);
+        }
+      }
+    });
+
     // Set up the Express application
     this.express = express();
-    this.express.engine('handlebars', handlebars());
+    this.express.engine('handlebars', hbs.engine);
     this.express.set('view engine', 'handlebars');
     this.express.use(express.json({ verify: (req, res, buf) => this.verifyRequest(app.settings.secret, req, buf) }));
     this.express.use(express.urlencoded({ extended: true }));
     this.express.use(express.static('public'));
+    this.express.use(cookieParser());
 
     // Create the HTTP server
     const http = (() => {
@@ -79,48 +89,51 @@ class HttpServer {
 
     // Index page; shows the Twitch auth link
     this.express.get('/', (req, res) => {
-      const params = {};
-      if (app.settings.oauth_access_token) {
-        if (app.config.debug) {
-          params.alerts = app.alerts;
-        }
-      } else {
-        params.connectUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${app.settings.twitch_api_client}&redirect_uri=${app.config.url}/cb&response_type=code&scope=user:read:email`;
-      }
-
-      res.render('index', params);
+      res.render('index');
     });
 
-    // The Twitch auth callback
-    this.express.get('/cb', (req, res) => {
-      if (!req.query.code) {
-        res.status(400).end();
-        return;
-      }
+    // The login page
+    this.express.get('/login', (req, res) => {
+      if (req.query.code) {
+        const url = `https://id.twitch.tv/oauth2/token?client_id=${app.settings.twitch_api_client}&client_secret=${app.settings.twitch_api_secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${app.config.url}/login`;
 
-      const url = `https://id.twitch.tv/oauth2/token?client_id=${app.settings.twitch_api_client}&client_secret=${app.settings.twitch_api_secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${app.config.url}/cb`;
+        fetch(url, {
+          method: 'POST'
+        })
+        .then(res => res.json())
+        .then(auth => {
+          app.settings.oauth_access_token = auth.access_token;
+          app.settings.oauth_refresh_token = auth.refresh_token;
+          app.api.checkUser()
+          .then(valid => {
+            if (valid) {
+              app.settings.web_token = crypto.randomBytes(64).toString('hex');
+              app.saveConfig();
 
-      fetch(url, {
-        method: 'POST'
-      })
-      .then(res => res.json())
-      .then(auth => {
-        app.settings.oauth_access_token = auth.access_token;
-        app.settings.oauth_refresh_token = auth.refresh_token;
-        app.api.checkUser()
-        .then(valid => {
-          if (valid) {
-            app.saveConfig();
-            app.api.setWebhooks();
-            app.api.checkStream();
-          }
+              res.cookie('token', app.settings.web_token, {
+                maxAge: 7776000000,
+                secure: app.config.ssl.enabled,
+                httpOnly: true
+              });
+
+              app.api.setWebhooks();
+              app.api.checkStream();
+
+              res.redirect('/');
+            } else {
+              res.redirect('/login');
+            }
+          });
+        })
+        .catch(err => {
+          console.warn('failed to authenticate with Twitch');
+          console.log(err);
+
+          res.sendStatus(503);
         });
-      })
-      .catch(err => {
-        console.warn('failed to authenticate with Twitch');
-        console.log(err);
-      })
-      .finally(() => res.redirect('/'));
+      } else {
+        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.settings.twitch_api_client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email` })
+      }
     });
 
     // The webhook registration callback
@@ -211,7 +224,7 @@ class HttpServer {
         if (req.query.tips) {
           options.config.tips = [];
           options.tips = true;
-          app.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
+          app.db.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
             if (err) {
               console.warn('error loading tip data');
               console.log(err);

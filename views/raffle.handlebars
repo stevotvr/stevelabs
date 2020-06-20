@@ -1,0 +1,33 @@
+<h2>Raffle</h2>
+<form method="post">
+	<fieldset>
+		<legend>Raffle Settings</legend>
+		<label><input type="checkbox" name="raffle_active" id="raffle_active"{{#if data.raffle_active }} checked{{/if}}> Enable Raffle</label>
+		<fieldset>
+			<input type="reset" value="Reset">
+			<input type="submit" name="save" value="Save">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post">
+	<fieldset>
+		<legend>Add Entrant</legend>
+		<label>User: <input type="text" name="user"></label>
+		<fieldset>
+			<input type="submit" name="add" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post">
+	<fieldset>
+		<legend>Entrants</legend>
+		<table>
+			{{#each data.users }}
+			<tr>
+				<td>{{this}}</td>
+				<td><input type="submit" name="delete[{{this}}]" value="&times;"></td>
+			</tr>
+			{{/each}}
+		</table>
+	</fieldset>
+</form>

@@ -23,6 +23,7 @@ class ChatBot {
    */
   constructor(app) {
     this.app = app;
+    this.db = app.db;
 
     this.timerPos = 0;
     this.nextTimer = Infinity;
@@ -51,7 +52,7 @@ class ChatBot {
         resolve();
       },
       tip: (user, args, resolve, reject) => {
-        this.app.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', (err, row) => {
+        this.db.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', (err, row) => {
           if (err) {
             console.warn('error getting tip data');
             console.log(err);
@@ -76,7 +77,7 @@ class ChatBot {
         } else if (message.length > 80) {
           reject(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
         } else {
-          this.app.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
+          this.db.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
             if (err) {
               console.warn('error saving tip data');
               console.log(err);
@@ -95,7 +96,7 @@ class ChatBot {
           reject();
         }
 
-        this.app.db.run('INSERT OR IGNORE INTO raffle (user, tickets) VALUES (?, ?)', [ user, 1 ], err => {
+        this.db.db.run('INSERT OR IGNORE INTO raffle (user, tickets) VALUES (?, ?)', [ user, 1 ], err => {
           if (err) {
             console.warn('error saving raffle data');
             console.log(err);
@@ -113,7 +114,7 @@ class ChatBot {
           return;
         }
 
-        this.app.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
+        this.db.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
           if (err) {
             console.warn('error retrieving raffle data');
             console.log(err);
@@ -135,7 +136,7 @@ class ChatBot {
           return;
         }
 
-        this.app.db.get('DELETE FROM raffle', err => {
+        this.db.db.get('DELETE FROM raffle', err => {
           if (err) {
             console.warn('error deleting raffle data');
             console.log(err);

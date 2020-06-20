@@ -23,6 +23,8 @@ class Database {
    * @param {App} app The main application
    */
   constructor(app) {
+    this.app = app;
+
     // Create the database connection
     const db = new sqlite3.Database('./data/stovelabs.db', err => {
       if (err) {
@@ -76,121 +78,28 @@ class Database {
                 .run('host', '${user} hosted the channel with ${viewers} viewers!')
                 .run('charitydonation', '${user} donated ${amount} to charity!')
                 .run('rafflewinner', '${user} won the raffle!')
-                .finalize()
-                .all('SELECT key, message, graphic, sound, duration FROM alerts', (err, rows) => {
-                  if (err) {
-                    console.warn('error loading alerts from the database');
-                    console.log(err);
-
-                    return;
-                  }
-
-                  rows.forEach(row => {
-                    app.alerts[row.key] = {
-                      message: row.message,
-                      graphic: row.graphic,
-                      sound: row.sound,
-                      duration: row.duration
-                    };
-                  });
-
-                  for (const key in app.alerts) {
-                    const alert = app.alerts[key];
-                    if (alert.graphic) {
-                      const ext = alert.graphic.substring(alert.graphic.lastIndexOf('.') + 1).toLowerCase();
-                      switch (ext) {
-                        case 'mp4':
-                        case 'mov':
-                        case 'webm':
-                          alert.video = alert.graphic;
-                          break;
-                        default:
-                          alert.image = alert.graphic;
-                      }
-                    }
-
-                    alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
-                  }
-                });
+                .finalize();
+                this.loadAlerts();
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS commands (key TEXT PRIMARY KEY, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)')
-                .all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM commands', (err, rows) => {
-                  if (err) {
-                    console.warn('error loading commands from the database');
-                    console.log(err);
-
-                    return;
-                  }
-
-                  rows.forEach(row => {
-                    app.commands[row.key] = {
-                      level: row.level,
-                      user_timeout: row.user_timeout,
-                      global_timeout: row.global_timeout,
-                      aliases: row.aliases ? row.aliases.split(',') : [],
-                      command: row.command
-                    };
-                  });
-
-                  for (const k in app.commands) {
-                    for (const k2 in app.commands[k].aliases) {
-                      app.commands[app.commands[k].aliases[k2]] = app.commands[k];
-                    }
-
-                    app.commands[k].timeouts = {
-                      global: 0,
-                      user: {}
-                    };
-                  }
-                });
+              db.run('CREATE TABLE IF NOT EXISTS commands (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
+              this.loadCommands();
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, message TEXT NOT NULL)')
-                .all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
-                  if (err) {
-                    console.warn('error loading timers from the database');
-                    console.log(err);
-
-                    return;
-                  }
-
-                  rows.forEach(row => app.timers.push(row.message));
-                });
+              db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, message TEXT NOT NULL)');
+              this.loadTimers();
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER NOT NULL DEFAULT 0, hour INTEGER NOT NULL DEFAULT 0, minute INTEGER NOT NULL DEFAULT 0, length INTEGER NOT NULL DEFAULT 0, game TEXT NOT NULL DEFAULT \'\')')
-                .all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
-                  if (err) {
-                    console.warn('error loading schedule from the database');
-                    console.log(err);
-
-                    return;
-                  }
-
-                  rows.forEach(row => app.schedule.push(row));
-                });
+              db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER NOT NULL DEFAULT 0, hour INTEGER NOT NULL DEFAULT 0, minute INTEGER NOT NULL DEFAULT 0, length INTEGER NOT NULL DEFAULT 0, game TEXT NOT NULL DEFAULT \'\')');
+              this.loadSchedule();
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS sfx (key TEXT PRIMARY KEY, file TEXT NOT NULL)')
-                .all('SELECT key, file FROM sfx', (err, rows) => {
-                  if (err) {
-                    console.warn('error loading sfx from the database');
-                    console.log(err);
-
-                    return;
-                  }
-
-                  rows.forEach(row => {
-                    app.sfx[row.key] = {
-                      file: row.file
-                    };
-                  });
-                });
+              db.run('CREATE TABLE IF NOT EXISTS sfx (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, file TEXT NOT NULL)');
+              this.loadSfx();
             });
 
             db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
@@ -200,6 +109,124 @@ class Database {
       });
 
     this.db = db;
+  }
+
+  loadAlerts() {
+    this.db.all('SELECT key, message, graphic, sound, duration FROM alerts', (err, rows) => {
+      if (err) {
+        console.warn('error loading alerts from the database');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.alerts = {};
+      rows.forEach(row => {
+        this.app.alerts[row.key] = {
+          message: row.message,
+          graphic: row.graphic,
+          sound: row.sound,
+          duration: row.duration
+        };
+      });
+
+      for (const key in this.app.alerts) {
+        const alert = this.app.alerts[key];
+        if (alert.graphic) {
+          const ext = alert.graphic.substring(alert.graphic.lastIndexOf('.') + 1).toLowerCase();
+          switch (ext) {
+            case 'mp4':
+            case 'mov':
+            case 'webm':
+              alert.video = alert.graphic;
+              break;
+            default:
+              alert.image = alert.graphic;
+          }
+        }
+
+        alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
+      }
+    });
+  }
+
+  loadCommands() {
+    this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM commands', (err, rows) => {
+      if (err) {
+        console.warn('error loading commands from the database');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.commands = {};
+      rows.forEach(row => {
+        this.app.commands[row.key] = {
+          level: row.level,
+          user_timeout: row.user_timeout,
+          global_timeout: row.global_timeout,
+          aliases: row.aliases ? row.aliases.split(',') : [],
+          command: row.command
+        };
+      });
+
+      for (const k in this.app.commands) {
+        for (const k2 in this.app.commands[k].aliases) {
+          this.app.commands[this.app.commands[k].aliases[k2]] = this.app.commands[k];
+        }
+
+        this.app.commands[k].timeouts = {
+          global: 0,
+          user: {}
+        };
+      }
+    });
+  }
+
+  loadTimers() {
+    this.db.all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
+      if (err) {
+        console.warn('error loading timers from the database');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.timers = [];
+      rows.forEach(row => this.app.timers.push(row.message));
+    });
+  }
+
+  loadSchedule() {
+    this.db.all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
+      if (err) {
+        console.warn('error loading schedule from the database');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.schedule = [];
+      rows.forEach(row => this.app.schedule.push(row));
+    });
+  }
+
+  loadSfx() {
+    this.db.all('SELECT key, file FROM sfx', (err, rows) => {
+      if (err) {
+        console.warn('error loading sfx from the database');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.sfx = {};
+      rows.forEach(row => {
+        this.app.sfx[row.key] = {
+          file: row.file
+        };
+      });
+    });
   }
 }
 

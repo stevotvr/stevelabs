@@ -15,6 +15,7 @@ const fs = require('fs');
 const config = require('./config.json');
 
 // Modules
+const Backend = require('./modules/backend');
 const ChatBot = require('./modules/chatbot');
 const Database = require('./modules/database');
 const HttpServer = require('./modules/httpserver');
@@ -53,14 +54,15 @@ class App {
     this.api = new TwitchApi.TwitchApi(this);
     this.chatbot = new ChatBot.ChatBot(this);
     this.http = new HttpServer.HttpServer(this);
-    this.db = new Database.Database(this).db;
+    this.db = new Database.Database(this);
+    new Backend.Backend(this);
   }
 
   /**
    * Save the configuration to the database.
    */
   saveConfig() {
-    const stmt = this.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+    const stmt = this.db.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
     for (const key in this.settings) {
       stmt.run(key, this.settings[key]);
