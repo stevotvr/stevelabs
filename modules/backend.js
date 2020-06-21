@@ -123,11 +123,19 @@ class Backend {
   createPostHandlers() {
     this.postHandlers = {
       settings: (resolve, req) => {
-        for (const key in req.body) {
-          if (this.app.settings.hasOwnProperty(key)) {
-            this.app.settings[key] = req.body[key];
-          }
+        const settings = this.app.settings;
+
+        if (req.body.twitch_channel_username !== settings.twitch_channel_username || req.body.twitch_channel_password !== settings.twitch_channel_password || req.body.twitch_bot_username !== settings.twitch_bot_username || req.body.twitch_bot_password !== settings.twitch_bot_password) {
+          settings.twitch_channel_username = req.body.twitch_channel_username;
+          settings.twitch_channel_password = req.body.twitch_channel_password;
+          settings.twitch_bot_username = req.body.twitch_bot_username;
+          settings.twitch_bot_password = req.body.twitch_bot_password;
+
+          this.app.chatbot.setupTwitchClients();
         }
+
+        settings.donordrive_instance = req.body.donordrive_instance;
+        settings.donordrive_participant = req.body.donordrive_participant;
 
         this.app.saveSettings();
 

@@ -157,6 +157,11 @@ class ChatBot {
    * Set up the Twitch chat clients.
    */
   setupTwitchClients() {
+    const settings = this.app.settings;
+    if (!settings.twitch_channel_username || !settings.twitch_channel_password || !settings.twitch_bot_username || !settings.twitch_bot_password) {
+      return;
+    }
+
     // Create the client for the host channel
     this.host = new tmi.Client({
       connection: {
@@ -164,10 +169,10 @@ class ChatBot {
         reconnect: true
       },
       identity: {
-        username: this.app.settings.twitch_channel_username,
-        password: this.app.settings.twitch_channel_password
+        username: settings.twitch_channel_username,
+        password: settings.twitch_channel_password
       },
-      channels: [ `${this.app.settings.twitch_channel_username}` ]
+      channels: [ `${settings.twitch_channel_username}` ]
     });
 
     this.host.connect()
@@ -185,8 +190,8 @@ class ChatBot {
         reconnect: true
       },
       identity: {
-        username: this.app.settings.twitch_bot_username,
-        password: this.app.settings.twitch_bot_password
+        username: settings.twitch_bot_username,
+        password: settings.twitch_bot_password
       }
     });
 
@@ -198,7 +203,7 @@ class ChatBot {
       console.log(err);
     });
 
-    this.nextTimer = Date.now() + this.app.settings.timer_timeout * 1000;
+    this.nextTimer = Date.now() + settings.timer_timeout * 1000;
 
     this.hookEvents();
     this.startTimers();
