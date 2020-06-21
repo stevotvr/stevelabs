@@ -112,6 +112,9 @@ class Database {
     this.db = db;
   }
 
+  /**
+   * Load the alerts from the database.
+   */
   loadAlerts() {
     this.db.all('SELECT key, message, graphic, sound, duration FROM alerts', (err, rows) => {
       if (err) {
@@ -151,6 +154,9 @@ class Database {
     });
   }
 
+  /**
+   * Load the chat commands from the database.
+   */
   loadCommands() {
     this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM commands', (err, rows) => {
       if (err) {
@@ -184,6 +190,9 @@ class Database {
     });
   }
 
+  /**
+   * Load the timers from the database.
+   */
   loadTimers() {
     this.db.all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
       if (err) {
@@ -198,6 +207,9 @@ class Database {
     });
   }
 
+  /**
+   * Load the schedule from the database.
+   */
   loadSchedule() {
     this.db.all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
       if (err) {
@@ -212,6 +224,9 @@ class Database {
     });
   }
 
+  /**
+   * Load the sound effects from the database.
+   */
   loadSfx() {
     this.db.all('SELECT key, file FROM sfx', (err, rows) => {
       if (err) {

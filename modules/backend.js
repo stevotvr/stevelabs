@@ -9,7 +9,16 @@
 
 'use strict'
 
+/**
+ * Provides the backend interface.
+ */
 class Backend {
+
+  /**
+   * Constructor.
+   *
+   * @param {App} app The main application
+   */
   constructor(app) {
     this.app = app;
     this.db = app.db.db;
@@ -70,6 +79,9 @@ class Backend {
     });
   }
 
+  /**
+   * Create the functions for handling GET requests.
+   */
   createGetHandlers() {
     this.getHandlers = {
       settings: (resolve) => {
@@ -120,6 +132,9 @@ class Backend {
     };
   }
 
+  /**
+   * Create the functions for handling POST requests.
+   */
   createPostHandlers() {
     this.postHandlers = {
       settings: (resolve, req) => {
