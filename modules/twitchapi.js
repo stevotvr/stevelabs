@@ -190,8 +190,9 @@ class TwitchApi {
       api.request('https://api.twitch.tv/helix/users', 'GET', false, access_token, refresh_token)
       .then(res => res.json())
       .then(user => {
-        if (user.data && user.data[0] && user.data[0].login === settings.twitch_channel_username) {
+        if (settings.twitch_channel_username === undefined || (user.data && user.data[0] && user.data[0].login === settings.twitch_channel_username)) {
           api.userid = user.data[0].id;
+          settings.twitch_channel_username = user.data[0].login;
 
           if (access_token !== settings.oauth_access_token) {
             settings.oauth_access_token = access_token;
