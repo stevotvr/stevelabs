@@ -22,7 +22,10 @@ Main configuration.
     * **keyfile**: (`string`) The absolute path to your SSL certificate's key file
     * **cert**: (`string`) The absolute path to your SSL certificate file
     * **cafile**: (`string`) The absolute path to your SSL certificate authority file
-
+  * **oauth**:
+    * **client**: (`string`) Your Twitch API client ID
+    * **secret**: (`string`) Your Twitch API client secret
+    
 ## License
 
 The source code is released under the terms of the [MIT License](https://github.com/stevotvr/twitchbot/blob/master/LICENSE.txt).
