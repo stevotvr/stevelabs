@@ -1,19 +1,20 @@
 <h2>Tips</h2>
 <form method="post">
+	<input type="hidden" name="add" value="1">
 	<fieldset>
 		<legend>Add Tip</legend>
 		<table>
 			<tr>
-				<th>User</th>
-				<th>Message</th>
+				<th style="width: 15%;">User</th>
+				<th style="width: 75%;">Message</th>
 			</tr>
 			<tr>
 				<td><input type="text" name="user"></td>
 				<td><input type="text" name="message"></td>
 			</tr>
 		</table>
-		<fieldset>
-			<input type="submit" name="add" value="Add">
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
 		</fieldset>
 	</fieldset>
 </form>
@@ -22,11 +23,11 @@
 		<legend>Edit Tips</legend>
 		<table>
 			<tr>
-				<th>ID</th>
-				<th>Time</th>
-				<th>User</th>
-				<th>Message</th>
-				<th>Delete</th>
+				<th style="width: 4%;">ID</th>
+				<th style="width: 15%;">Time</th>
+				<th style="width: 15%;">User</th>
+				<th style="width: 62%;">Message</th>
+				<th style="width: 4%;">Delete</th>
 			</tr>
 			{{#each data.tips}}
 			<tr>
@@ -41,7 +42,7 @@
 			</tr>
 			{{/each}}
 		</table>
-		<fieldset>
+		<fieldset class="buttons">
 			<input type="reset" value="Reset">
 			<input type="submit" value="Save">
 		</fieldset>

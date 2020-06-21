@@ -3,25 +3,26 @@
 	<fieldset>
 		<legend>Raffle Settings</legend>
 		<label><input type="checkbox" name="raffle_active" id="raffle_active"{{#if data.raffle_active }} checked{{/if}}> Enable Raffle</label>
-		<fieldset>
+		<fieldset class="buttons">
 			<input type="reset" value="Reset">
 			<input type="submit" name="save" value="Save">
 		</fieldset>
 	</fieldset>
 </form>
 <form method="post">
+	<input type="hidden" name="add" value="1">
 	<fieldset>
 		<legend>Add Entrant</legend>
 		<label>User: <input type="text" name="user"></label>
-		<fieldset>
-			<input type="submit" name="add" value="Add">
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
 		</fieldset>
 	</fieldset>
 </form>
 <form method="post">
 	<fieldset>
 		<legend>Entrants</legend>
-		<table>
+		<table class="entrants">
 			{{#each data.users }}
 			<tr>
 				<td>{{this}}</td>

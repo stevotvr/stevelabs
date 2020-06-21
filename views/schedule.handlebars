@@ -1,14 +1,15 @@
 <h2>Schedule</h2>
 <form method="post">
+	<input type="hidden" name="add" value="1">
 	<fieldset>
 		<legend>Add Item</legend>
 		<table>
 			<tr>
-				<th>Day</th>
-				<th>Hour</th>
-				<th>Minute</th>
-				<th>Length</th>
-				<th>Game</th>
+				<th style="width: 10%;">Day</th>
+				<th style="width: 5%;">Hour</th>
+				<th style="width: 5%;">Minute</th>
+				<th style="width: 5%;">Length</th>
+				<th style="width: 75%;">Game</th>
 			</tr>
 			<tr>
 				<td>
@@ -28,8 +29,8 @@
 				<td><input type="text" name="game"></td>
 			</tr>
 		</table>
-		<fieldset>
-			<input type="submit" name="add" value="Add">
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
 		</fieldset>
 	</fieldset>
 </form>
@@ -38,12 +39,12 @@
 		<legend>Edit Schedule</legend>
 		<table>
 			<tr>
-				<th>Day</th>
-				<th>Hour</th>
-				<th>Minute</th>
-				<th>Length</th>
-				<th>Game</th>
-				<th>Delete</th>
+				<th style="width: 10%;">Day</th>
+				<th style="width: 5%;">Hour</th>
+				<th style="width: 5%;">Minute</th>
+				<th style="width: 5%;">Length</th>
+				<th style="width: 71%;">Game</th>
+				<th style="width: 4%;">Delete</th>
 			</tr>
 			{{#each data.schedule}}
 			<tr>
@@ -67,7 +68,7 @@
 			</tr>
 			{{/each}}
 		</table>
-		<fieldset>
+		<fieldset class="buttons">
 			<input type="reset" value="Reset">
 			<input type="submit" value="Save">
 		</fieldset>

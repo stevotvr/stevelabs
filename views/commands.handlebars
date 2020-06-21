@@ -1,15 +1,16 @@
 <h2>Commands</h2>
 <form method="post">
+	<input type="hidden" name="add" value="1">
 	<fieldset>
 		<legend>Add Command</legend>
 		<table>
 			<tr>
-				<th>Trigger</th>
-				<th>Access Level</th>
-				<th>User Timeout</th>
-				<th>Global Timeout</th>
-				<th>Aliases</th>
-				<th>Command</th>
+				<th style="width: 15%;">Trigger</th>
+				<th style="width: 10%;">Access Level</th>
+				<th style="width: 5%;">User Timeout</th>
+				<th style="width: 5%;">Global Timeout</th>
+				<th style="width: 15%;">Aliases</th>
+				<th style="width: 50%;">Command</th>
 			</tr>
 			<tr>
 				<td><input type="text" name="key"></td>
@@ -27,8 +28,8 @@
 				<td><input type="text" name="command"></td>
 			</tr>
 		</table>
-		<fieldset>
-			<input type="submit" name="add" value="Add">
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
 		</fieldset>
 	</fieldset>
 </form>
@@ -37,13 +38,13 @@
 		<legend>Edit Commands</legend>
 		<table>
 			<tr>
-				<th>Trigger</th>
-				<th>Access Level</th>
-				<th>User Timeout</th>
-				<th>Global Timeout</th>
-				<th>Aliases</th>
-				<th>Command</th>
-				<th>Delete</th>
+				<th style="width: 15%;">Trigger</th>
+				<th style="width: 10%;">Access Level</th>
+				<th style="width: 5%;">User Timeout</th>
+				<th style="width: 5%;">Global Timeout</th>
+				<th style="width: 15%;">Aliases</th>
+				<th style="width: 46%;">Command</th>
+				<th style="width: 4%;">Delete</th>
 			</tr>
 			{{#each data.commands}}
 			<tr>
@@ -67,7 +68,7 @@
 			</tr>
 			{{/each}}
 		</table>
-		<fieldset>
+		<fieldset class="buttons">
 			<input type="reset" value="Reset">
 			<input type="submit" value="Save">
 		</fieldset>

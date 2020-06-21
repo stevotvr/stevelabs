@@ -1,0 +1,70 @@
+* {
+  margin: 0;
+}
+
+body, input, select, textarea {
+  background: #111;
+  color: #ddd;
+}
+
+a {
+  color: #fff;
+}
+
+h2 {
+  text-align: center;
+}
+
+header, main, footer {
+  margin: 0 auto;
+  width: 1200px;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+nav ul li {
+  padding-right: 12px;
+}
+
+footer {
+  text-align: center;
+}
+
+fieldset.buttons {
+  margin-top: 10px;
+  padding-top: 8px;
+  text-align: center;
+}
+
+input[type=submit] {
+  background: #060;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+}
+
+td {
+  padding: 2px 12px 2px 0;
+}
+
+table tr:nth-child(odd) * {
+  background: #222;
+}
+
+table input, table select, textarea {
+  width: 100%;
+}
+
+table.entrants {
+  width: auto;
+}
+
+table.entrants input {
+  background: #600;
+}

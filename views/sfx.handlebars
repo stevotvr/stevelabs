@@ -1,10 +1,11 @@
-<h2>Sound Efforts</h2>
+<h2>Sound Effects</h2>
 <form method="post">
+	<input type="hidden" name="add" value="1">
 	<fieldset>
 		<legend>Add Sound</legend>
 		<table>
 			<tr>
-				<th>Key</th>
+				<th style="width: 15%;">Key</th>
 				<th>File</th>
 			</tr>
 			<tr>
@@ -12,8 +13,8 @@
 				<td><input type="text" name="file"></td>
 			</tr>
 		</table>
-		<fieldset>
-			<input type="submit" name="add" value="Add">
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
 		</fieldset>
 	</fieldset>
 </form>
@@ -22,9 +23,9 @@
 		<legend>Edit Sounds</legend>
 		<table>
 			<tr>
-				<th>Key</th>
+				<th style="width: 15%;">Key</th>
 				<th>File</th>
-				<th>Delete</th>
+				<th style="width: 4%;">Delete</th>
 			</tr>
 			{{#each data.sfx}}
 			<tr>
@@ -37,7 +38,7 @@
 			</tr>
 			{{/each}}
 		</table>
-		<fieldset>
+		<fieldset class="buttons">
 			<input type="reset" value="Reset">
 			<input type="submit" value="Save">
 		</fieldset>
