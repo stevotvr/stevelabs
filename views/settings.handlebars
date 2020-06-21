@@ -1,16 +1,16 @@
 <h2>Settings</h2>
-<form method="post">
+<form method="post" autocomplete="off">
 	<fieldset>
 		<legend>Twitch Channels</legend>
 		<fieldset>
 			<legend>Host Channel</legend>
 			<label>Username: <input type="text" name="twitch_channel_username" value="{{data.twitch_channel_username}}"></label>
-			<label>Password: <input type="password" name="twitch_channel_password" value="{{data.twitch_channel_password}}"></label>
+			<label>Password: <input type="password" name="twitch_channel_password" value="{{data.twitch_channel_password}}" autocomplete="new-password"></label>
 		</fieldset>
 		<fieldset>
 			<legend>Bot Channel</legend>
 			<label>Username: <input type="text" name="twitch_bot_username" value="{{data.twitch_bot_username}}"></label>
-			<label>Password: <input type="password" name="twitch_bot_password" value="{{data.twitch_bot_password}}"></label>
+			<label>Password: <input type="password" name="twitch_bot_password" value="{{data.twitch_bot_password}}" autocomplete="new-password"></label>
 		</fieldset>
 	</fieldset>
 	<fieldset>
