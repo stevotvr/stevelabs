@@ -102,9 +102,7 @@ class HttpServer {
         })
         .then(res => res.json())
         .then(auth => {
-          app.settings.oauth_access_token = auth.access_token;
-          app.settings.oauth_refresh_token = auth.refresh_token;
-          app.api.checkUser()
+          app.api.checkToken(auth.access_token, auth.refresh_token)
           .then(valid => {
             if (valid) {
               app.settings.web_token = crypto.randomBytes(64).toString('hex');

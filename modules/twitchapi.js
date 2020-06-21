@@ -37,13 +37,18 @@ class TwitchApi {
    * @param {string} url The URL to query
    * @param {string} method GET or POST
    * @param {object} body Object to send as the JSON body
+   * @param {string} access_token The optional access token to use
+   * @param {string} refresh_token The optional refresh token to use
    */
-  request(url, method, body) {
+  request(url, method, body, access_token, refresh_token) {
     const app = this.app;
     const settings = app.settings;
 
+    access_token = access_token ? access_token : settings.oauth_access_token;
+    refresh_token = refresh_token ? refresh_token : settings.oauth_refresh_token;
+
     return new Promise((resolve, reject) => {
-      if (!settings.oauth_access_token) {
+      if (!access_token) {
         reject('api request failed due to missing access token');
         return;
       }
@@ -52,7 +57,7 @@ class TwitchApi {
         method: method,
         headers: {
           'Client-ID': app.config.oauth.client,
-          'Authorization': `Bearer ${settings.oauth_access_token}`
+          'Authorization': `Bearer ${access_token}`
         }
       };
 
@@ -64,7 +69,7 @@ class TwitchApi {
       fetch(url, options)
         .then(res => {
           if (res.status === 401) {
-            if (!settings.oauth_refresh_token) {
+            if (!refresh_token) {
               reject('api request failed due to invalid or expired access token');
               return;
             }
@@ -167,33 +172,45 @@ class TwitchApi {
 
   /**
    * Verify authentication tokens and load user data.
+   *
+   * @param {string} access_token The access token to check
+   * @param {string} refresh_token The refresh token
    */
-  checkUser() {
+  checkToken(access_token, refresh_token) {
     const api = this;
     const app = this.app;
     const settings = app.settings;
 
     return new Promise((resolve, reject) => {
-      if (!settings.oauth_access_token) {
+      if (!access_token) {
         resolve(false);
         return;
       }
 
-      api.request('https://api.twitch.tv/helix/users', 'GET')
+      api.request('https://api.twitch.tv/helix/users', 'GET', false, access_token, refresh_token)
       .then(res => res.json())
       .then(user => {
         if (user.data && user.data[0] && user.data[0].login === settings.twitch_channel_username) {
           api.userid = user.data[0].id;
 
+          if (access_token !== settings.oauth_access_token) {
+            settings.oauth_access_token = access_token;
+            settings.oauth_refresh_token = refresh_token;
+
+            app.saveSettings();
+          }
+
           console.log(`authenticated with Twitch as user ${ user.data[0].login}`);
 
           resolve(true);
         } else {
-          settings.oauth_access_token = '';
-          settings.oauth_refresh_token = '';
-          app.userid = 0;
+          if (access_token === settings.oauth_access_token) {
+            settings.oauth_access_token = '';
+            settings.oauth_refresh_token = '';
+            app.userid = 0;
 
-          app.saveSettings();
+            app.saveSettings();
+          }
 
           resolve(false);
         }

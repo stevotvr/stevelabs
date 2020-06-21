@@ -55,7 +55,7 @@ class Database {
             app.http.setupHttpRoutes();
             app.chatbot.setupTwitchClients();
 
-            app.api.checkUser()
+            app.api.checkToken(app.settings.oauth_access_token, app.settings.oauth_refresh_token)
             .then(valid => {
               if (valid) {
                 app.api.setWebhooks();
