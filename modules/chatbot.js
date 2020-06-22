@@ -352,6 +352,10 @@ class ChatBot {
       this.sessionUsers.add(userstate.username);
 
       this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ userstate.username ], (err, row) => {
+        if (!row) {
+          return;
+        }
+
         const params = [ userstate.username ];
         if (this.app.commands.shoutout) {
           params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, userstate.username ], userstate).slice(2));
