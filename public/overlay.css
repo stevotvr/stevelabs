@@ -36,6 +36,10 @@ body > * {
   color: #f00;
 }
 
+.alert #shoutout img {
+  border-radius: 50%;
+}
+
 #countdown {
   bottom: 78px;
   left: 12px;
