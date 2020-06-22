@@ -245,20 +245,6 @@ class HttpServer {
         res.render('overlay', options);
       });
     });
-
-    // The form action for the test buttons
-    this.express.post('/test', (req, res) => {
-      if (!app.config.debug) {
-        res.sendStatus(403).end();
-        return;
-      }
-
-      if (req.body.alert) {
-        http.sendAlert(req.body.type, req.body);
-      }
-
-      res.redirect('/');
-    });
   }
 
   /**
