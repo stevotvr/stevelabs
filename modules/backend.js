@@ -128,6 +128,13 @@ class Backend {
             users: rows.map(v => v.user)
           });
         });
+      },
+      users: (resolve) => {
+        this.db.all('SELECT user FROM autoshoutout ORDER BY user ASC', (err, rows) => {
+          resolve({
+            asousers: rows.map(v => v.user)
+          });
+        });
       }
     };
   }
@@ -402,6 +409,28 @@ class Backend {
           params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
 
           this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', params);
+        }
+
+        resolve();
+      },
+      users: (resolve, req) => {
+        if (typeof req.body.delaso === "object") {
+          const stmt = this.db.prepare('DELETE FROM autoshoutout WHERE user = ?');
+
+          for (const key in req.body.delaso) {
+            if (req.body.delete.hasOwnProperty(key)) {
+              stmt.run(key);
+            }
+          }
+
+          stmt.finalize();
+        }
+
+        if (req.body.addaso) {
+          const params = [];
+          params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
+
+          this.db.run('INSERT OR IGNORE INTO autoshoutout (user) VALUES (?)', params);
         }
 
         resolve();

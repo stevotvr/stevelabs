@@ -79,6 +79,7 @@ class Database {
                 .run('host', '${user} hosted the channel with ${viewers} viewers!')
                 .run('charitydonation', '${user} donated ${amount} to charity!')
                 .run('rafflewinner', '${user} won the raffle!')
+                .run('shoutout', 'Welcome, ${user}!')
                 .finalize();
                 this.loadAlerts();
             });
@@ -105,6 +106,7 @@ class Database {
 
             db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS raffle (user TEXT PRIMARY KEY, tickets INTEGER NOT NULL DEFAULT 1)');
+            db.run('CREATE TABLE IF NOT EXISTS autoshoutout (user TEXT PRIMARY KEY)');
           });
         });
       });

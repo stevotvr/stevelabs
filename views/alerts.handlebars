@@ -14,7 +14,7 @@
 			<tr>
 				<td>{{this.key}}</td>
 				<td><input type="text" name="update[{{this.key}}][message]" value="{{this.message}}"></td>
-				<td><input type="text" name="update[{{this.key}}][graphic]" value="{{this.graphic}}"></td>
+				<td><input type="text" name="update[{{this.key}}][graphic]" value="{{this.graphic}}"{{#eq this.key 'shoutout'}} disabled{{/eq}}></td>
 				<td><input type="text" name="update[{{this.key}}][sound]" value="{{this.sound}}"></td>
 				<td><input type="number" name="update[{{this.key}}][duration]" value="{{this.duration}}"></td>
 			</tr>

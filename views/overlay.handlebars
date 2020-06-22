@@ -24,7 +24,10 @@
 	</div>
 	{{/if}}
 	{{#each alerts}}
-	<div class="alert" id="{{@key}}">
+	<div class="alert{{#eq @key 'shoutout'}} shoutout{{/eq}}" id="{{@key}}">
+		{{#eq @key 'shoutout'}}
+		<img>
+		{{/eq}}
 		{{#if this.video}}
 		<video src="media/{{this.video}}"></video>
 		{{/if}}

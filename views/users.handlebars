@@ -1,0 +1,25 @@
+<h2>User Management</h2>
+<h3>Auto-shoutout</h3>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="addaso" value="1">
+	<fieldset>
+		<legend>Add User</legend>
+		<label>User: <input type="text" name="user"></label>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post">
+	<fieldset>
+		<legend>Auto-shoutout Users</legend>
+		<table class="entrants">
+			{{#each data.asousers }}
+			<tr>
+				<td>{{this}}</td>
+				<td><input type="submit" name="delaso[{{this}}]" value="&times;"></td>
+			</tr>
+			{{/each}}
+		</table>
+	</fieldset>
+</form>

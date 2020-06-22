@@ -113,6 +113,13 @@ function showNextAlert() {
     audioElems[0].currentTime = 0;
     audioElems[0].play();
   }
+
+  if (type === 'shoutout') {
+    const imgElement = alertElem.getElementsByTagName('img');
+    if (imgElement && imgElement.length) {
+      imgElement[0].src = params.image;
+    }
+  }
 }
 
 /**

@@ -29,6 +29,8 @@ class ChatBot {
     this.nextTimer = Infinity;
     this.chatLines = 0;
 
+    this.sessionUsers = new Set();
+
     this.createChatCommands();
   }
 
@@ -149,6 +151,23 @@ class ChatBot {
             resolve(args.join(' '));
           }
         });
+      },
+      shoutout: (user, args, resolve, reject) => {
+        if (!args[0]) {
+          reject();
+          return;
+        }
+
+        this.app.api.getUser(args[0])
+          .then(user => {
+            this.app.http.sendAlert('shoutout', {
+              user: user.display_name,
+              image: user.profile_image_url
+            });
+
+            resolve(args.length > 1 ? args.slice(1).join(' ') : null);
+          })
+          .catch(() => reject());
       }
     };
   }
@@ -329,6 +348,21 @@ class ChatBot {
 
     this.chatLines++;
 
+    if (!this.sessionUsers.has(userstate.username)) {
+      this.sessionUsers.add(userstate.username);
+
+      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ userstate.username ], (err, row) => {
+        const params = [ userstate.username ];
+        if (this.app.commands.shoutout) {
+          params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, userstate.username ], userstate).slice(2));
+        }
+
+        this.chatCommands.shoutout(null, params, res => {
+          this.bot.say(channel, res);
+        }, () => {});
+      });
+    }
+
     if (message[0] !== '!') {
       return;
     }
@@ -364,7 +398,38 @@ class ChatBot {
     }
 
     const params = message.trim().substring(1).split(/\s+/);
-    let parsed = command.command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
+    const parsed = this.parseCommand(command.command, params, userstate);
+    if (!parsed.length || this.chatCommands[parsed[0]] === undefined) {
+      return;
+    }
+
+    new Promise((resolve, reject) => {
+      this.chatCommands[parsed[0]](userstate.username, parsed.slice(1), resolve, reject);
+    })
+    .then(response => {
+      if (response) {
+        this.bot.say(channel, response);
+      }
+
+      command.timeouts.global = Date.now() + command.global_timeout * 1000;
+      command.timeouts.user[userstate.username] = Date.now() + command.user_timeout * 1000;
+    })
+    .catch(response => {
+      if (response) {
+        this.bot.say(channel, response);
+      }
+    });
+  }
+
+  /**
+   * Parse a chat command string.
+   *
+   * @param {string} command The command string
+   * @param {array} params The parameters
+   * @param {object} userstate The user state of the user triggering the command
+   */
+  parseCommand(command, params, userstate) {
+    let parsed = command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
       if (range) {
         if (end) {
           if (end >= 0) {
@@ -391,27 +456,7 @@ class ChatBot {
       }
     });
 
-    parsed = parsed.split(/\s+/);
-    if (!parsed.length || this.chatCommands[parsed[0]] === undefined) {
-      return;
-    }
-
-    new Promise((resolve, reject) => {
-      this.chatCommands[parsed[0]](userstate.username, parsed.slice(1), resolve, reject);
-    })
-    .then(response => {
-      if (response) {
-        this.bot.say(channel, response);
-      }
-
-      command.timeouts.global = Date.now() + command.global_timeout * 1000;
-      command.timeouts.user[userstate.username] = Date.now() + command.user_timeout * 1000;
-    })
-    .catch(response => {
-      if (response) {
-        this.bot.say(channel, response);
-      }
-    });
+    return parsed.split(/\s+/);
   }
 }
 

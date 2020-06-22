@@ -164,7 +164,16 @@ class HttpServer {
 
       switch (req.params.cb) {
         case 'stream':
-          app.islive = req.body.data && req.body.data.length > 0;
+          if (req.body.data && req.body.data.length > 0) {
+            if (!app.islive) {
+              app.chatbot.sessionUsers.clear();
+            }
+
+            app.islive = true;
+          } else {
+            app.islive = false;
+          }
+
           console.log(`channel is ${app.islive ? 'LIVE!' : 'offline'}`);
 
           break;
