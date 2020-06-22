@@ -93,7 +93,24 @@ function showNextAlert() {
     }
   }
 
-  alertElem.style.opacity = 1;
+  if (type === 'shoutout') {
+    const imgElement = alertElem.getElementsByTagName('img');
+    if (imgElement && imgElement.length) {
+      imgElement[0].src = params.image;
+      imgElement[0].onload = () => {
+        alertElem.style.opacity = 1;
+      }
+
+      setTimeout(() => {
+        imgElement[0].onload = null;
+      }, Math.max(500, duration - 1000));
+    } else {
+      alertElem.style.opacity = 1;
+    }
+  } else {
+    alertElem.style.opacity = 1;
+  }
+
   setTimeout(() => {
     alertElem.style.opacity = 0;
     setTimeout(() => {
@@ -112,13 +129,6 @@ function showNextAlert() {
   if (audioElems && audioElems.length) {
     audioElems[0].currentTime = 0;
     audioElems[0].play();
-  }
-
-  if (type === 'shoutout') {
-    const imgElement = alertElem.getElementsByTagName('img');
-    if (imgElement && imgElement.length) {
-      imgElement[0].src = params.image;
-    }
   }
 }
 
