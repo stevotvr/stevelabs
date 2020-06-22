@@ -418,7 +418,7 @@ class Backend {
           const stmt = this.db.prepare('DELETE FROM autoshoutout WHERE user = ?');
 
           for (const key in req.body.delaso) {
-            if (req.body.delete.hasOwnProperty(key)) {
+            if (req.body.delaso.hasOwnProperty(key)) {
               stmt.run(key);
             }
           }
