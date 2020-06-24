@@ -165,21 +165,25 @@ class Backend {
       },
       alerts: (resolve, req) => {
         if (typeof req.body.update === "object") {
+          let count = Object.keys(req.body.update).length;
+          if (!count) {
+            resolve();
+          }
+
           const stmt = this.db.prepare('UPDATE alerts SET message = ?, graphic = ?, sound = ?, duration = ? WHERE key = ?');
 
           for (const key in req.body.update) {
-            if (req.body.update.hasOwnProperty(key)) {
-              const row = req.body.update[key];
-              stmt.run(row.message, row.graphic, row.sound, Math.max(1, row.duration), key);
-            }
+            const row = req.body.update[key];
+            stmt.run(row.message, row.graphic, row.sound, Math.max(1, row.duration), key, () => {
+              if (!--count) {
+                this.app.db.loadAlerts();
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
         }
-
-        this.app.db.loadAlerts();
-
-        resolve();
       },
       commands: (resolve, req) => {
         const filter = input => {
@@ -194,13 +198,33 @@ class Backend {
           return params;
         };
 
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
+
+        if (Array.isArray(req.body.update)) {
+          count += req.body.update.length;
+        }
+
+        if (req.body.add) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM commands WHERE id = ?');
 
           for (const key in req.body.delete) {
-            if (req.body.delete.hasOwnProperty(key)) {
-              stmt.run(+key.substr(1));
-            }
+            stmt.run(+key.substr(1), () => {
+              if (!--count) {
+                this.app.db.loadCommands();
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -213,19 +237,25 @@ class Backend {
             const params = filter(row);
             params.push(+row.id);
 
-            stmt.run(params);
+            stmt.run(params, () => {
+              if (!--count) {
+                this.app.db.loadCommands();
+                resolve();
+              }
+            });
           });
 
           stmt.finalize();
         }
 
         if (req.body.add) {
-          this.db.run('INSERT OR IGNORE INTO commands (key, level, user_timeout, global_timeout, aliases, command) VALUES (?, ?, ?, ?, ?, ?)', filter(req.body));
+          this.db.run('INSERT OR IGNORE INTO commands (key, level, user_timeout, global_timeout, aliases, command) VALUES (?, ?, ?, ?, ?, ?)', filter(req.body), () => {
+            if (!--count) {
+              this.app.db.loadCommands();
+              resolve();
+            }
+          });
         }
-
-        this.app.db.loadCommands();
-
-        resolve();
       },
       timers: (resolve, req) => {
         this.app.settings.timer_timeout = req.body.timer_timeout;
@@ -242,18 +272,25 @@ class Backend {
             return;
           }
 
+          const messages = req.body.messages.split('\n');
+
+          let count = messages.length;
+          if (!count) {
+            resolve();
+          }
+
           const stmt = this.db.prepare('INSERT INTO timers (pos, message) VALUES (?, ?)');
 
-          const messages = req.body.messages.split('\n');
           for (let i = 0; i < messages.length; i++) {
-            stmt.run(i, messages[i]);
+            stmt.run(i, messages[i], () => {
+              if (!--count) {
+                this.app.db.loadTimers();
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
-
-          this.app.db.loadTimers();
-
-          resolve();
         });
       },
       sfx: (resolve, req) => {
@@ -265,13 +302,33 @@ class Backend {
           return params;
         };
 
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
+
+        if (Array.isArray(req.body.update)) {
+          count += req.body.update.length;
+        }
+
+        if (req.body.add) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM sfx WHERE id = ?');
 
           for (const key in req.body.delete) {
-            if (req.body.delete.hasOwnProperty(key)) {
-              stmt.run(+key.substr(1));
-            }
+            stmt.run(+key.substr(1), () => {
+              if (!--count) {
+                this.app.db.loadSfx();
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -284,19 +341,25 @@ class Backend {
             const params = filter(row);
             params.push(+row.id);
 
-            stmt.run(params);
+            stmt.run(params, () => {
+              if (!--count) {
+                this.app.db.loadSfx();
+                resolve();
+              }
+            });
           });
 
           stmt.finalize();
         }
 
         if (req.body.add) {
-          this.db.run('INSERT OR IGNORE INTO sfx (key, file) VALUES (?, ?)', filter(req.body));
+          this.db.run('INSERT OR IGNORE INTO sfx (key, file) VALUES (?, ?)', filter(req.body), () => {
+            if (!--count) {
+              this.app.db.loadSfx();
+              resolve();
+            }
+          });
         }
-
-        this.app.db.loadSfx();
-
-        resolve();
       },
       schedule: (resolve, req) => {
         const filter = input => {
@@ -310,13 +373,33 @@ class Backend {
           return params;
         };
 
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
+
+        if (Array.isArray(req.body.update)) {
+          count += req.body.update.length;
+        }
+
+        if (req.body.add) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM schedule WHERE id = ?');
 
           for (const key in req.body.delete) {
-            if (req.body.delete.hasOwnProperty(key)) {
-              stmt.run(+key.substr(1));
-            }
+            stmt.run(+key.substr(1), () => {
+              if (!--count) {
+                this.app.db.loadSchedule();
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -329,19 +412,25 @@ class Backend {
             const params = filter(row);
             params.push(+row.id);
 
-            stmt.run(params);
+            stmt.run(params, () => {
+              if (!--count) {
+                this.app.db.loadSchedule();
+                resolve();
+              }
+            });
           });
 
           stmt.finalize();
         }
 
         if (req.body.add) {
-          this.db.run('INSERT INTO schedule (day, hour, minute, length, game) VALUES (?, ?, ?, ?, ?)', filter(req.body));
+          this.db.run('INSERT INTO schedule (day, hour, minute, length, game) VALUES (?, ?, ?, ?, ?)', filter(req.body), () => {
+            if (!--count) {
+              this.app.db.loadSchedule();
+              resolve();
+            }
+          });
         }
-
-        this.app.db.loadSchedule();
-
-        resolve();
       },
       tips: (resolve, req) => {
         const filter = input => {
@@ -352,13 +441,32 @@ class Backend {
           return params;
         };
 
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
+
+        if (Array.isArray(req.body.update)) {
+          count += req.body.update.length;
+        }
+
+        if (req.body.add) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM tips WHERE id = ?');
 
           for (const key in req.body.delete) {
-            if (req.body.delete.hasOwnProperty(key)) {
-              stmt.run(+key.substr(1));
-            }
+            stmt.run(+key.substr(1), () => {
+              if (!--count) {
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -371,7 +479,11 @@ class Backend {
             const params = filter(row);
             params.push(+row.id);
 
-            stmt.run(params);
+            stmt.run(params, () => {
+              if (!--count) {
+                resolve();
+              }
+            });
           });
 
           stmt.finalize();
@@ -381,10 +493,12 @@ class Backend {
           const params = filter(req.body);
           params.push(Date.now());
 
-          this.db.run('INSERT INTO tips (user, message, date) VALUES (?, ?, ?)', params);
+          this.db.run('INSERT INTO tips (user, message, date) VALUES (?, ?, ?)', params, () => {
+            if (!--count) {
+              resolve();
+            }
+          });
         }
-
-        resolve();
       },
       raffle: (resolve, req) => {
         if (req.body.save) {
@@ -392,13 +506,28 @@ class Backend {
           this.app.saveSettings();
         }
 
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
+
+        if (req.body.add) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM raffle WHERE user = ?');
 
           for (const key in req.body.delete) {
-            if (req.body.delete.hasOwnProperty(key)) {
-              stmt.run(key);
-            }
+            stmt.run(key, () => {
+              if (!--count) {
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -408,19 +537,36 @@ class Backend {
           const params = [];
           params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
 
-          this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', params);
+          this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', params, () => {
+            if (!--count) {
+              resolve();
+            }
+          });
         }
-
-        resolve();
       },
       users: (resolve, req) => {
+        let count = 0;
+        if (typeof req.body.delaso === "object") {
+          count += Object.keys(req.body.delaso).length;
+        }
+
+        if (req.body.addaso) {
+          count++;
+        }
+
+        if (!count) {
+          resolve();
+        }
+
         if (typeof req.body.delaso === "object") {
           const stmt = this.db.prepare('DELETE FROM autoshoutout WHERE user = ?');
 
           for (const key in req.body.delaso) {
-            if (req.body.delaso.hasOwnProperty(key)) {
-              stmt.run(key);
-            }
+            stmt.run(key, () => {
+              if (!--count) {
+                resolve();
+              }
+            });
           }
 
           stmt.finalize();
@@ -430,10 +576,12 @@ class Backend {
           const params = [];
           params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
 
-          this.db.run('INSERT OR IGNORE INTO autoshoutout (user) VALUES (?)', params);
+          this.db.run('INSERT OR IGNORE INTO autoshoutout (user) VALUES (?)', params, () => {
+            if (!--count) {
+              resolve();
+            }
+          });
         }
-
-        resolve();
       }
     }
   }
