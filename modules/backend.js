@@ -129,10 +129,10 @@ class Backend {
           });
         });
       },
-      users: (resolve) => {
+      autoshoutout: (resolve) => {
         this.db.all('SELECT user FROM autoshoutout ORDER BY user ASC', (err, rows) => {
           resolve({
-            asousers: rows.map(v => v.user)
+            users: rows.map(v => v.user)
           });
         });
       }
@@ -544,13 +544,13 @@ class Backend {
           });
         }
       },
-      users: (resolve, req) => {
+      autoshoutout: (resolve, req) => {
         let count = 0;
-        if (typeof req.body.delaso === "object") {
-          count += Object.keys(req.body.delaso).length;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
         }
 
-        if (req.body.addaso) {
+        if (req.body.add) {
           count++;
         }
 
@@ -558,10 +558,10 @@ class Backend {
           resolve();
         }
 
-        if (typeof req.body.delaso === "object") {
+        if (typeof req.body.delete === "object") {
           const stmt = this.db.prepare('DELETE FROM autoshoutout WHERE user = ?');
 
-          for (const key in req.body.delaso) {
+          for (const key in req.body.delete) {
             stmt.run(key, () => {
               if (!--count) {
                 resolve();
@@ -572,7 +572,7 @@ class Backend {
           stmt.finalize();
         }
 
-        if (req.body.addaso) {
+        if (req.body.add) {
           const params = [];
           params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
 
