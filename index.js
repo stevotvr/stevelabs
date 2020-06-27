@@ -51,10 +51,10 @@ class App {
     this.sfx = {};
 
     // Module instances
+    this.db = new Database.Database(this);
     this.api = new TwitchApi.TwitchApi(this);
     this.chatbot = new ChatBot.ChatBot(this);
     this.http = new HttpServer.HttpServer(this);
-    this.db = new Database.Database(this);
     new Backend.Backend(this);
   }
 

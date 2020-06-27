@@ -98,7 +98,7 @@ class ChatBot {
           reject();
         }
 
-        this.db.db.run('INSERT OR IGNORE INTO raffle (user, tickets) VALUES (?, ?)', [ user, 1 ], err => {
+        this.db.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], err => {
           if (err) {
             console.warn('error saving raffle data');
             console.log(err);
