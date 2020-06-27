@@ -28,13 +28,13 @@ if (config.alerts || config.sfx) {
   });
 
   // New alert event
-  socket.on('alert', (type, params, duration) => {
-    addAlert(type, params, duration);
+  socket.on('alert', (type, params, duration, videoVolume, soundVolume) => {
+    addAlert(type, params, duration, videoVolume, soundVolume);
   });
 
   // New sfx event
-  socket.on('sfx', (key) => {
-    addSound(key);
+  socket.on('sfx', (key, volume) => {
+    addSound(key, volume);
   });
 }
 
@@ -51,19 +51,23 @@ const alertQueue = [];
  * @param {string} type The type of event
  * @param {object} params The event parameters
  * @param {int} duration The event duration in milliseconds
+ * @param {int} videoVolume The audio level for the video element (0-100)
+ * @param {int} soundVolume The audio level for the sound element (0-100)
  */
-function addAlert(type, params, duration) {
+function addAlert(type, params, duration, videoVolume, soundVolume) {
   alertQueue.push({
     type: type,
     params: params,
-    duration: duration
+    duration: duration,
+    videoVolume: videoVolume,
+    soundVolume: soundVolume
   });
+
+  console.log(type, params, duration, videoVolume, soundVolume);
 
   if (alertQueue.length === 1) {
     showNextAlert();
   }
-
-  console.log(type, params, duration);
 }
 
 /**
@@ -74,7 +78,7 @@ function showNextAlert() {
     return;
   }
 
-  const { type, params, duration } = alertQueue[0];
+  const { type, params, duration, videoVolume, soundVolume } = alertQueue[0];
 
   const alertElem = document.getElementById(type);
   if (!alertElem) {
@@ -122,12 +126,14 @@ function showNextAlert() {
   const videoElems = alertElem.getElementsByTagName('video');
   if (videoElems && videoElems.length) {
     videoElems[0].currentTime = 0;
+    videoElems[0].volume = videoVolume / 100;
     videoElems[0].play();
   }
 
   const audioElems = alertElem.getElementsByTagName('audio');
   if (audioElems && audioElems.length) {
     audioElems[0].currentTime = 0;
+    audioElems[0].volume = soundVolume / 100;
     audioElems[0].play();
   }
 }
@@ -315,15 +321,19 @@ const soundQueue = [];
  * Add a new sound to the queue.
  *
  * @param {string} key The sound effect key
+ * @param {int} volume The audio level (0-100)
  */
-function addSound(key) {
-  soundQueue.push(key);
+function addSound(key, volume) {
+  soundQueue.push({
+    key: key,
+    volume: volume
+  });
+
+  console.log('sfx', key, volume);
 
   if (soundQueue.length === 1) {
     playNextSound();
   }
-
-  console.log('sfx', key);
 }
 
 /**
@@ -334,12 +344,15 @@ function playNextSound() {
     return;
   }
 
-  const soundElem = document.getElementById(`sfx_${soundQueue[0]}`);
+  const { key, volume } = soundQueue[0];
+
+  const soundElem = document.getElementById(`sfx_${key}`);
   if (!soundElem) {
     return;
   }
 
   soundElem.currentTime = 0;
+  soundElem.volume = volume / 100;
   soundElem.play();
 
   soundElem.onended = (() => {

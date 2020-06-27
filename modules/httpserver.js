@@ -271,7 +271,7 @@ class HttpServer {
 
     const duration = Math.max(1, alert.duration) * 1000;
 
-    this.io.emit('alert', type, params, duration);
+    this.io.emit('alert', type, params, duration, alert.videoVolume, alert.soundVolume);
     console.log(`alert sent: ${type}`);
   }
 
@@ -281,7 +281,11 @@ class HttpServer {
    * @param {string} name The name of the sound effect to send
    */
   sendSfx(name) {
-    this.io.emit('sfx', name);
+    if (!this.app.sfx[name]) {
+      return;
+    }
+
+    this.io.emit('sfx', name, this.app.sfx[name].volume);
   }
 
   /**

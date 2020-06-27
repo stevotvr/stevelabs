@@ -67,7 +67,7 @@ class Database {
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, message TEXT, graphic TEXT, sound TEXT, duration INTEGER NOT NULL DEFAULT 5)')
+              db.run('CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, message TEXT, graphic TEXT, sound TEXT, duration INTEGER NOT NULL DEFAULT 5, videoVolume INTEGER NOT NULL DEFAULT 100, soundVolume INTEGER NOT NULL DEFAULT 100)')
                 .prepare('INSERT OR IGNORE INTO alerts (key, message) VALUES (?, ?)')
                 .run('cheer', '${user} cheered ${amount} bits!')
                 .run('follower', '${user} is now following!')
@@ -100,7 +100,7 @@ class Database {
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS sfx (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, file TEXT NOT NULL)');
+              db.run('CREATE TABLE IF NOT EXISTS sfx (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, file TEXT NOT NULL, volume INTEGER NOT NULL DEFAULT 100)');
               this.loadSfx();
             });
 
@@ -118,7 +118,7 @@ class Database {
    * Load the alerts from the database.
    */
   loadAlerts() {
-    this.db.all('SELECT key, message, graphic, sound, duration FROM alerts', (err, rows) => {
+    this.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts', (err, rows) => {
       if (err) {
         console.warn('error loading alerts from the database');
         console.log(err);
@@ -132,7 +132,9 @@ class Database {
           message: row.message,
           graphic: row.graphic,
           sound: row.sound,
-          duration: row.duration
+          duration: row.duration,
+          videoVolume: row.videoVolume,
+          soundVolume: row.soundVolume
         };
       });
 
@@ -230,7 +232,7 @@ class Database {
    * Load the sound effects from the database.
    */
   loadSfx() {
-    this.db.all('SELECT key, file FROM sfx', (err, rows) => {
+    this.db.all('SELECT key, file, volume FROM sfx', (err, rows) => {
       if (err) {
         console.warn('error loading sfx from the database');
         console.log(err);
@@ -241,7 +243,8 @@ class Database {
       this.app.sfx = {};
       rows.forEach(row => {
         this.app.sfx[row.key] = {
-          file: row.file
+          file: row.file,
+          volume: row.volume
         };
       });
     });

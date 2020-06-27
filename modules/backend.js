@@ -88,7 +88,7 @@ class Backend {
         resolve(this.app.settings);
       },
       alerts: (resolve) => {
-        this.db.all('SELECT key, message, graphic, sound, duration FROM alerts ORDER BY key ASC', (err, rows) => {
+        this.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts ORDER BY key ASC', (err, rows) => {
           resolve({ alerts: rows });
         });
       },
@@ -107,7 +107,7 @@ class Backend {
         });
       },
       sfx: (resolve) => {
-        this.db.all('SELECT id, key, file FROM sfx ORDER BY key ASC', (err, rows) => {
+        this.db.all('SELECT id, key, file, volume FROM sfx ORDER BY key ASC', (err, rows) => {
           resolve({ sfx: rows });
         });
       },
@@ -170,11 +170,13 @@ class Backend {
             resolve();
           }
 
-          const stmt = this.db.prepare('UPDATE alerts SET message = ?, graphic = ?, sound = ?, duration = ? WHERE key = ?');
+          const stmt = this.db.prepare('UPDATE alerts SET message = ?, graphic = ?, sound = ?, duration = ?, videoVolume = ?, soundVolume = ? WHERE key = ?');
 
           for (const key in req.body.update) {
             const row = req.body.update[key];
-            stmt.run(row.message, row.graphic, row.sound, Math.max(1, row.duration), key, () => {
+            const videoVolume = row.videoVolume ? Math.min(100, Math.max(0, row.videoVolume)) : 100;
+            const soundVolume = row.soundVolume ? Math.min(100, Math.max(0, row.soundVolume)) : 100;
+            stmt.run(row.message, row.graphic, row.sound, Math.max(1, row.duration), videoVolume, soundVolume, key, () => {
               if (!--count) {
                 this.app.db.loadAlerts();
                 resolve();
@@ -298,6 +300,7 @@ class Backend {
           const params = [];
           params.push(input.key.replace(/[^a-z\d]/ig, '').toLowerCase());
           params.push(input.file);
+          params.push(input.volume ? Math.min(100, Math.max(0, input.volume)) : 100);
 
           return params;
         };
@@ -335,7 +338,7 @@ class Backend {
         }
 
         if (Array.isArray(req.body.update)) {
-          const stmt = this.db.prepare('UPDATE OR IGNORE sfx SET key = ?, file = ? WHERE id = ?');
+          const stmt = this.db.prepare('UPDATE OR IGNORE sfx SET key = ?, file = ?, volume = ? WHERE id = ?');
 
           req.body.update.forEach(row => {
             const params = filter(row);
@@ -353,7 +356,7 @@ class Backend {
         }
 
         if (req.body.add) {
-          this.db.run('INSERT OR IGNORE INTO sfx (key, file) VALUES (?, ?)', filter(req.body), () => {
+          this.db.run('INSERT OR IGNORE INTO sfx (key, file, volume) VALUES (?, ?, ?)', filter(req.body), () => {
             if (!--count) {
               this.app.db.loadSfx();
               resolve();

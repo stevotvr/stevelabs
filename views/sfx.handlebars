@@ -6,11 +6,13 @@
 		<table>
 			<tr>
 				<th style="width: 15%;">Key</th>
-				<th>File</th>
+				<th style="width: 81%;">File</th>
+				<th style="width: 4%;">Volume</th>
 			</tr>
 			<tr>
 				<td><input type="text" name="key"></td>
 				<td><input type="text" name="file"></td>
+				<td><input type="number" name="volume" value="100" min="0" max="100"></td>
 			</tr>
 		</table>
 		<fieldset class="buttons">
@@ -24,7 +26,8 @@
 		<table>
 			<tr>
 				<th style="width: 15%;">Key</th>
-				<th>File</th>
+				<th style="width: 77%;">File</th>
+				<th style="width: 4%;">Volume</th>
 				<th style="width: 4%;">Delete</th>
 			</tr>
 			{{#each data.sfx}}
@@ -34,6 +37,7 @@
 					<input type="text" name="update[{{this.id}}][key]" value="{{this.key}}">
 				</td>
 				<td><input type="text" name="update[{{this.id}}][file]" value="{{this.file}}"></td>
+				<td><input type="number" name="update[{{this.id}}][volume]" value="{{this.volume}}" min="0" max="100"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
 			</tr>
 			{{/each}}
