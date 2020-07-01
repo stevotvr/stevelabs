@@ -215,6 +215,7 @@ class HttpServer {
         options.countdown = true;
         options.countdown_audio = app.settings.countdown_audio;
         options.config.schedule = app.schedule;
+        options.config.countdown_audio_volume = app.settings.countdown_audio_volume;
       }
 
       if (req.query.nextstream) {

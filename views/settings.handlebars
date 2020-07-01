@@ -18,6 +18,11 @@
 		<label>Instance Name: <input type="text" name="donordrive_instance" value="{{data.donordrive_instance}}"></label>
 		<label>Participant ID: <input type="number" name="donordrive_participant" value="{{data.donordrive_participant}}"></label>
 	</fieldset>
+	<fieldset>
+		<legend>Countdown Music</legend>
+		<label>Audio File: <input type="text" name="countdown_audio" value="{{data.countdown_audio}}"></label>
+		<label>Volume: <input type="number" name="countdown_audio_volume" value="{{data.countdown_audio_volume}}" min="0" max="100"></label>
+	</fieldset>
 	<fieldset class="buttons">
 		<input type="reset" value="Reset">
 		<input type="submit" value="Save">

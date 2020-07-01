@@ -159,6 +159,9 @@ class Backend {
         settings.donordrive_instance = req.body.donordrive_instance;
         settings.donordrive_participant = req.body.donordrive_participant;
 
+        settings.countdown_audio = req.body.countdown_audio;
+        settings.countdown_audio_volume = Math.max(0, Math.min(100, req.body.countdown_audio_volume));
+
         this.app.saveSettings();
 
         resolve();

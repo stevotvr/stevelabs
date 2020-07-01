@@ -50,6 +50,7 @@ class Database {
 
             if (!app.settings.secret) {
               app.settings.secret = crypto.randomBytes(64).toString('hex');
+              app.settings.countdown_audio_volume = 100;
               app.saveSettings();
             }
 

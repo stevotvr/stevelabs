@@ -220,7 +220,7 @@ if (countdownElem && config.schedule) {
     musicElem.onloadedmetadata = () => {
       const diff = (next.date.getTime() - Date.now()) / 1000;
       musicElem.currentTime = musicElem.duration - (diff % musicElem.duration);
-      musicElem.volume = .5;
+      musicElem.volume = config.countdown_audio_volume / 100;
       musicElem.play();
     };
   }
