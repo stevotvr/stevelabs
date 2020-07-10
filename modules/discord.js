@@ -64,9 +64,6 @@ class DiscordBot {
         return;
       }
 
-      this.app.settings.live_stream_time = Date.now();
-      this.app.settings.live_channel_name = channelName;
-
       const url = `https://www.twitch.tv/${channelName}`;
       const options = {
         embed: {
@@ -92,10 +89,35 @@ class DiscordBot {
         options.embed.description = `Playing ${game.name}`;
       }
 
+      if (this.app.settings.live_stream_discord_id) {
+        let message;
+        try {
+          message = await channel.messages.fetch(this.app.settings.live_stream_discord_id);
+        } catch (err) {
+          console.warn('failed to get Discord message');
+          console.log(err);
+          console.log('posting new message...');
+        }
+
+        if (message) {
+          try {
+            await message.edit(this.getMessage(this.app.settings.discord_live_message, channelName), options);
+            resolve();
+
+            return;
+          } catch (err) {
+            console.warn('failed to edit Discord message');
+            console.log(err);
+            console.log('posting new message...');
+          }
+        }
+      }
+
       channel.send(this.getMessage(this.app.settings.discord_live_message, channelName), options)
       .then(message => {
+        this.app.settings.live_stream_time = Date.now();
+        this.app.settings.live_channel_name = channelName;
         this.app.settings.live_stream_discord_id = message.id;
-
         this.app.saveSettings();
 
         resolve();
@@ -162,6 +184,10 @@ class DiscordBot {
         reject(err);
       });
     })
+    .then(() => {
+      this.app.settings.live_stream_discord_id = undefined;
+      this.app.saveSettings();
+    })
     .catch(err => console.log(err));
   }
 
@@ -173,7 +199,7 @@ class DiscordBot {
    */
   getMessage(format, name) {
     if (format) {
-      return format.replace('${name}', name);
+      return format.replace(/\$\{name\}/ig, name);
     }
   }
 }
