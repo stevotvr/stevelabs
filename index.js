@@ -18,6 +18,7 @@ const config = require('./config.json');
 const Backend = require('./modules/backend');
 const ChatBot = require('./modules/chatbot');
 const Database = require('./modules/database');
+const DiscordBot = require('./modules/discord');
 const HttpServer = require('./modules/httpserver');
 const TwitchApi = require('./modules/twitchapi');
 
@@ -54,6 +55,7 @@ class App {
     this.db = new Database.Database(this);
     this.api = new TwitchApi.TwitchApi(this);
     this.chatbot = new ChatBot.ChatBot(this);
+    this.discord = new DiscordBot.DiscordBot(this);
     this.http = new HttpServer.HttpServer(this);
     new Backend.Backend(this);
   }

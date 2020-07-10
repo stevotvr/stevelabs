@@ -45,13 +45,17 @@ class Database {
             }
 
             rows.forEach(row => {
-              app.settings[row.key] = isNaN(row.value) ? row.value : +row.value;
+              app.settings[row.key] = row.value;
             });
 
             if (!app.settings.secret) {
               app.settings.secret = crypto.randomBytes(64).toString('hex');
               app.settings.countdown_audio_volume = 100;
               app.saveSettings();
+            }
+
+            if (app.settings.discord_bot_token) {
+              app.discord.login(app.settings.discord_bot_token);
             }
 
             app.http.setupHttpRoutes();

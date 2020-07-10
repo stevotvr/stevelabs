@@ -170,8 +170,10 @@ class HttpServer {
             }
 
             app.islive = true;
+            app.discord.postLive(req.body.data[0].channel_name, req.body.data[0].title, req.body.data[0].game_id);
           } else {
             app.islive = false;
+            app.discord.postEnd();
           }
 
           console.log(`channel is ${app.islive ? 'LIVE!' : 'offline'}`);

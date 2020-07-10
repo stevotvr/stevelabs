@@ -156,6 +156,16 @@ class Backend {
           this.app.chatbot.setupTwitchClients();
         }
 
+        if (req.body.discord_bot_token !== settings.discord_bot_token) {
+          settings.discord_bot_token = req.body.discord_bot_token;
+
+          this.app.discord.login(settings.discord_bot_token);
+        }
+
+        settings.discord_channel = req.body.discord_channel;
+        settings.discord_live_message = req.body.discord_live_message;
+        settings.discord_ended_message = req.body.discord_ended_message;
+
         settings.donordrive_instance = req.body.donordrive_instance;
         settings.donordrive_participant = req.body.donordrive_participant;
 

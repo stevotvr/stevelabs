@@ -269,6 +269,30 @@ class TwitchApi {
         });
     });
   }
+
+  /**
+   * Get game data from Twitch.
+   *
+   * @param {int} gameId The game ID
+   */
+  getGame(gameId) {
+    return new Promise((resolve, reject) => {
+      this.request(`https://api.twitch.tv/helix/games?id=${gameId}`, 'GET')
+        .then(res => res.json())
+        .then(game => {
+          if (game.data && game.data[0]) {
+            resolve(game.data[0]);
+          } else {
+            reject();
+          }
+        })
+        .catch(err => {
+          console.warn('api request for game data failed');
+          console.log(err);
+          reject();
+        });
+    })
+  }
 }
 
 module.exports.TwitchApi = TwitchApi;
