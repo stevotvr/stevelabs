@@ -44,11 +44,10 @@ class DiscordBot {
   /**
    * Post the live notification to the Discord channel.
    *
-   * @param {string} channelName The name of the channel
    * @param {string} title The stream title
    * @param {int} gameId The game ID
    */
-  postLive(channelName, title, gameId) {
+  postLive(title, gameId) {
     if (!this.ready || !this.app.settings.discord_channel) {
       return;
     }
@@ -64,29 +63,40 @@ class DiscordBot {
         return;
       }
 
-      const url = `https://www.twitch.tv/${channelName}`;
+      let user;
+      try {
+        user = await this.app.api.getUser(this.app.settings.twitch_channel_username);
+
+        this.app.settings.live_stream_image = user.profile_image_url;
+      } catch (err) {
+        console.warn('failed to get Twitch user');
+        reject(err);
+
+        return;
+      }
+
+      const url = `https://www.twitch.tv/${this.app.settings.twitch_channel_username}`;
       const options = {
         embed: {
           author: {
-            name: channelName,
+            name: user.display_name,
             url: url
           },
           title: title,
-          url: url
+          url: url,
+          thumbnail: {
+            url: this.app.settings.live_stream_image
+          }
         }
       };
 
-      const user = await this.app.api.getUser(channelName);
-      if (user) {
-        this.app.settings.live_stream_image = user.profile_image_url;
-        options.embed.thumbnail = {
-          url: this.app.settings.live_stream_image
-        };
-      }
-
-      let game = await this.app.api.getGame(gameId);
-      if (game) {
+      let game;
+      try {
+        game = await this.app.api.getGame(gameId);
         options.embed.description = `Playing ${game.name}`;
+      } catch (err) {
+        console.warn('failed to get game information');
+        console.log(err);
       }
 
       if (this.app.settings.live_stream_discord_id) {
@@ -101,7 +111,7 @@ class DiscordBot {
 
         if (message) {
           try {
-            await message.edit(this.getMessage(this.app.settings.discord_live_message, channelName), options);
+            await message.edit(this.getMessage(this.app.settings.discord_live_message, user.display_name), options);
             resolve();
 
             return;
@@ -113,10 +123,10 @@ class DiscordBot {
         }
       }
 
-      channel.send(this.getMessage(this.app.settings.discord_live_message, channelName), options)
+      channel.send(this.getMessage(this.app.settings.discord_live_message, user.display_name), options)
       .then(message => {
         this.app.settings.live_stream_time = Date.now();
-        this.app.settings.live_channel_name = channelName;
+        this.app.settings.live_channel_name = user.display_name;
         this.app.settings.live_stream_discord_id = message.id;
         this.app.saveSettings();
 
