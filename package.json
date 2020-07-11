@@ -21,6 +21,7 @@
     "node-fetch": "^2.6.0",
     "socket.io": "^2.3.0",
     "sqlite3": "^4.2.0",
-    "tmi.js": "^1.5.0"
+    "tmi.js": "^1.5.0",
+    "twitter-lite": "^0.14.0"
   }
 }

@@ -167,6 +167,7 @@ class HttpServer {
           if (req.body.data && req.body.data.length > 0) {
             if (!app.islive) {
               app.chatbot.sessionUsers.clear();
+              app.twitter.setLive(true);
             }
 
             app.islive = true;
@@ -174,6 +175,7 @@ class HttpServer {
           } else {
             app.islive = false;
             app.discord.postEnd();
+            app.twitter.setLive(false);
           }
 
           console.log(`channel is ${app.islive ? 'LIVE!' : 'offline'}`);

@@ -58,6 +58,8 @@ class Database {
               app.discord.login(app.settings.discord_bot_token);
             }
 
+            app.twitter.login();
+
             app.http.setupHttpRoutes();
             app.chatbot.setupTwitchClients();
 

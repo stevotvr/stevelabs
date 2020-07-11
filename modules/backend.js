@@ -166,6 +166,12 @@ class Backend {
         settings.discord_live_message = req.body.discord_live_message;
         settings.discord_ended_message = req.body.discord_ended_message;
 
+        settings.twitter_consumer_key = req.body.twitter_consumer_key;
+        settings.twitter_consumer_secret = req.body.twitter_consumer_secret;
+        settings.twitter_access_token_key = req.body.twitter_access_token_key;
+        settings.twitter_access_token_secret = req.body.twitter_access_token_secret;
+        this.app.twitter.login();
+
         settings.donordrive_instance = req.body.donordrive_instance;
         settings.donordrive_participant = req.body.donordrive_participant;
 

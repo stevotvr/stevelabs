@@ -21,6 +21,7 @@ const Database = require('./modules/database');
 const DiscordBot = require('./modules/discord');
 const HttpServer = require('./modules/httpserver');
 const TwitchApi = require('./modules/twitchapi');
+const TwitterBot = require('./modules/twitter');
 
 /**
  * The main application class.
@@ -56,6 +57,7 @@ class App {
     this.api = new TwitchApi.TwitchApi(this);
     this.chatbot = new ChatBot.ChatBot(this);
     this.discord = new DiscordBot.DiscordBot(this);
+    this.twitter = new TwitterBot.TwitterBot(this);
     this.http = new HttpServer.HttpServer(this);
     new Backend.Backend(this);
   }
