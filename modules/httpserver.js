@@ -211,7 +211,9 @@ class HttpServer {
         options.config.donordrive = {
           instance: app.settings.donordrive_instance,
           participant: app.settings.donordrive_participant,
-          alertduration: app.alerts.charitydonation.duration * 1000
+          duration: app.alerts.charitydonation.duration * 1000,
+          video_volume: app.alerts.charitydonation.videoVolume,
+          sound_volume: app.alerts.charitydonation.soundVolume
         };
       }
 

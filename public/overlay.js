@@ -171,7 +171,7 @@ function queryDonorDrive() {
           addAlert('charitydonation', {
             user: json[i].displayName,
             amount: `\$${json[i].amount}`
-          }, config.donordrive.alertduration);
+          }, config.donordrive.duration, config.donordrive.video_volume, config.donordrive.sound_volume);
         }
       }
 
