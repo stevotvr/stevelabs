@@ -126,7 +126,7 @@ class ChatBot {
             this.app.settings.raffle_active = false;
             this.app.saveSettings();
 
-            this.app.http.sendAlert('rafflewinner', row.user);
+            this.app.http.sendAlert('rafflewinner', { user: row.user });
             resolve(row ? args.join(' ').replace('${winner}', row.user) : '');
           }
         });
