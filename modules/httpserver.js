@@ -158,7 +158,7 @@ class HttpServer {
       }
 
       if (!req.headers['twitch-notification-id'] || http.whProcessed.has(req.headers['twitch-notification-id'])) {
-        req.end();
+        res.end();
         return;
       }
 
