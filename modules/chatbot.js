@@ -348,22 +348,22 @@ class ChatBot {
 
     this.chatLines++;
 
-    if (!this.sessionUsers.has(userstate.username)) {
+    if (!this.sessionUsers.has(userstate.username) && userstate.badges.broadcaster === undefined) {
       this.sessionUsers.add(userstate.username);
 
       this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ userstate.username ], (err, row) => {
-        if (!row) {
-          return;
-        }
+        if (row || userstate.badges.subscriber !== undefined || userstate.badges.vip !== undefined) {
+          const params = [ userstate.username ];
+          if (row && this.app.commands.shoutout) {
+            params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, userstate.username ], userstate).slice(2));
+          }
 
-        const params = [ userstate.username ];
-        if (this.app.commands.shoutout) {
-          params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, userstate.username ], userstate).slice(2));
+          this.chatCommands.shoutout(null, params, res => {
+            if (res) {
+              this.bot.say(channel, res);
+            }
+          }, () => {});
         }
-
-        this.chatCommands.shoutout(null, params, res => {
-          this.bot.say(channel, res);
-        }, () => {});
       });
     }
 
