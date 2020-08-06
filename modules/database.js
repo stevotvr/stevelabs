@@ -1,5 +1,5 @@
 /**
- * This file is part of StoveLabs.
+ * This file is part of Stevelabs.
  *
  * @copyright (c) 2020, Steve Guidetti, https://github.com/stevotvr
  * @license MIT
@@ -26,7 +26,7 @@ class Database {
     this.app = app;
 
     // Create the database connection
-    const db = new sqlite3.Database('./data/stovelabs.db', err => {
+    const db = new sqlite3.Database('./data/stevelabs.db', err => {
       if (err) {
         console.warn('database connection failed');
         console.log(err);

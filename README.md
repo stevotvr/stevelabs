@@ -1,4 +1,4 @@
-# StoveLabs
+# SteveLabs
 
 This is a custom Twitch bot for my channel.
 
@@ -28,4 +28,4 @@ Main configuration.
     
 ## License
 
-The source code is released under the terms of the [MIT License](https://github.com/stevotvr/twitchbot/blob/master/LICENSE.txt).
+The source code is released under the terms of the [MIT License](https://github.com/stevotvr/stevelabs/blob/master/LICENSE.txt).

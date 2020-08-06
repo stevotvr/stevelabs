@@ -1,18 +1,18 @@
 {
-  "name": "stovelabs",
+  "name": "stevelabs",
   "version": "1.0.0",
   "description": "Custom bot for my Twitch channel",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stevotvr/twitchbot.git"
+    "url": "git+https://github.com/stevotvr/stevelabs.git"
   },
   "author": "Steve Guidetti",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/stevotvr/twitchbot/issues"
+    "url": "https://github.com/stevotvr/stevelabs/issues"
   },
-  "homepage": "https://github.com/stevotvr/twitchbot",
+  "homepage": "https://github.com/stevotvr/stevelabs",
   "dependencies": {
     "cookie-parser": "^1.4.5",
     "discord.js": "^12.2.0",

@@ -1,5 +1,5 @@
 /**
- * This file is part of StoveLabs.
+ * This file is part of Stevelabs.
  *
  * @copyright (c) 2020, Steve Guidetti, https://github.com/stevotvr
  * @license MIT
