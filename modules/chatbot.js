@@ -9,6 +9,7 @@
 
 'use strict'
 
+const nlp = require('./nlp');
 const tmi = require('tmi.js');
 
 /**
@@ -24,6 +25,7 @@ class ChatBot {
   constructor(app) {
     this.app = app;
     this.db = app.db;
+    this.nlp = new nlp.Nlp(app);
 
     this.timerPos = 0;
     this.nextTimer = Infinity;
@@ -367,11 +369,24 @@ class ChatBot {
       });
     }
 
-    if (message[0] !== '!') {
+    message = message.trim();
+
+    const first = message.substring(message[0] === '@' ? 1 : 0, message.indexOf(' '));
+    const tobot = first.toLowerCase() === this.app.settings.twitch_bot_username.toLowerCase();
+    if (tobot && message.indexOf(' ') !== -1) {
+      this.nlp.process(message.substring(message.indexOf(' ') + 1))
+        .then(answer => this.bot.say(channel, `${userstate['display-name']}, ${answer}`));
+    }
+
+    if (message[0] !== '!' && !tobot) {
       return;
     }
 
     console.log(`${userstate.username}: ${message}`);
+
+    if (message[0] !== '!') {
+      return;
+    }
 
     let command = false;
     for (const key in this.app.commands) {
