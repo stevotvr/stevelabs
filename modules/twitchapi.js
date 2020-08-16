@@ -283,7 +283,7 @@ class TwitchApi {
           if (game.data && game.data[0]) {
             resolve(game.data[0]);
           } else {
-            reject();
+            reject(`game ${gameId} not found`);
           }
         })
         .catch(err => {
@@ -291,7 +291,31 @@ class TwitchApi {
           console.log(err);
           reject();
         });
-    })
+    });
+  }
+
+  /**
+   * Get stream data from Twitch.
+   *
+   * @param {string} channel The name of the channel
+   */
+  getStreamInfo(channel) {
+    return new Promise((resolve, reject) => {
+      this.request(`https://api.twitch.tv/helix/streams?user_login=${channel}`, 'GET')
+        .then(res => res.json())
+        .then(stream => {
+          if (stream.data && stream.data[0]) {
+            resolve(stream.data[0]);
+          } else {
+            reject(`channel ${channel} is offline`);
+          }
+        })
+        .catch(err => {
+          console.warn('api request for stream data failed');
+          console.log(err);
+          reject();
+        });
+    });
   }
 }
 

@@ -209,11 +209,11 @@ class Backend {
       commands: (resolve, req) => {
         const filter = input => {
           const params = [];
-          params.push(input.key.replace(/[^a-z\d]/ig, '').toLowerCase());
+          params.push(input.key.replace(/[^a-z\d ]/ig, '').toLowerCase());
           params.push(Math.max(0, input.level));
           params.push(Math.max(0, input.user_timeout));
           params.push(Math.max(0, input.global_timeout));
-          params.push(input.aliases.replace(/[^a-z\d,]/ig, '').toLowerCase());
+          params.push(input.aliases.replace(/[^a-z\d ,]/ig, '').toLowerCase());
           params.push(input.command);
 
           return params;

@@ -170,6 +170,108 @@ class ChatBot {
             resolve(args.length > 1 ? args.slice(1).join(' ') : null);
           })
           .catch(() => reject());
+      },
+      quote: (user, args, resolve, reject) => {
+        const cb = (err, row) => {
+          if (err) {
+            console.warn('error getting quote data');
+            console.log(err);
+
+            reject();
+
+            return;
+          }
+
+          if (row) {
+            const date = new Date(row.date);
+            const dateString = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()}`;
+            const endTag = row.game ? `[${row.game}] [${dateString}]` : `[${dateString}]`;
+
+            const message = row.message[0] === '"' ? row.message : `"${row.message}"`;
+            resolve(`Quote #${row.id}: ${message} ${endTag}`);
+          } else {
+            resolve(`Sorry, ${user}, we're all out of quotes!`);
+          }
+        };
+
+        if (args && args[0].match(/\d+/)) {
+          this.db.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
+        } else {
+          this.db.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
+        }
+      },
+      addquote: async (user, args, resolve, reject) => {
+        const message = args.join(' ').trim();
+
+        if (!this.app.islive) {
+          reject(`${user} You can only add a quote when the channel is live`);
+        } else if (message.length < 2) {
+          reject(`${user} Your quote message is too short (2 characters min, yours was ${message.length})`);
+        } else {
+          let game = '';
+          try {
+            const streamInfo = await this.app.api.getStreamInfo(this.app.settings.twitch_channel_username);
+            if (streamInfo) {
+              const gameInfo = await this.app.api.getGame(streamInfo.game_id);
+              if (gameInfo) {
+                game = gameInfo.name;
+              }
+            }
+          } catch (err) {
+            console.warn('quote: error getting game info');
+            console.log(err);
+          }
+
+          this.db.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
+            if (err) {
+              console.warn('error saving quote data');
+              console.log(err);
+
+              reject();
+
+              return;
+            }
+
+            resolve(`Quote #${this.lastID} has been added!`);
+          });
+        }
+      },
+      editquote: (user, args, resolve, reject) => {
+        if (args.length < 2 || !args[0].match(/\d+/)) {
+          reject();
+        } else {
+          const message = args.slice(1).join(' ').trim();
+          this.db.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], err => {
+            if (err) {
+              console.warn('error saving quote data');
+              console.log(err);
+
+              reject();
+
+              return;
+            }
+
+            resolve(`Quote #${args[0]} has been edited!`);
+          });
+        }
+      },
+      deletequote: (user, args, resolve, reject) => {
+        if (args.length < 1 || !args[0].match(/\d+/)) {
+          reject();
+        } else {
+          this.db.db.run('DELETE FROM quotes WHERE id = ?', args[0], err => {
+            if (err) {
+              console.warn('error deleting quote data');
+              console.log(err);
+
+              reject();
+
+              return;
+            }
+
+            resolve(`Quote #${args[0]} has been deleted!`);
+          });
+        }
       }
     };
   }
@@ -389,9 +491,11 @@ class ChatBot {
     }
 
     let command = false;
-    for (const key in this.app.commands) {
+    for (let i = 0; i < this.app.commands._keys.length; i++) {
+      const key = this.app.commands._keys[i];
       if (key === message.substr(1, key.length)) {
         command = this.app.commands[key];
+        break
       }
     }
 
@@ -416,7 +520,8 @@ class ChatBot {
       return;
     }
 
-    const params = message.trim().substring(1).split(/\s+/);
+    const params = message.trim().substring(command.trigger.length + 2).split(/\s+/);
+    params.unshift(command.trigger);
     const parsed = this.parseCommand(command.command, params, userstate);
     if (!parsed.length || this.chatCommands[parsed[0]] === undefined) {
       return;

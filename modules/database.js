@@ -114,6 +114,7 @@ class Database {
             db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS raffle (user TEXT PRIMARY KEY, tickets INTEGER NOT NULL DEFAULT 1)');
             db.run('CREATE TABLE IF NOT EXISTS autoshoutout (user TEXT PRIMARY KEY)');
+            db.run('CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL, game TEXT NOT NULL, message TEXT NOT NULL)');
           });
         });
       });
@@ -178,14 +179,18 @@ class Database {
       }
 
       this.app.commands = {};
+      const keys = [];
       rows.forEach(row => {
         this.app.commands[row.key] = {
+          trigger: row.key,
           level: row.level,
           user_timeout: row.user_timeout,
           global_timeout: row.global_timeout,
           aliases: row.aliases ? row.aliases.split(',') : [],
           command: row.command
         };
+
+        keys.push(row.key);
       });
 
       for (const k in this.app.commands) {
@@ -198,6 +203,9 @@ class Database {
           user: {}
         };
       }
+
+      keys.sort((a, b) => b.length - a.length);
+      this.app.commands._keys = keys;
     });
   }
 
