@@ -56,7 +56,7 @@ class ChatBot {
         resolve();
       },
       tip: (user, args, resolve, reject) => {
-        this.db.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', (err, row) => {
+        const cb = (err, row) => {
           if (err) {
             console.warn('error getting tip data');
             console.log(err);
@@ -71,7 +71,14 @@ class ChatBot {
           } else {
             resolve(`Sorry, ${user}, we're all out of tips!`);
           }
-        });
+        }
+
+        if (args && args[0].match(/\d+/)) {
+          this.db.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
+        } else {
+          this.db.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cd);
+        }
+
       },
       addtip: (user, args, resolve, reject) => {
         const message = args.join(' ');
@@ -92,6 +99,43 @@ class ChatBot {
             }
 
             resolve(`Tip #${this.lastID} has been added to the list`);
+          });
+        }
+      },
+      edittip: (user, args, resolve, reject) => {
+        if (args.length < 2 || !args[0].match(/\d+/)) {
+          reject();
+        } else {
+          const message = args.slice(1).join(' ').trim();
+          this.db.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], err => {
+            if (err) {
+              console.warn('error saving tip data');
+              console.log(err);
+
+              reject();
+
+              return;
+            }
+
+            resolve(`Tip #${args[0]} has been edited!`);
+          });
+        }
+      },
+      deletetip: (user, args, resolve, reject) => {
+        if (args.length < 1 || !args[0].match(/\d+/)) {
+          reject();
+        } else {
+          this.db.db.run('DELETE FROM tips WHERE id = ?', args[0], err => {
+            if (err) {
+              console.warn('error deleting tip data');
+              console.log(err);
+
+              reject();
+
+              return;
+            }
+
+            resolve(`Tip #${args[0]} has been deleted!`);
           });
         }
       },
