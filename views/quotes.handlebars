@@ -1,0 +1,54 @@
+<h2>Quotes</h2>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<fieldset>
+		<legend>Add Quote</legend>
+		<table>
+			<tr>
+				<th style="width: 15%;">User</th>
+				<th style="width: 15%;">Game</th>
+				<th style="width: 70%;">Message</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="user"></td>
+				<td><input type="text" name="game"></td>
+				<td><input type="text" name="message"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Quotes</legend>
+		<table>
+			<tr>
+				<th style="width: 4%;">ID</th>
+				<th style="width: 15%;">Time</th>
+				<th style="width: 15%;">User</th>
+				<th style="width: 15%;">Game</th>
+				<th style="width: 47%;">Message</th>
+				<th style="width: 4%;">Delete</th>
+			</tr>
+			{{#each data.quotes}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					{{this.id}}
+				</td>
+				<td>{{this.date}}</td>
+				<td><input type="text" name="update[{{this.id}}][user]" value="{{this.user}}"></td>
+				<td><input type="text" name="update[{{this.id}}][game]" value="{{this.game}}"></td>
+				<td><input type="text" name="update[{{this.id}}][message]" value="{{this.message}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>
