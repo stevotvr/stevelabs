@@ -54,6 +54,9 @@ class Database {
               app.saveSettings();
             }
 
+            app.api.login(app.settings.oauth_access_token, app.settings.oauth_refresh_token);
+            app.api.login(app.settings.bot_access_token, app.settings.bot_refresh_token);
+
             if (app.settings.discord_bot_token) {
               app.discord.login(app.settings.discord_bot_token);
             }
@@ -61,17 +64,6 @@ class Database {
             app.twitter.login();
 
             app.http.setupHttpRoutes();
-            app.chatbot.setupTwitchClients();
-
-            app.api.checkToken(app.settings.oauth_access_token, app.settings.oauth_refresh_token)
-            .then(valid => {
-              if (valid) {
-                app.api.setWebhooks();
-                app.api.checkStream();
-              } else {
-                console.log('invalid oauth2 tokens');
-              }
-            });
 
             db.serialize(() => {
               db.run('CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, message TEXT, graphic TEXT, sound TEXT, duration INTEGER NOT NULL DEFAULT 5, videoVolume INTEGER NOT NULL DEFAULT 100, soundVolume INTEGER NOT NULL DEFAULT 100)')

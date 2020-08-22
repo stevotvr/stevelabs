@@ -44,161 +44,141 @@ class DiscordBot {
   /**
    * Post the live notification to the Discord channel.
    *
-   * @param {string} title The stream title
-   * @param {int} gameId The game ID
+   * @param {HelixStream} stream The stream data
    */
-  postLive(title, gameId) {
+  async postLive(stream) {
     if (!this.ready || !this.app.settings.discord_channel) {
       return;
     }
 
-    new Promise(async (resolve, reject) => {
-      let channel;
-      try {
-        channel = await this.bot.channels.fetch(this.app.settings.discord_channel);
-      } catch (err) {
-        console.warn('failed to get Discord channel');
-        reject(err);
-
-        return;
-      }
-
-      let user;
-      try {
-        user = await this.app.api.getUser(this.app.settings.twitch_channel_username);
-
-        this.app.settings.live_stream_image = user.profile_image_url;
-      } catch (err) {
-        console.warn('failed to get Twitch user');
-        reject(err);
-
-        return;
-      }
-
-      const url = `https://www.twitch.tv/${this.app.settings.twitch_channel_username}`;
-      const options = {
-        embed: {
-          author: {
-            name: user.display_name,
-            url: url
-          },
-          title: title,
-          url: url,
-          thumbnail: {
-            url: this.app.settings.live_stream_image
-          }
-        }
-      };
-
-      let game;
-      try {
-        game = await this.app.api.getGame(gameId);
-        options.embed.description = `Playing ${game.name}`;
-      } catch (err) {
-        console.warn('failed to get game information');
-        console.log(err);
-      }
-
-      if (this.app.settings.live_stream_discord_id) {
-        let message;
-        try {
-          message = await channel.messages.fetch(this.app.settings.live_stream_discord_id);
-        } catch (err) {
-          console.warn('failed to get Discord message');
-          console.log(err);
-          console.log('posting new message...');
-        }
-
-        if (message) {
-          try {
-            await message.edit(this.getMessage(this.app.settings.discord_live_message, user.display_name), options);
-            resolve();
-
-            return;
-          } catch (err) {
-            console.warn('failed to edit Discord message');
-            console.log(err);
-            console.log('posting new message...');
-          }
-        }
-      }
-
-      channel.send(this.getMessage(this.app.settings.discord_live_message, user.display_name), options)
-      .then(message => {
-        this.app.settings.live_stream_time = Date.now();
-        this.app.settings.live_channel_name = user.display_name;
-        this.app.settings.live_stream_discord_id = message.id;
-        this.app.saveSettings();
-
-        resolve();
-      })
-      .catch(err => {
-        console.warn('failed to post to Discord');
-        reject(err);
-      });
-    })
-    .catch(err => console.log(err));
-  }
-
-  /**
-   * Post the stream end message to the Discord channel.
-   */
-  postEnd() {
-    if (!this.ready || !this.app.settings.discord_channel || !this.app.settings.live_stream_discord_id) {
+    let channel;
+    try {
+      channel = await this.bot.channels.fetch(this.app.settings.discord_channel);
+    } catch (err) {
+      console.warn('failed to get Discord channel');
+      console.log(err);
       return;
     }
 
-    new Promise(async (resolve, reject) => {
-      let channel;
-      try {
-        channel = await this.bot.channels.fetch(this.app.settings.discord_channel);
-      } catch (err) {
-        console.warn('failed to get Discord channel');
-        reject(err);
+    let user, game;
+    try {
+      user = await stream.getUser();
+      this.app.settings.live_stream_image = user.profilePictureUrl;
+      game = await stream.getGame();
+    } catch (err) {
+      console.warn('failed to query Twitch for stream info');
+      console.log(err);
+      return;
+    }
 
-        return;
+    const url = `https://www.twitch.tv/${this.app.settings.twitch_channel_username}`;
+    const options = {
+      embed: {
+        author: {
+          name: user.displayName,
+          url: url
+        },
+        title: stream.title,
+        url: url,
+        thumbnail: {
+          url: this.app.settings.live_stream_image
+        }
       }
+    };
 
+    options.embed.description = `Playing ${game.name}`;
+
+    if (this.app.settings.live_stream_discord_id) {
       let message;
       try {
         message = await channel.messages.fetch(this.app.settings.live_stream_discord_id);
       } catch (err) {
         console.warn('failed to get Discord message');
-        reject(err);
-
-        return;
+        console.log(err);
+        console.log('posting new message...');
       }
 
-      const url = `https://www.twitch.tv/${this.app.settings.live_channel_name}`;
-      const duration = Date.now() - this.app.settings.live_stream_time;
-      const options = {
-        embed: {
-          author: {
-            name: this.app.settings.live_channel_name,
-            url: url
-          },
-          description: `**Duration** ${Math.floor(duration / 3600000)} hours, ${Math.floor(duration / 60000 % 60)} minutes, ${Math.floor(duration / 1000 % 60)} seconds`
+      if (message) {
+        try {
+          await message.edit(this.getMessage(this.app.settings.discord_live_message, user.displayName), options);
+          resolve();
+
+          return;
+        } catch (err) {
+          console.warn('failed to edit Discord message');
+          console.log(err);
+          console.log('posting new message...');
         }
-      };
-
-      if (this.app.settings.live_stream_image) {
-        options.embed.thumbnail = {
-          url: this.app.settings.live_stream_image
-        };
       }
+    }
 
-      message.edit(this.getMessage(this.app.settings.discord_ended_message, this.app.settings.live_channel_name), options)
-      .then(() => resolve())
-      .catch(err => {
-        console.warn('failed to edit Discord message');
-        reject(err);
-      });
-    })
-    .then(() => {
-      this.app.settings.live_stream_discord_id = undefined;
+    try {
+      const discordMessage = await channel.send(this.getMessage(this.app.settings.discord_live_message, user.displayName), options);
+      this.app.settings.live_stream_time = Date.now();
+      this.app.settings.live_channel_name = user.displayName;
+      this.app.settings.live_stream_discord_id = discordMessage.id;
       this.app.saveSettings();
-    })
-    .catch(err => console.log(err));
+    } catch (err) {
+      console.warn('failed to post to Discord');
+      console.log(err);
+    }
+  }
+
+  /**
+   * Post the stream end message to the Discord channel.
+   */
+  async postEnd() {
+    if (!this.ready || !this.app.settings.discord_channel || !this.app.settings.live_stream_discord_id) {
+      return;
+    }
+
+    let channel;
+    try {
+      channel = await this.bot.channels.fetch(this.app.settings.discord_channel);
+    } catch (err) {
+      console.warn('failed to get Discord channel');
+      console.log(err);
+
+      return;
+    }
+
+    let message;
+    try {
+      message = await channel.messages.fetch(this.app.settings.live_stream_discord_id);
+    } catch (err) {
+      console.warn('failed to get Discord message');
+      console.log(err);
+
+      return;
+    }
+
+    const url = `https://www.twitch.tv/${this.app.settings.live_channel_name}`;
+    const duration = Date.now() - this.app.settings.live_stream_time;
+    const options = {
+      embed: {
+        author: {
+          name: this.app.settings.live_channel_name,
+          url: url
+        },
+        description: `**Duration** ${Math.floor(duration / 3600000)} hours, ${Math.floor(duration / 60000 % 60)} minutes, ${Math.floor(duration / 1000 % 60)} seconds`
+      }
+    };
+
+    if (this.app.settings.live_stream_image) {
+      options.embed.thumbnail = {
+        url: this.app.settings.live_stream_image
+      };
+    }
+
+    try {
+      await message.edit(this.getMessage(this.app.settings.discord_ended_message, this.app.settings.live_channel_name), options);
+    } catch (err) {
+      console.warn('failed to edit Discord message');
+      console.log(err);
+    }
+
+    this.app.settings.live_stream_discord_id = undefined;
+    this.app.saveSettings();
   }
 
   /**

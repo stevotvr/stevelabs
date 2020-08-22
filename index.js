@@ -65,7 +65,7 @@ class App {
   /**
    * Save the settings to the database.
    */
-  saveSettings() {
+  async saveSettings() {
     const stmt = this.db.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
     for (const key in this.settings) {

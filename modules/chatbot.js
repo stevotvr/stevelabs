@@ -9,8 +9,9 @@
 
 'use strict'
 
+const ApiClient = require('twitch');
+const ChatClient = require('twitch-chat-client');
 const nlp = require('./nlp');
-const tmi = require('tmi.js');
 
 /**
  * Provides chat functionality.
@@ -204,11 +205,11 @@ class ChatBot {
           return;
         }
 
-        this.app.api.getUser(args[0])
+        this.app.api.client.kraken.users.getUserByName(args[0])
           .then(user => {
             this.app.http.sendAlert('shoutout', {
-              user: user.display_name,
-              image: user.profile_image_url
+              user: user.displayName,
+              image: user.logoUrl
             });
 
             resolve(args.length > 1 ? args.slice(1).join(' ') : null);
@@ -254,12 +255,9 @@ class ChatBot {
         } else {
           let game = '';
           try {
-            const streamInfo = await this.app.api.getStreamInfo(this.app.settings.twitch_channel_username);
-            if (streamInfo) {
-              const gameInfo = await this.app.api.getGame(streamInfo.game_id);
-              if (gameInfo) {
-                game = gameInfo.name;
-              }
+            const channel = await this.app.api.client.kraken.channels.getMyChannel();
+            if (channel) {
+              game = channel.game;
             }
           } catch (err) {
             console.warn('quote: error getting game info');
@@ -324,22 +322,13 @@ class ChatBot {
    * Set up the Twitch chat clients.
    */
   setupTwitchClients() {
-    const settings = this.app.settings;
-    if (!settings.twitch_channel_username || !settings.twitch_channel_password || !settings.twitch_bot_username || !settings.twitch_bot_password) {
+    if (!this.app.api.client || !this.app.api.botAuth) {
       return;
     }
 
     // Create the client for the host channel
-    this.host = new tmi.Client({
-      connection: {
-        secure: true,
-        reconnect: true
-      },
-      identity: {
-        username: settings.twitch_channel_username,
-        password: settings.twitch_channel_password
-      },
-      channels: [ `${settings.twitch_channel_username}` ]
+    this.host = new ChatClient(this.app.api.client, {
+      channels: [ this.app.config.users.host ]
     });
 
     this.host.connect()
@@ -351,15 +340,10 @@ class ChatBot {
     });
 
     // Create the client for the bot channel
-    this.bot = new tmi.Client({
-      connection: {
-        secure: true,
-        reconnect: true
-      },
-      identity: {
-        username: settings.twitch_bot_username,
-        password: settings.twitch_bot_password
-      }
+    this.bot = new ChatClient(new ApiClient({
+      authProvider: this.app.api.botAuth
+    }),{
+      channels: [ this.app.config.users.host ]
     });
 
     this.bot.connect()
@@ -370,13 +354,12 @@ class ChatBot {
       console.log(err);
     });
 
-    this.nextTimer = Date.now() + settings.timer_timeout * 1000;
+    this.nextTimer = Date.now() + this.app.settings.timer_timeout * 1000;
 
     this.hookEvents();
     this.startTimers();
 
-    const chatbot = this;
-    this.host.on('chat', (channel, userstate, message, self) => chatbot.onChat(channel, userstate, message, self));
+    this.host.onPrivmsg((channel, user, message, msg) => this.onChat(channel, user, message, msg));
   }
 
   /**
@@ -385,78 +368,62 @@ class ChatBot {
   hookEvents() {
     const app = this.app;
 
-    // Cheer event
-    this.host.on('cheer', (channel, userstate, message) => {
-      app.http.sendAlert('cheer', {
-        user: userstate['display-name'],
-        amount: userstate.bits,
-        message: message
-      });
-    });
-
     // New subscriber event
-    this.host.on('subscription', (channel, username, method, message, userstate) => {
+    this.host.onSub((channel, user, subInfo, msg) => {
       app.http.sendAlert('subscription', {
-        user: userstate['display-name'],
-        message: message
+        user: subInfo.displayName,
+        message: subInfo.message
       });
     });
 
     // User renews anonymous gift subscription event
-    this.host.on('anongiftpaidupgrade', (channel, username, userstate) => {
+    this.host.onGiftPaidUpgrade((channel, user, subInfo, msg) => {
       app.http.sendAlert('subscription', {
-        user: userstate['display-name']
-      });
-    });
-
-    // User renews gift subscription event
-    this.host.on('giftpaidupgrade', (channel, username, sender, userstate) => {
-      app.http.sendAlert('subscription', {
-        user: userstate['display-name']
+        user: subInfo.displayName
       });
     });
 
     // User renews subscription event
-    this.host.on('resub', (channel, username, months, message, userstate, methods) => {
+    this.host.onResub((channel, user, subInfo, msg) => {
       app.http.sendAlert('resub', {
-        user: userstate['display-name'],
-        months: months,
-        message: message
+        user: subInfo.displayName,
+        months: subInfo.months,
+        message: subInfo.message
       });
     });
 
     // User gifts subscription to user event
-    this.host.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
+    this.host.onSubGift((channel, user, subInfo, msg) => {
       app.http.sendAlert('subgift', {
-        user: userstate['display-name'],
-        recipient: recipient
+        user: subInfo.gifterDisplayName,
+        recipient: subInfo.displayName
       });
     });
 
     // User gifts subscriptions to random users event
-    this.host.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => {
+    this.host.onCommunitySub((channel, user, subInfo, msg) => {
       app.http.sendAlert('submysterygift', {
-        user: userstate['display-name'],
-        subcount: numbOfSubs
+        user: subInfo.gifterDisplayName,
+        subcount: subInfo.count
       });
     });
 
     // Raid event
-    this.host.on('raided', (channel, username, viewers) => {
+    this.host.onRaid((channel, user, raidInfo, msg) => {
       app.http.sendAlert('raid', {
-        user: username,
-        viewers: viewers
+        user: raidInfo.displayName,
+        viewers: raidInfo.viewerCount
       });
     });
 
     // Host event
-    this.host.on('hosted', (channel, username, viewers, autohost) => {
-      if (autohost) {
+    this.host.onHosted((channel, byChannel, auto, viewers) => {
+      if (auto) {
         return;
       }
 
       app.http.sendAlert('host', {
-        user: username,
+        user: byChannel,
         viewers: viewers
       });
     });
@@ -482,28 +449,43 @@ class ChatBot {
   }
 
   /**
+   * Handle a cheer from a user.
+   *
+   * @param {string} user The user that sent the cheer message
+   * @param {int} totalBits The total number of bits
+   * @param {string} message The cheer message
+   */
+  onCheer(user, totalBits, message) {
+    app.http.sendAlert('cheer', {
+      user: user,
+      amount: totalBits,
+      message: message
+    });
+  }
+
+  /**
    * Handle a chat message.
    *
    * @param {string} channel The channel that received the message
-   * @param {object} userstate Data about the user that sent the message
+   * @param {string} user The user that sent the message
    * @param {string} message The message text
-   * @param {bool} self Whether the message originated from the destination
+   * @param {TwitchPrivateMessage} msg The raw message data
    */
-  onChat(channel, userstate, message, self) {
-    if (userstate.username === this.app.settings.twitch_bot_username) {
+  onChat(channel, user, message, msg) {
+    if (user === this.app.config.users.bot) {
       return;
     }
 
     this.chatLines++;
 
-    if (!this.sessionUsers.has(userstate.username) && userstate.badges.broadcaster === undefined) {
-      this.sessionUsers.add(userstate.username);
+    if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
+      this.sessionUsers.add(user);
 
-      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ userstate.username ], (err, row) => {
-        if (row || userstate.badges.subscriber !== undefined || userstate.badges.vip !== undefined) {
-          const params = [ userstate.username ];
+      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], (err, row) => {
+        if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
+          const params = [ user ];
           if (row && this.app.commands.shoutout) {
-            params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, userstate.username ], userstate).slice(2));
+            params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, user ], msg.userInfo).slice(2));
           }
 
           this.chatCommands.shoutout(null, params, res => {
@@ -517,18 +499,23 @@ class ChatBot {
 
     message = message.trim();
 
+    if (msg.isCheer) {
+      this.onCheer(user, msg.totalBits, message);
+      return;
+    }
+
     const first = message.substring(message[0] === '@' ? 1 : 0, message.indexOf(' '));
-    const tobot = first.toLowerCase() === this.app.settings.twitch_bot_username.toLowerCase();
+    const tobot = first.toLowerCase() === this.app.config.users.bot.toLowerCase();
     if (tobot && message.indexOf(' ') !== -1) {
       this.nlp.process(message.substring(message.indexOf(' ') + 1))
-        .then(answer => this.bot.say(channel, `${userstate['display-name']}, ${answer}`));
+        .then(answer => this.bot.say(channel, `${user}, ${answer}`));
     }
 
     if (message[0] !== '!' && !tobot) {
       return;
     }
 
-    console.log(`${userstate.username}: ${message}`);
+    console.log(`${user}: ${message}`);
 
     if (message[0] !== '!') {
       return;
@@ -547,16 +534,16 @@ class ChatBot {
       return;
     }
 
-    if (Date.now() < Math.max(command.timeouts.global, command.timeouts.user[userstate.username] || 0)) {
+    if (Date.now() < Math.max(command.timeouts.global, command.timeouts.user[user] || 0)) {
       return;
     }
 
     let level = 0;
-    if (`#${userstate.username}` === channel) {
+    if (msg.userInfo.isBroadcaster) {
       level = 3;
-    } else if (userstate.mod) {
+    } else if (msg.userInfo.isMod) {
       level = 2;
-    } else if (userstate.subscriber) {
+    } else if (msg.userInfo.isSubscriber) {
       level = 1;
     }
 
@@ -566,13 +553,13 @@ class ChatBot {
 
     const params = message.trim().substring(command.trigger.length + 2).split(/\s+/);
     params.unshift(command.trigger);
-    const parsed = this.parseCommand(command.command, params, userstate);
+    const parsed = this.parseCommand(command.command, params, msg.userInfo);
     if (!parsed.length || this.chatCommands[parsed[0]] === undefined) {
       return;
     }
 
     new Promise((resolve, reject) => {
-      this.chatCommands[parsed[0]](userstate.username, parsed.slice(1), resolve, reject);
+      this.chatCommands[parsed[0]](user, parsed.slice(1), resolve, reject);
     })
     .then(response => {
       if (response) {
@@ -580,7 +567,7 @@ class ChatBot {
       }
 
       command.timeouts.global = Date.now() + command.global_timeout * 1000;
-      command.timeouts.user[userstate.username] = Date.now() + command.user_timeout * 1000;
+      command.timeouts.user[user] = Date.now() + command.user_timeout * 1000;
     })
     .catch(response => {
       if (response) {
@@ -594,9 +581,9 @@ class ChatBot {
    *
    * @param {string} command The command string
    * @param {array} params The parameters
-   * @param {object} userstate The user state of the user triggering the command
+   * @param {ChatUser} userInfo The user data of the user triggering the command
    */
-  parseCommand(command, params, userstate) {
+  parseCommand(command, params, userInfo) {
     let parsed = command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
       if (range) {
         if (end) {
@@ -616,7 +603,7 @@ class ChatBot {
     parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
       switch (fn) {
         case 'user':
-          return userstate['display-name'];
+          return userInfo.displayName;
         case 'channel':
           return p.toLowerCase();
         default:

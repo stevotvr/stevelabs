@@ -10,7 +10,6 @@
 'use strict'
 
 const cookieParser = require('cookie-parser');
-const crypto = require('crypto');
 const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
@@ -29,15 +28,6 @@ class HttpServer {
   constructor(app) {
     this.app = app;
 
-    // Set of processed webhook notification IDs
-    this.whProcessed = new Set();
-
-    // Map of webhook creation functions
-    this.whCreateFuncs = {
-      stream: app.api.setStreamWebhook,
-      follows: app.api.setFollowsWebhook
-    };
-
     const hbs = handlebars.create({
       helpers: {
         eq: function(p1, p2, options) {
@@ -50,7 +40,6 @@ class HttpServer {
     this.express = express();
     this.express.engine('handlebars', hbs.engine);
     this.express.set('view engine', 'handlebars');
-    this.express.use(express.json({ verify: (req, res, buf) => this.verifyRequest(app.settings.secret, req, buf) }));
     this.express.use(express.urlencoded({ extended: true }));
     this.express.use(express.static('public'));
     this.express.use(cookieParser());
@@ -102,7 +91,7 @@ class HttpServer {
         })
         .then(res => res.json())
         .then(auth => {
-          app.api.checkToken(auth.access_token, auth.refresh_token)
+          app.api.login(auth.access_token, auth.refresh_token)
           .then(valid => {
             if (valid) {
               app.settings.web_token = crypto.randomBytes(64).toString('hex');
@@ -114,88 +103,15 @@ class HttpServer {
                 httpOnly: true
               });
 
-              app.api.setWebhooks();
-              app.api.checkStream();
-
               res.redirect('/');
             } else {
               res.redirect('/login');
             }
           });
-        })
-        .catch(err => {
-          console.warn('failed to authenticate with Twitch');
-          console.log(err);
-
-          res.sendStatus(503);
         });
       } else {
-        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email` })
+        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email+chat:read+chat:edit` })
       }
-    });
-
-    // The webhook registration callback
-    this.express.get('/wh/:cb', (req, res) => {
-      if (req.query['hub.challenge'] && req.query['hub.mode']) {
-        console.log(`${req.params.cb} webhook subscription ${req.query['hub.mode']}ed successfully`);
-        if (req.query['hub.mode'] === 'subscribe') {
-          if (req.query['hub.lease_seconds']) {
-            app.api.whTimeouts[req.params.cb] = setTimeout(http.whCreateFuncs[req.params.cb], req.query['hub.lease_seconds'] * 1000);
-          }
-        } else {
-          clearTimeout(app.api.whTimeouts[req.params.cb]);
-        }
-
-        res.send(req.query['hub.challenge']);
-      }
-    });
-
-    // The webhook callback
-    this.express.post('/wh/:cb', (req, res) => {
-      if (!req.verified) {
-        res.sendStatus(403).end();
-        return;
-      }
-
-      if (!req.headers['twitch-notification-id'] || http.whProcessed.has(req.headers['twitch-notification-id'])) {
-        res.end();
-        return;
-      }
-
-      switch (req.params.cb) {
-        case 'stream':
-          if (req.body.data && req.body.data.length > 0) {
-            if (!app.islive) {
-              app.chatbot.sessionUsers.clear();
-              app.twitter.setLive(true);
-            }
-
-            app.islive = true;
-            app.discord.postLive(req.body.data[0].title, req.body.data[0].game_id);
-          } else {
-            app.islive = false;
-            app.discord.postEnd();
-            app.twitter.setLive(false);
-          }
-
-          console.log(`channel is ${app.islive ? 'LIVE!' : 'offline'}`);
-
-          break;
-        case 'follows':
-          if (req.body.data) {
-            for (let i = req.body.data.length - 1; i >= 0; i--) {
-              http.sendAlert('follower', {
-                user: req.body.data[i].from_name
-              });
-            };
-          }
-
-          break;
-      }
-
-      http.whProcessed.add(req.headers['twitch-notification-id']);
-
-      res.end();
     });
 
     // The overlay page
@@ -293,21 +209,6 @@ class HttpServer {
     }
 
     this.io.emit('sfx', name, this.app.sfx[name].volume);
-  }
-
-  /**
-   * Verify a signed request.
-   *
-   * @param {string} secret The secret used for signing requests
-   * @param {express.Request} req The request object
-   * @param {Buffer} buf Buffer containing the raw request body
-   */
-  verifyRequest(secret, req, buf) {
-    req.verified = false;
-    if (req.headers['x-hub-signature']) {
-      const hash = crypto.createHmac('sha256', secret).update(buf).digest('hex');
-      req.verified = req.headers['x-hub-signature'] === `sha256=${hash}`;
-    }
   }
 }
 

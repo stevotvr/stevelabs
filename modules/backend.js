@@ -152,15 +152,6 @@ class Backend {
       settings: (resolve, req) => {
         const settings = this.app.settings;
 
-        if (req.body.twitch_channel_username !== settings.twitch_channel_username || req.body.twitch_channel_password !== settings.twitch_channel_password || req.body.twitch_bot_username !== settings.twitch_bot_username || req.body.twitch_bot_password !== settings.twitch_bot_password) {
-          settings.twitch_channel_username = req.body.twitch_channel_username;
-          settings.twitch_channel_password = req.body.twitch_channel_password;
-          settings.twitch_bot_username = req.body.twitch_bot_username;
-          settings.twitch_bot_password = req.body.twitch_bot_password;
-
-          this.app.chatbot.setupTwitchClients();
-        }
-
         if (req.body.discord_bot_token !== settings.discord_bot_token) {
           settings.discord_bot_token = req.body.discord_bot_token;
 

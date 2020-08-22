@@ -11,5 +11,9 @@
   "oauth": {
     "client": "",
     "secret": ""
+  },
+  "users": {
+    "host": "",
+    "bot": ""
   }
 }
