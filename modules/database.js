@@ -9,13 +9,13 @@
 
 'use strict'
 
-const sqlite3 = require('sqlite3');
-const crypto = require('crypto');
+import sqlite3 from 'sqlite3';
+import crypto from 'crypto';
 
 /**
  * Handles database operations.
  */
-class Database {
+export default class Database {
 
   /**
    * Constructor.
@@ -257,5 +257,3 @@ class Database {
     });
   }
 }
-
-module.exports.Database = Database;

@@ -9,12 +9,12 @@
 
 'use strict'
 
-const discord = require('discord.js');
+import discord from 'discord.js';
 
 /**
  * Provides Discord bot functionality.
  */
-class DiscordBot {
+export default class DiscordBot {
 
   /**
    * Constructor.
@@ -193,5 +193,3 @@ class DiscordBot {
     }
   }
 }
-
-module.exports.DiscordBot = DiscordBot;

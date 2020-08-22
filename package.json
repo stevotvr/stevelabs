@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "stevelabs",
   "version": "1.0.0",
   "description": "Custom bot for my Twitch channel",

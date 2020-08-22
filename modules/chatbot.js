@@ -9,14 +9,14 @@
 
 'use strict'
 
-const ApiClient = require('twitch');
-const ChatClient = require('twitch-chat-client');
-const nlp = require('./nlp');
+import ApiClient from 'twitch';
+import ChatClient from 'twitch-chat-client';
+import Nlp from './nlp.js';
 
 /**
  * Provides chat functionality.
  */
-class ChatBot {
+export default class ChatBot {
 
   /**
    * Constructor.
@@ -26,7 +26,7 @@ class ChatBot {
   constructor(app) {
     this.app = app;
     this.db = app.db;
-    this.nlp = new nlp.Nlp(app);
+    this.nlp = new Nlp(app);
 
     this.timerPos = 0;
     this.nextTimer = Infinity;
@@ -614,5 +614,3 @@ class ChatBot {
     return parsed.split(/\s+/);
   }
 }
-
-module.exports.ChatBot = ChatBot;

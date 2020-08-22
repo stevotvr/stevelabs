@@ -12,7 +12,7 @@
 /**
  * Provides the backend interface.
  */
-class Backend {
+export default class Backend {
 
   /**
    * Constructor.
@@ -673,5 +673,3 @@ class Backend {
     }
   }
 }
-
-module.exports.Backend = Backend;

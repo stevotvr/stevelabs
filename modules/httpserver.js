@@ -9,16 +9,19 @@
 
 'use strict'
 
-const cookieParser = require('cookie-parser');
-const express = require('express');
-const fetch = require('node-fetch');
-const fs = require('fs');
-const handlebars = require('express-handlebars');
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import fetch from 'node-fetch';
+import fs from 'fs';
+import handlebars from 'express-handlebars';
+import http from 'http';
+import https from 'https';
+import Socket from 'socket.io';
 
 /**
  * Provides HTTP server functionality.
  */
-class HttpServer {
+export default class HttpServer {
 
   /**
    * Constructor.
@@ -45,7 +48,7 @@ class HttpServer {
     this.express.use(cookieParser());
 
     // Create the HTTP server
-    const http = (() => {
+    const httpServer = (() => {
       if (app.config.ssl.enabled) {
         const options = {
           key: fs.readFileSync(app.config.ssl.keyfile),
@@ -53,17 +56,17 @@ class HttpServer {
           ca: fs.readFileSync(app.config.ssl.cafile)
         };
 
-        return require('https').createServer(options, this.express);
+        return https.createServer(options, this.express);
       } else {
-        return require('http').Server(this.express);
+        return http.Server(this.express);
       }
     })();
 
     // Create the socket
-    this.io = require('socket.io')(http);
+    this.io = Socket(httpServer);
 
     // Start listening to HTTP requests
-    http.listen(app.config.port, app.config.host, () => {
+    httpServer.listen(app.config.port, app.config.host, () => {
       console.log(`listening on ${app.config.host}:${app.config.port}`);
       console.log(`overlay url: ${app.config.url}/overlay`);
     });
@@ -211,5 +214,3 @@ class HttpServer {
     this.io.emit('sfx', name, this.app.sfx[name].volume);
   }
 }
-
-module.exports.HttpServer = HttpServer;

@@ -9,12 +9,12 @@
 
 'use strict'
 
-const Twitter = require('twitter-lite');
+import Twitter from 'twitter-lite';
 
 /**
  * Provides Twitter bot functionality.
  */
-class TwitterBot {
+export default class TwitterBot {
 
   /**
    * Constructor.
@@ -74,5 +74,3 @@ class TwitterBot {
       });
   }
 }
-
-module.exports.TwitterBot = TwitterBot;

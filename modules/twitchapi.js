@@ -9,15 +9,13 @@
 
 'use strict'
 
-const ApiClient = require('twitch');
-const { StaticAuthProvider, RefreshableAuthProvider } = require('twitch');
-const WebHookListener = require('twitch-webhooks');
-const { SimpleAdapter } = require('twitch-webhooks');
+import ApiClient, { StaticAuthProvider, RefreshableAuthProvider } from 'twitch';
+import WebHookListener, { SimpleAdapter } from 'twitch-webhooks';
 
 /**
  * Handles Twitch API operations.
  */
-class TwitchApi {
+export default class TwitchApi {
 
   /**
    * Constructor.
@@ -141,5 +139,3 @@ class TwitchApi {
     console.log(`channel is ${this.app.islive ? 'LIVE!' : 'offline'}`);
   }
 }
-
-module.exports.TwitchApi = TwitchApi;

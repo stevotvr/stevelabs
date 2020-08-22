@@ -9,11 +9,11 @@
 
 'use strict'
 
-const { NlpManager } = require('node-nlp');
+import nlp from 'node-nlp';
 
-class Nlp {
+export default class Nlp {
   constructor(app) {
-    this.manager = new NlpManager({ languages: ['en'] });
+    this.manager = new nlp.NlpManager({ languages: ['en'] });
     this.manager.load('./data/model.nlp');
   }
 
@@ -29,5 +29,3 @@ class Nlp {
     });
   }
 }
-
-module.exports.Nlp = Nlp;

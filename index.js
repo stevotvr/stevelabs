@@ -9,19 +9,16 @@
 
 'use strict'
 
-const fs = require('fs');
-
-// User configurations
-const config = require('./config.json');
+import fs from 'fs';
 
 // Modules
-const Backend = require('./modules/backend');
-const ChatBot = require('./modules/chatbot');
-const Database = require('./modules/database');
-const DiscordBot = require('./modules/discord');
-const HttpServer = require('./modules/httpserver');
-const TwitchApi = require('./modules/twitchapi');
-const TwitterBot = require('./modules/twitter');
+import Backend from './modules/backend.js';
+import ChatBot from './modules/chatbot.js';
+import Database from './modules/database.js';
+import DiscordBot from './modules/discord.js';
+import HttpServer from './modules/httpserver.js';
+import TwitchApi from './modules/twitchapi.js';
+import TwitterBot from './modules/twitter.js';
 
 /**
  * The main application class.
@@ -32,10 +29,10 @@ class App {
    * Constructor.
    */
   constructor() {
-    this.config = config;
+    this.config = JSON.parse(fs.readFileSync('./config.json'));
 
     // Construct the base URL for the application
-    config.url = `${config.ssl.enabled ? 'https' : 'http'}://${config.host}:${config.port}`;
+    this.config.url = `${this.config.ssl.enabled ? 'https' : 'http'}://${this.config.host}:${this.config.port}`;
 
     // Create the data directory
     try {
@@ -53,13 +50,13 @@ class App {
     this.sfx = {};
 
     // Module instances
-    this.db = new Database.Database(this);
-    this.api = new TwitchApi.TwitchApi(this);
-    this.chatbot = new ChatBot.ChatBot(this);
-    this.discord = new DiscordBot.DiscordBot(this);
-    this.twitter = new TwitterBot.TwitterBot(this);
-    this.http = new HttpServer.HttpServer(this);
-    new Backend.Backend(this);
+    this.db = new Database(this);
+    this.api = new TwitchApi(this);
+    this.chatbot = new ChatBot(this);
+    this.discord = new DiscordBot(this);
+    this.twitter = new TwitterBot(this);
+    this.http = new HttpServer(this);
+    new Backend(this);
   }
 
   /**
