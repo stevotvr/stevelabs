@@ -11,12 +11,26 @@
 
 import nlp from 'node-nlp';
 
+/**
+ * Handles natural language processing.
+ */
 export default class Nlp {
+
+  /**
+   * Constructor.
+   *
+   * @param {App} app The main application
+   */
   constructor(app) {
     this.manager = new nlp.NlpManager({ languages: ['en'] });
     this.manager.load('./data/model.nlp');
   }
 
+  /**
+   * Process input text and generate a response.
+   *
+   * @param {string} text The input text
+   */
   process(text) {
     return new Promise(async resolve => {
       const result = await this.manager.process(text);
