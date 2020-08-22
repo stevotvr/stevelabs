@@ -31,15 +31,13 @@ export default class Nlp {
    *
    * @param {string} text The input text
    */
-  process(text) {
-    return new Promise(async resolve => {
-      const result = await this.manager.process(text);
-      let answer = result.score > 0.5 && result.answer ? result.answer : "Sorry, I don't understand";
-      if (result.sentiment.score !== 0) {
-        answer += result.sentiment.score > 0 ? ' :)' : ' :(';
-      }
+  async process(text) {
+    const result = await this.manager.process(text);
+    let answer = result.score > 0.5 && result.answer ? result.answer : "Sorry, I don't understand";
+    if (result.sentiment.score !== 0) {
+      answer += result.sentiment.score > 0 ? ' :)' : ' :(';
+    }
 
-      resolve(answer);
-    });
+    return answer;
   }
 }
