@@ -25,6 +25,9 @@ Main configuration.
   * **oauth**:
     * **client**: (`string`) Your Twitch API client ID
     * **secret**: (`string`) Your Twitch API client secret
+  * **users**:
+    * **host**: (`string`) Your Twitch channel username
+    * **bot**: (`string`) Your Twitch bot username
     
 ## License
 
