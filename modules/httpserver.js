@@ -10,8 +10,8 @@
 'use strict'
 
 import cookieParser from 'cookie-parser';
+import crypto from 'crypto';
 import express from 'express';
-import fetch from 'node-fetch';
 import fs from 'fs';
 import handlebars from 'express-handlebars';
 import http from 'http';
