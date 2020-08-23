@@ -10,7 +10,6 @@
 'use strict'
 
 import sqlite3 from 'sqlite3';
-import crypto from 'crypto';
 
 /**
  * Handles database operations.
@@ -48,8 +47,7 @@ export default class Database {
               app.settings[row.key] = row.value;
             });
 
-            if (!app.settings.secret) {
-              app.settings.secret = crypto.randomBytes(64).toString('hex');
+            if (app.settings.countdown_audio_volume === undefined) {
               app.settings.countdown_audio_volume = 100;
               app.saveSettings();
             }
