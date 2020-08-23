@@ -9,7 +9,6 @@
 
 'use strict'
 
-import ApiClient from 'twitch';
 import ChatClient from 'twitch-chat-client';
 import Nlp from './nlp.js';
 
@@ -322,7 +321,7 @@ export default class ChatBot {
    * Set up the Twitch chat clients.
    */
   setupTwitchClients() {
-    if (!this.app.api.client || !this.app.api.botAuth) {
+    if (!this.app.api.client || !this.app.api.botClient) {
       return;
     }
 
@@ -340,11 +339,7 @@ export default class ChatBot {
     });
 
     // Create the client for the bot channel
-    this.bot = new ChatClient(new ApiClient({
-      authProvider: this.app.api.botAuth
-    }),{
-      channels: [ this.app.config.users.host ]
-    });
+    this.bot = new ChatClient(this.app.api.botClient);
 
     this.bot.connect()
     .then(() => {

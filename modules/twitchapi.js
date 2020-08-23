@@ -9,7 +9,7 @@
 
 'use strict'
 
-import ApiClient, { StaticAuthProvider, RefreshableAuthProvider } from 'twitch';
+import TwitchClient from 'twitch';
 import WebHookListener, { SimpleAdapter } from 'twitch-webhooks';
 
 /**
@@ -32,17 +32,14 @@ export default class TwitchApi {
     }
 
     const app = this.app;
-    const sap = new StaticAuthProvider(app.config.oauth.client, access_token);
 
-    const client = new ApiClient({
-      authProvider: new RefreshableAuthProvider(sap, {
-        clientSecret: app.config.oauth.secret,
-        refreshToken: refresh_token,
-        onRefresh: (token) => {
-          access_token = token.accessToken;
-          refresh_token = token.refreshToken;
-        }
-      })
+    const client = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
+      clientSecret: app.config.oauth.secret,
+      refreshToken: refresh_token,
+      onRefresh: (token) => {
+        access_token = token.accessToken;
+        refresh_token = token.refreshToken;
+      }
     });
 
     const token = await client.getTokenInfo();
@@ -51,7 +48,7 @@ export default class TwitchApi {
       app.settings.oauth_refresh_token = refresh_token;
       app.saveSettings();
 
-      this.auth = new RefreshableAuthProvider(sap, {
+      this.client = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
         clientSecret: app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
@@ -60,21 +57,21 @@ export default class TwitchApi {
           app.saveSettings();
         }
       });
-      this.client = new ApiClient({
-        authProvider: this.auth
-      });
       this.userId = token.userId;
 
+      app.chatbot.setupTwitchClients();
       this.setupWebhooks();
       this.checkStream();
 
       console.log(`authenticated with Twitch as user ${token.userName}`);
+
+      return true;
     } else if (token.userName === app.config.users.bot) {
       app.settings.bot_access_token = access_token;
       app.settings.bot_refresh_token = refresh_token;
       app.saveSettings();
 
-      this.botAuth = new RefreshableAuthProvider(sap, {
+      this.botClient = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
         clientSecret: app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
@@ -83,9 +80,13 @@ export default class TwitchApi {
           app.saveSettings();
         }
       });
+
+      app.chatbot.setupTwitchClients();
+
+      return true;
     }
 
-    app.chatbot.setupTwitchClients();
+    return false;
   }
 
   /**
@@ -114,7 +115,7 @@ export default class TwitchApi {
       }
 
       this.app.islive = true;
-      this.app.discord.postLive(stream.title, await stream.getGame());
+      this.app.discord.postLive(stream);
     } else {
       this.app.islive = false;
       this.app.discord.postEnd();

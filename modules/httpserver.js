@@ -17,6 +17,7 @@ import handlebars from 'express-handlebars';
 import http from 'http';
 import https from 'https';
 import Socket from 'socket.io';
+import TwitchClient from 'twitch';
 
 /**
  * Provides HTTP server functionality.
@@ -87,31 +88,26 @@ export default class HttpServer {
     // The login page
     this.express.get('/login', (req, res) => {
       if (req.query.code) {
-        const url = `https://id.twitch.tv/oauth2/token?client_id=${app.config.oauth.client}&client_secret=${app.config.oauth.secret}&code=${req.query.code}&grant_type=authorization_code&redirect_uri=${app.config.url}/login`;
+        TwitchClient.getAccessToken(app.config.oauth.client, app.config.oauth.secret, req.query.code, `${app.config.url}/login`)
+          .then(token => {
+            app.api.login(token.accessToken, token.refreshToken)
+            .then(valid => {
+              if (valid) {
+                app.settings.web_token = crypto.randomBytes(64).toString('hex');
+                app.saveSettings();
 
-        fetch(url, {
-          method: 'POST'
-        })
-        .then(res => res.json())
-        .then(auth => {
-          app.api.login(auth.access_token, auth.refresh_token)
-          .then(valid => {
-            if (valid) {
-              app.settings.web_token = crypto.randomBytes(64).toString('hex');
-              app.saveSettings();
+                res.cookie('token', app.settings.web_token, {
+                  maxAge: 7776000000,
+                  secure: app.config.ssl.enabled,
+                  httpOnly: true
+                });
 
-              res.cookie('token', app.settings.web_token, {
-                maxAge: 7776000000,
-                secure: app.config.ssl.enabled,
-                httpOnly: true
-              });
-
-              res.redirect('/');
-            } else {
-              res.redirect('/login');
-            }
+                res.redirect('/');
+              } else {
+                res.redirect('/login');
+              }
+            });
           });
-        });
       } else {
         res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email+chat:read+chat:edit` })
       }
