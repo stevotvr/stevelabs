@@ -436,7 +436,7 @@ export default class ChatBot {
         return;
       }
 
-      chatbot.bot.say(app.settings.twitch_channel_username, app.timers[chatbot.timerPos]);
+      chatbot.bot.say(app.config.users.host, app.timers[chatbot.timerPos]);
       chatbot.timerPos = (chatbot.timerPos + 1) % app.timers.length;
       chatbot.nextTimer = Date.now() + app.settings.timer_timeout * 1000;
       chatbot.chatLines = 0;
