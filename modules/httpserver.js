@@ -77,7 +77,6 @@ export default class HttpServer {
    * Set up HTTP server routes.
    */
   setupHttpRoutes() {
-    const http = this;
     const app = this.app;
 
     // Index page; shows the Twitch auth link
