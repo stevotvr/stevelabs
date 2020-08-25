@@ -11,6 +11,7 @@
 				<th style="width: 4%;">Duration</th>
 				<th style="width: 4%;">Video Volume</Video></th>
 				<th style="width: 4%;">Sound Volume</th>
+				<td></td>
 			</tr>
 			{{#each data.alerts}}
 			<tr>
@@ -21,6 +22,7 @@
 				<td><input type="number" name="update[{{this.key}}][duration]" value="{{this.duration}}"></td>
 				<td><input type="number" name="update[{{this.key}}][videoVolume]" value="{{this.videoVolume}}" min="0" max="100"{{#eq this.key 'shoutout'}} disabled{{/eq}}></td>
 				<td><input type="number" name="update[{{this.key}}][soundVolume]" value="{{this.soundVolume}}" min="0" max="100"></td>
+				<td><input type="button" class="testbutton" name="atest[{{this.key}}]" value="Test"></td>
 			</tr>
 			{{/each}}
 		</table>

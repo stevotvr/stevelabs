@@ -29,6 +29,7 @@
 				<th style="width: 77%;">File</th>
 				<th style="width: 4%;">Volume</th>
 				<th style="width: 4%;">Delete</th>
+				<th></th>
 			</tr>
 			{{#each data.sfx}}
 			<tr>
@@ -39,6 +40,7 @@
 				<td><input type="text" name="update[{{this.id}}][file]" value="{{this.file}}"></td>
 				<td><input type="number" name="update[{{this.id}}][volume]" value="{{this.volume}}" min="0" max="100"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+				<td><input type="button" class="testbutton" name="stest[{{this.key}}]" value="Test"></td>
 			</tr>
 			{{/each}}
 		</table>

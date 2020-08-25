@@ -73,8 +73,12 @@ export default class Backend {
       new Promise((resolve) => {
         this.postHandlers[req.params.page](resolve, req, res);
       })
-      .then(() => {
-        res.redirect(req.params.page);
+      .then((redir = true) => {
+        if (redir) {
+          res.redirect(req.params.page);
+        } else {
+          res.end();
+        }
       });
     });
   }
@@ -669,6 +673,29 @@ export default class Backend {
             }
           });
         }
+      },
+      test: (resolve, req) => {
+        if (req.body.alert) {
+          const params = {
+            amount: Math.round(Math.random() * 10),
+            image: '/testuser.jpg',
+            months: Math.round(Math.random() * 36),
+            recipient: `user${Math.round(Math.random() * 100)}`,
+            subcount: Math.round(Math.random() * 15),
+            user: `user${Math.round(Math.random() * 100)}`,
+            viewers: Math.round(Math.random() * 10)
+          };
+
+          if (req.body.alert === 'charitydonation') {
+            params.amount = `\$${params.amount}.00`;
+          }
+
+          this.app.http.sendAlert(req.body.alert, params);
+        } else if (req.body.sfx) {
+          this.app.http.sendSfx(req.body.sfx);
+        }
+
+        resolve(false);
       }
     }
   }
