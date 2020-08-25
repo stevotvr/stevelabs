@@ -52,6 +52,8 @@ export default class Database {
               app.saveSettings();
             }
 
+            app.settings.raffle_active = app.settings.raffle_active === '1';
+
             app.api.login(app.settings.oauth_access_token, app.settings.oauth_refresh_token);
             app.api.login(app.settings.bot_access_token, app.settings.bot_refresh_token);
 
