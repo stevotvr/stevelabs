@@ -103,8 +103,8 @@ export default class TwitchApi {
     }));
     await this.whListener.listen();
 
-    await this.whListener.subscribeToStreamChanges(this.userId, this.streamCallback);
-    await this.whListener.subscribeToFollowsToUser(this.userId, this.followCallback);
+    await this.whListener.subscribeToStreamChanges(this.userId, (stream) => this.streamCallback(stream));
+    await this.whListener.subscribeToFollowsToUser(this.userId, (follow) => this.followCallback(follow));
   }
 
   async streamCallback(stream) {
@@ -126,7 +126,7 @@ export default class TwitchApi {
   }
 
   async followCallback(follow) {
-    http.sendAlert('follower', {
+    this.app.http.sendAlert('follower', {
       user: follow.userDisplayName
     });
   }
