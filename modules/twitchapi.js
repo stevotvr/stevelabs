@@ -32,10 +32,8 @@ export default class TwitchApi {
       return false;
     }
 
-    const app = this.app;
-
-    const client = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
-      clientSecret: app.config.oauth.secret,
+    const client = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+      clientSecret: this.app.config.oauth.secret,
       refreshToken: refresh_token,
       onRefresh: (token) => {
         access_token = token.accessToken;
@@ -44,23 +42,23 @@ export default class TwitchApi {
     });
 
     const token = await client.getTokenInfo();
-    if (token.userName === app.config.users.host) {
-      app.settings.oauth_access_token = access_token;
-      app.settings.oauth_refresh_token = refresh_token;
-      app.saveSettings();
+    if (token.userName === this.app.config.users.host) {
+      this.app.settings.oauth_access_token = access_token;
+      this.app.settings.oauth_refresh_token = refresh_token;
+      this.app.saveSettings();
 
-      this.client = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
-        clientSecret: app.config.oauth.secret,
+      this.client = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+        clientSecret: this.app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
-          app.settings.oauth_access_token = token.accessToken;
-          app.settings.oauth_refresh_token = token.refreshToken;
-          app.saveSettings();
+          this.app.settings.oauth_access_token = token.accessToken;
+          this.app.settings.oauth_refresh_token = token.refreshToken;
+          this.app.saveSettings();
         }
       });
       this.userId = token.userId;
 
-      app.chatbot.setupTwitchClients();
+      this.app.chatbot.setupTwitchClients();
       this.setupWebhooks();
       this.setupPubSub();
       this.checkStream();
@@ -68,22 +66,22 @@ export default class TwitchApi {
       console.log(`authenticated with Twitch as user ${token.userName}`);
 
       return true;
-    } else if (token.userName === app.config.users.bot) {
-      app.settings.bot_access_token = access_token;
-      app.settings.bot_refresh_token = refresh_token;
-      app.saveSettings();
+    } else if (token.userName === this.app.config.users.bot) {
+      this.app.settings.bot_access_token = access_token;
+      this.app.settings.bot_refresh_token = refresh_token;
+      this.app.saveSettings();
 
-      this.botClient = TwitchClient.withCredentials(app.config.oauth.client, access_token, undefined, {
-        clientSecret: app.config.oauth.secret,
+      this.botClient = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+        clientSecret: this.app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
-          app.settings.bot_access_token = token.accessToken;
-          app.settings.bot_refresh_token = token.refreshToken;
-          app.saveSettings();
+          this.app.settings.bot_access_token = token.accessToken;
+          this.app.settings.bot_refresh_token = token.refreshToken;
+          this.app.saveSettings();
         }
       });
 
-      app.chatbot.setupTwitchClients();
+      this.app.chatbot.setupTwitchClients();
 
       return true;
     }

@@ -24,7 +24,7 @@ export default class ChatBot {
    */
   constructor(app) {
     this.app = app;
-    this.db = app.db;
+    this.db = app.db.db;
     this.nlp = new Nlp(app);
 
     this.timerPos = 0;
@@ -74,9 +74,9 @@ export default class ChatBot {
         }
 
         if (args && args[0].match(/\d+/)) {
-          this.db.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
+          this.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
         } else {
-          this.db.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cd);
+          this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cd);
         }
 
       },
@@ -88,7 +88,7 @@ export default class ChatBot {
         } else if (message.length > 80) {
           reject(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
         } else {
-          this.db.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
+          this.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
             if (err) {
               console.warn('error saving tip data');
               console.log(err);
@@ -107,7 +107,7 @@ export default class ChatBot {
           reject();
         } else {
           const message = args.slice(1).join(' ').trim();
-          this.db.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], err => {
+          this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], err => {
             if (err) {
               console.warn('error saving tip data');
               console.log(err);
@@ -125,7 +125,7 @@ export default class ChatBot {
         if (args.length < 1 || !args[0].match(/\d+/)) {
           reject();
         } else {
-          this.db.db.run('DELETE FROM tips WHERE id = ?', args[0], err => {
+          this.db.run('DELETE FROM tips WHERE id = ?', args[0], err => {
             if (err) {
               console.warn('error deleting tip data');
               console.log(err);
@@ -144,7 +144,7 @@ export default class ChatBot {
           reject();
         }
 
-        this.db.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], err => {
+        this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], err => {
           if (err) {
             console.warn('error saving raffle data');
             console.log(err);
@@ -162,7 +162,7 @@ export default class ChatBot {
           return;
         }
 
-        this.db.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
+        this.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
           if (err) {
             console.warn('error retrieving raffle data');
             console.log(err);
@@ -184,7 +184,7 @@ export default class ChatBot {
           return;
         }
 
-        this.db.db.get('DELETE FROM raffle', err => {
+        this.db.get('DELETE FROM raffle', err => {
           if (err) {
             console.warn('error deleting raffle data');
             console.log(err);
@@ -239,9 +239,9 @@ export default class ChatBot {
         };
 
         if (args && args[0].match(/\d+/)) {
-          this.db.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
+          this.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
         } else {
-          this.db.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
+          this.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
         }
       },
       addquote: async (user, args, resolve, reject) => {
@@ -263,7 +263,7 @@ export default class ChatBot {
             console.log(err);
           }
 
-          this.db.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
+          this.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
             if (err) {
               console.warn('error saving quote data');
               console.log(err);
@@ -282,7 +282,7 @@ export default class ChatBot {
           reject();
         } else {
           const message = args.slice(1).join(' ').trim();
-          this.db.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], err => {
+          this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], err => {
             if (err) {
               console.warn('error saving quote data');
               console.log(err);
@@ -300,7 +300,7 @@ export default class ChatBot {
         if (args.length < 1 || !args[0].match(/\d+/)) {
           reject();
         } else {
-          this.db.db.run('DELETE FROM quotes WHERE id = ?', args[0], err => {
+          this.db.run('DELETE FROM quotes WHERE id = ?', args[0], err => {
             if (err) {
               console.warn('error deleting quote data');
               console.log(err);
@@ -369,11 +369,9 @@ export default class ChatBot {
    * Set up listeners for channel events.
    */
   hookEvents() {
-    const app = this.app;
-
     // New subscriber event
     this.host.onSub((channel, user, subInfo, msg) => {
-      app.http.sendAlert('subscription', {
+      this.app.http.sendAlert('subscription', {
         user: subInfo.displayName,
         message: subInfo.message
       });
@@ -381,14 +379,14 @@ export default class ChatBot {
 
     // User renews anonymous gift subscription event
     this.host.onGiftPaidUpgrade((channel, user, subInfo, msg) => {
-      app.http.sendAlert('subscription', {
+      this.app.http.sendAlert('subscription', {
         user: subInfo.displayName
       });
     });
 
     // User renews subscription event
     this.host.onResub((channel, user, subInfo, msg) => {
-      app.http.sendAlert('resub', {
+      this.app.http.sendAlert('resub', {
         user: subInfo.displayName,
         months: subInfo.months,
         message: subInfo.message
@@ -397,7 +395,7 @@ export default class ChatBot {
 
     // User gifts subscription to user event
     this.host.onSubGift((channel, user, subInfo, msg) => {
-      app.http.sendAlert('subgift', {
+      this.app.http.sendAlert('subgift', {
         user: subInfo.gifterDisplayName,
         recipient: subInfo.displayName
       });
@@ -405,7 +403,7 @@ export default class ChatBot {
 
     // User gifts subscriptions to random users event
     this.host.onCommunitySub((channel, user, subInfo, msg) => {
-      app.http.sendAlert('submysterygift', {
+      this.app.http.sendAlert('submysterygift', {
         user: subInfo.gifterDisplayName,
         subcount: subInfo.count
       });
@@ -413,7 +411,7 @@ export default class ChatBot {
 
     // Raid event
     this.host.onRaid((channel, user, raidInfo, msg) => {
-      app.http.sendAlert('raid', {
+      this.app.http.sendAlert('raid', {
         user: raidInfo.displayName,
         viewers: raidInfo.viewerCount
       });
@@ -425,7 +423,7 @@ export default class ChatBot {
         return;
       }
 
-      app.http.sendAlert('host', {
+      this.app.http.sendAlert('host', {
         user: byChannel,
         viewers: viewers
       });
@@ -436,17 +434,16 @@ export default class ChatBot {
    * Start the chat timers.
    */
   startTimers() {
-    const app = this.app;
     const chatbot = this;
 
     setInterval(() => {
-      if (!app.timers || !app.islive || chatbot.chatLines < app.settings.timer_chat_lines || Date.now() < chatbot.nextTimer) {
+      if (!chatbot.app.timers || !chatbot.app.islive || chatbot.chatLines < chatbot.app.settings.timer_chat_lines || Date.now() < chatbot.nextTimer) {
         return;
       }
 
-      chatbot.bot.say(app.config.users.host, app.timers[chatbot.timerPos]);
-      chatbot.timerPos = (chatbot.timerPos + 1) % app.timers.length;
-      chatbot.nextTimer = Date.now() + app.settings.timer_timeout * 1000;
+      chatbot.bot.say(chatbot.app.config.users.host, chatbot.app.timers[chatbot.timerPos]);
+      chatbot.timerPos = (chatbot.timerPos + 1) % chatbot.app.timers.length;
+      chatbot.nextTimer = Date.now() + chatbot.app.settings.timer_timeout * 1000;
       chatbot.chatLines = 0;
     }, 1000);
   }
@@ -459,7 +456,7 @@ export default class ChatBot {
    * @param {string} message The cheer message
    */
   onCheer(user, totalBits, message) {
-    app.http.sendAlert('cheer', {
+    this.app.http.sendAlert('cheer', {
       user: user,
       amount: totalBits,
       message: message

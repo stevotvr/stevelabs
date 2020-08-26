@@ -77,8 +77,6 @@ export default class HttpServer {
    * Set up HTTP server routes.
    */
   setupHttpRoutes() {
-    const app = this.app;
-
     // Index page; shows the Twitch auth link
     this.express.get('/', (req, res) => {
       res.render('index');
@@ -87,17 +85,17 @@ export default class HttpServer {
     // The login page
     this.express.get('/login', (req, res) => {
       if (req.query.code) {
-        TwitchClient.getAccessToken(app.config.oauth.client, app.config.oauth.secret, req.query.code, `${app.config.url}/login`)
+        TwitchClient.getAccessToken(this.app.config.oauth.client, this.app.config.oauth.secret, req.query.code, `${this.app.config.url}/login`)
           .then(token => {
-            app.api.login(token.accessToken, token.refreshToken)
+            this.app.api.login(token.accessToken, token.refreshToken)
             .then(valid => {
               if (valid) {
-                app.settings.web_token = crypto.randomBytes(64).toString('hex');
-                app.saveSettings();
+                this.app.settings.web_token = crypto.randomBytes(64).toString('hex');
+                this.app.saveSettings();
 
-                res.cookie('token', app.settings.web_token, {
+                res.cookie('token', this.app.settings.web_token, {
                   maxAge: 7776000000,
-                  secure: app.config.ssl.enabled,
+                  secure: this.app.config.ssl.enabled,
                   httpOnly: true
                 });
 
@@ -114,7 +112,7 @@ export default class HttpServer {
           'chat:edit',
           'channel:read:redemptions'
         ];
-        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=${scopes.join('+')}` })
+        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${this.app.config.oauth.client}&redirect_uri=${this.app.config.url}/login&response_type=code&scope=${scopes.join('+')}` })
       }
     });
 
@@ -126,31 +124,31 @@ export default class HttpServer {
       };
 
       if (req.query.alerts) {
-        options.alerts = app.alerts;
+        options.alerts = this.app.alerts;
         options.config.alerts = true;
         options.config.donordrive = {
-          instance: app.settings.donordrive_instance,
-          participant: app.settings.donordrive_participant,
-          duration: app.alerts.charitydonation.duration * 1000,
-          video_volume: app.alerts.charitydonation.videoVolume,
-          sound_volume: app.alerts.charitydonation.soundVolume
+          instance: this.app.settings.donordrive_instance,
+          participant: this.app.settings.donordrive_participant,
+          duration: this.app.alerts.charitydonation.duration * 1000,
+          video_volume: this.app.alerts.charitydonation.videoVolume,
+          sound_volume: this.app.alerts.charitydonation.soundVolume
         };
       }
 
       if (req.query.countdown) {
         options.countdown = true;
-        options.countdown_audio = app.settings.countdown_audio;
-        options.config.schedule = app.schedule;
-        options.config.countdown_audio_volume = app.settings.countdown_audio_volume;
+        options.countdown_audio = this.app.settings.countdown_audio;
+        options.config.schedule = this.app.schedule;
+        options.config.countdown_audio_volume = this.app.settings.countdown_audio_volume;
       }
 
       if (req.query.nextstream) {
         options.nextstream = true;
-        options.config.schedule = app.schedule;
+        options.config.schedule = this.app.schedule;
       }
 
       if (req.query.sfx) {
-        options.sfx = app.sfx;
+        options.sfx = this.app.sfx;
         options.config.sfx = true;
       }
 
@@ -158,7 +156,7 @@ export default class HttpServer {
         if (req.query.tips) {
           options.config.tips = [];
           options.tips = true;
-          app.db.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
+          this.app.db.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
             if (err) {
               console.warn('error loading tip data');
               console.log(err);

@@ -154,29 +154,27 @@ export default class Backend {
   createPostHandlers() {
     this.postHandlers = {
       settings: (resolve, req) => {
-        const settings = this.app.settings;
+        if (req.body.discord_bot_token !== this.app.settings.discord_bot_token) {
+          this.app.settings.discord_bot_token = req.body.discord_bot_token;
 
-        if (req.body.discord_bot_token !== settings.discord_bot_token) {
-          settings.discord_bot_token = req.body.discord_bot_token;
-
-          this.app.discord.login(settings.discord_bot_token);
+          this.app.discord.login(this.app.settings.discord_bot_token);
         }
 
-        settings.discord_channel = req.body.discord_channel;
-        settings.discord_live_message = req.body.discord_live_message;
-        settings.discord_ended_message = req.body.discord_ended_message;
+        this.app.settings.discord_channel = req.body.discord_channel;
+        this.app.settings.discord_live_message = req.body.discord_live_message;
+        this.app.settings.discord_ended_message = req.body.discord_ended_message;
 
-        settings.twitter_consumer_key = req.body.twitter_consumer_key;
-        settings.twitter_consumer_secret = req.body.twitter_consumer_secret;
-        settings.twitter_access_token_key = req.body.twitter_access_token_key;
-        settings.twitter_access_token_secret = req.body.twitter_access_token_secret;
+        this.app.settings.twitter_consumer_key = req.body.twitter_consumer_key;
+        this.app.settings.twitter_consumer_secret = req.body.twitter_consumer_secret;
+        this.app.settings.twitter_access_token_key = req.body.twitter_access_token_key;
+        this.app.settings.twitter_access_token_secret = req.body.twitter_access_token_secret;
         this.app.twitter.login();
 
-        settings.donordrive_instance = req.body.donordrive_instance;
-        settings.donordrive_participant = req.body.donordrive_participant;
+        this.app.settings.donordrive_instance = req.body.donordrive_instance;
+        this.app.settings.donordrive_participant = req.body.donordrive_participant;
 
-        settings.countdown_audio = req.body.countdown_audio;
-        settings.countdown_audio_volume = Math.max(0, Math.min(100, req.body.countdown_audio_volume));
+        this.app.settings.countdown_audio = req.body.countdown_audio;
+        this.app.settings.countdown_audio_volume = Math.max(0, Math.min(100, req.body.countdown_audio_volume));
 
         this.app.saveSettings();
 

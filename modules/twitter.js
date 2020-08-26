@@ -22,24 +22,24 @@ export default class TwitterBot {
    * @param {App} app The main application
    */
   constructor(app) {
-    this.settings = app.settings;
+    this.app = app;
   }
 
   /**
    * Log in to the Twitter API.
    */
   login() {
-    if (!this.settings.twitter_consumer_key || !this.settings.twitter_consumer_secret || !this.settings.twitter_access_token_key || !this.settings.twitter_access_token_secret)
+    if (!this.app.settings.twitter_consumer_key || !this.app.settings.twitter_consumer_secret || !this.app.settings.twitter_access_token_key || !this.app.settings.twitter_access_token_secret)
     {
       this.client = undefined;
       return;
     }
 
     this.client = new Twitter({
-      consumer_key: this.settings.twitter_consumer_key,
-      consumer_secret: this.settings.twitter_consumer_secret,
-      access_token_key: this.settings.twitter_access_token_key,
-      access_token_secret: this.settings.twitter_access_token_secret
+      consumer_key: this.app.settings.twitter_consumer_key,
+      consumer_secret: this.app.settings.twitter_consumer_secret,
+      access_token_key: this.app.settings.twitter_access_token_key,
+      access_token_secret: this.app.settings.twitter_access_token_secret
     });
   }
 
