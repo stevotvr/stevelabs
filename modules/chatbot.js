@@ -76,7 +76,7 @@ export default class ChatBot {
         if (args && args[0].match(/\d+/)) {
           this.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
         } else {
-          this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cd);
+          this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cb);
         }
 
       },
