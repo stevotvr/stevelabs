@@ -9,6 +9,7 @@
 
 'use strict'
 
+import { BasicPubSubClient, SingleUserPubSubClient } from 'twitch-pubsub-client';
 import TwitchClient from 'twitch';
 import WebHookListener, { SimpleAdapter } from 'twitch-webhooks';
 
@@ -61,6 +62,7 @@ export default class TwitchApi {
 
       app.chatbot.setupTwitchClients();
       this.setupWebhooks();
+      this.setupPubSub();
       this.checkStream();
 
       console.log(`authenticated with Twitch as user ${token.userName}`);
@@ -129,6 +131,42 @@ export default class TwitchApi {
     this.app.http.sendAlert('follower', {
       user: follow.userDisplayName
     });
+  }
+
+  /**
+   * Set up the PubSub client.
+   */
+  async setupPubSub() {
+    if (this.psClient) {
+      await this.psClient.disconnect();
+    }
+
+    this.psClient = new BasicPubSubClient();
+    this.psClient.onConnect(() => {
+      console.log('connected to Twitch PubSub');
+    });
+    this.psClient.onDisconnect((manually, reason) => {
+      if (!manually) {
+        console.warn('disconnected from Twitch PubSub');
+        console.log(reason);
+      }
+    });
+    this.psClient.connect();
+
+    const userClient = new SingleUserPubSubClient({
+      pubSubClient: this.psClient,
+      twitchClient: this.client
+    });
+    userClient.onRedemption((message) => this.redemptionCallback(message));
+  }
+
+  /**
+   * Handle a redemption message received by the PubSub client.
+   *
+   * @param {PubSubRedemptionMessage} message The redemption data
+   */
+  async redemptionCallback(message) {
+    console.log(`${message.userName} redeemed channel point reward ${message.rewardName}`);
   }
 
   /**

@@ -25,6 +25,7 @@
     "sqlite3": "^4.2.0",
     "twitch": "^4.1.4",
     "twitch-chat-client": "^4.1.4",
+    "twitch-pubsub-client": "^4.1.4",
     "twitch-webhooks": "^4.1.4",
     "twitter-lite": "^0.14.0"
   }

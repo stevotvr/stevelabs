@@ -108,7 +108,13 @@ export default class HttpServer {
             });
           });
       } else {
-        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=user:read:email+chat:read+chat:edit` })
+        const scopes = [
+          'user:read:email',
+          'chat:read',
+          'chat:edit',
+          'channel:read:redemptions'
+        ];
+        res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${app.config.oauth.client}&redirect_uri=${app.config.url}/login&response_type=code&scope=${scopes.join('+')}` })
       }
     });
 
