@@ -320,13 +320,21 @@ export default class ChatBot {
   /**
    * Set up the Twitch chat clients.
    */
-  setupTwitchClients() {
+  async setupTwitchClients() {
     if (!this.app.api.client || !this.app.api.botClient) {
       return;
     }
 
+    if (this.host) {
+      await this.host.quit();
+    }
+
+    if (this.bot) {
+      await this.bot.quit();
+    }
+
     // Create the client for the host channel
-    this.host = new ChatClient(this.app.api.client, {
+    this.host = ChatClient.forTwitchClient(this.app.api.client, {
       channels: [ this.app.config.users.host ]
     });
 
@@ -339,7 +347,7 @@ export default class ChatBot {
     });
 
     // Create the client for the bot channel
-    this.bot = new ChatClient(this.app.api.botClient);
+    this.bot = ChatClient.forTwitchClient(this.app.api.botClient);
 
     this.bot.connect()
     .then(() => {
