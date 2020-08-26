@@ -109,6 +109,11 @@ export default class TwitchApi {
     await this.whListener.subscribeToFollowsToUser(this.userId, (follow) => this.followCallback(follow));
   }
 
+  /**
+   * Handle the stream change webhook message.
+   *
+   * @param {HelixStream} stream The stream data
+   */
   async streamCallback(stream) {
     if (stream) {
       if (!this.app.islive) {
@@ -127,6 +132,11 @@ export default class TwitchApi {
     console.log(`channel is ${this.app.islive ? 'LIVE!' : 'offline'}`);
   }
 
+  /**
+   * Handle the follow to user webhook message.
+   *
+   * @param {HelixFollow} follow The follow data
+   */
   async followCallback(follow) {
     this.app.http.sendAlert('follower', {
       user: follow.userDisplayName
