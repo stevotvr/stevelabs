@@ -188,6 +188,7 @@ export default class Database {
       for (const k in this.app.commands) {
         for (const k2 in this.app.commands[k].aliases) {
           this.app.commands[this.app.commands[k].aliases[k2]] = this.app.commands[k];
+          keys.push(this.app.commands[k].aliases[k2]);
         }
 
         this.app.commands[k].timeouts = {
