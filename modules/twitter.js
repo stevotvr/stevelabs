@@ -83,10 +83,15 @@ export default class TwitterBot {
    */
   getDescription(live, current) {
     if (!live && this.app.settings.twitter_bio) {
+      this.app.settings.twitter_bio = null;
+      this.app.saveSettings();
+
       return this.app.settings.twitter_bio;
     } else if (live && this.app.settings.twitter_live_message) {
-      this.app.settings.twitter_bio = current;
-      this.app.saveSettings();
+      if (!this.app.settings.twitter_bio) {
+        this.app.settings.twitter_bio = current;
+        this.app.saveSettings();
+      }
 
       return this.app.settings.twitter_live_message.replace(/\$\{name\}/ig, this.app.config.users.host);
     }

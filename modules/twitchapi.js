@@ -114,6 +114,9 @@ export default class TwitchApi {
    */
   async streamCallback(stream) {
     if (stream) {
+      const game = await stream.getGame();
+      this.game = game.name;
+
       if (!this.app.islive) {
         this.app.chatbot.sessionUsers.clear();
         this.app.twitter.setLive(true);
@@ -183,6 +186,18 @@ export default class TwitchApi {
   async checkStream() {
     const stream = await this.client.helix.streams.getStreamByUserId(this.userId);
     this.app.islive = stream !== null;
+
+    if (stream) {
+      const game = await stream.getGame();
+      this.game = game.name;
+
+      this.app.discord.postLive(stream);
+      this.app.twitter.setLive(true);
+    } else {
+      this.app.discord.postEnd();
+      this.app.twitter.setLive(false);
+    }
+
     console.log(`channel is ${this.app.islive ? 'LIVE!' : 'offline'}`);
   }
 }

@@ -60,11 +60,10 @@ export default class DiscordBot {
       return;
     }
 
-    let user, game;
+    let user;
     try {
       user = await stream.getUser();
       this.app.settings.live_stream_image = user.profilePictureUrl;
-      game = await stream.getGame();
     } catch (err) {
       console.warn('failed to query Twitch for stream info');
       console.log(err);
@@ -86,7 +85,7 @@ export default class DiscordBot {
       }
     };
 
-    options.embed.description = `Playing ${game.name}`;
+    options.embed.description = `Playing ${this.app.api.game}`;
 
     if (this.app.settings.live_stream_discord_id) {
       let message;
