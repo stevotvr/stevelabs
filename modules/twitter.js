@@ -93,7 +93,7 @@ export default class TwitterBot {
         this.app.saveSettings();
       }
 
-      return this.app.settings.twitter_live_message.replace(/\$\{name\}/ig, this.app.config.users.host).replace(/\$\{game\}/ig, this.app.api.game);
+      return this.app.settings.twitter_live_message.replace('${name}', this.app.config.users.host).replace('${game}', this.app.api.game);
     }
 
     return current;
