@@ -188,7 +188,7 @@ export default class DiscordBot {
    */
   getMessage(format, name) {
     if (format) {
-      return format.replace(/\$\{name\}/ig, name);
+      return format.replace(/\$\{name\}/ig, name).replace(/\$\{game\}/ig, this.app.api.game);
     }
   }
 }
