@@ -446,7 +446,7 @@ export default class ChatBot {
    * @param {string} message The message text
    * @param {TwitchPrivateMessage} msg The raw message data
    */
-  onChat(channel, user, message, msg) {
+  async onChat(channel, user, message, msg) {
     if (user === this.app.config.users.bot) {
       return;
     }
@@ -456,11 +456,11 @@ export default class ChatBot {
     if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
       this.sessionUsers.add(user);
 
-      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], (err, row) => {
+      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
           const params = [ user ];
           if (row && this.app.commands.shoutout) {
-            params.push(...this.parseCommand(this.app.commands.shoutout.command, [ null, user ], msg.userInfo).slice(2));
+            params.push(...(await this.parseCommand(this.app.commands.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
           }
 
           this.chatCommands.shoutout(null, params, res => {
@@ -496,11 +496,12 @@ export default class ChatBot {
       return;
     }
 
-    let command = false;
+    let command, alias = false;
     for (let i = 0; i < this.app.commands._keys.length; i++) {
       const key = this.app.commands._keys[i];
       if (key === message.substr(1, key.length)) {
         command = this.app.commands[key];
+        alias = key;
         break
       }
     }
@@ -526,9 +527,9 @@ export default class ChatBot {
       return;
     }
 
-    const params = message.trim().substring(command.trigger.length + 2).split(/\s+/);
+    const params = message.trim().substring(alias.length + 2).split(/\s+/);
     params.unshift(command.trigger);
-    const parsed = this.parseCommand(command.command, params, msg.userInfo);
+    const parsed = await this.parseCommand(command.command, params, msg.userInfo);
     if (!parsed.length || this.chatCommands[parsed[0]] === undefined) {
       return;
     }
@@ -559,7 +560,7 @@ export default class ChatBot {
    * @param {array} params The parameters
    * @param {ChatUser} userInfo The user data of the user triggering the command
    */
-  parseCommand(command, params, userInfo) {
+  async parseCommand(command, params, userInfo) {
     let parsed = command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
       if (range) {
         if (end) {
@@ -576,16 +577,41 @@ export default class ChatBot {
       return params[start];
     });
 
-    parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
-      switch (fn) {
-        case 'user':
-          return userInfo.displayName;
-        case 'channel':
-          return p.toLowerCase();
-        default:
-          return match;
-      }
+    const promises = [];
+    parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
+      promises.push(new Promise(async (resolve) => {
+        switch (fn) {
+          case 'user':
+            resolve(userInfo.displayName);
+            break;
+          case 'channel':
+            resolve(p.toLowerCase());
+            break;
+          case 'game':
+            if (!p) {
+              resolve(this.app.api.game);
+              break;
+            }
+
+            const user = await this.app.api.client.kraken.users.getUserByName(p);
+            if (user) {
+              const channel = await user.getChannel();
+              if (channel && channel.game) {
+                resolve(channel.game);
+                break;
+              }
+            }
+
+            resolve('unknown');
+            break;
+          default:
+            resolve(match);
+        }
+      }));
     });
+
+    const values = await Promise.all(promises);
+    parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, () => values.shift());
 
     return parsed.split(/\s+/);
   }
