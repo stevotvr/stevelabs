@@ -58,7 +58,8 @@ export default class TwitterBot {
         const add = '🔴【LIVE】 ';
         const name = res.name.replace(add, '');
         this.client.post('account/update_profile', {
-          name: live ? add + name : name
+          name: live ? add + name : name,
+          description: this.getDescription(live, res.description)
         })
         .then(() => {
           console.log('updated Twitter name');
@@ -72,5 +73,24 @@ export default class TwitterBot {
         console.warn('failed to get Twitter account');
         console.log(err);
       });
+  }
+
+  /**
+   * Get the description text for the Twitter profile.
+   *
+   * @param {boolean} live Whether to get the live description
+   * @param {string} current The current profile description
+   */
+  getDescription(live, current) {
+    if (!live && this.app.settings.twitter_bio) {
+      return this.app.settings.twitter_bio;
+    } else if (live && this.app.settings.twitter_live_message) {
+      this.app.settings.twitter_bio = current;
+      this.app.saveSettings();
+
+      return this.app.settings.twitter_live_message.replace(/\$\{name\}/ig, this.app.config.users.host);
+    }
+
+    return current;
   }
 }

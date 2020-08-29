@@ -168,6 +168,7 @@ export default class Backend {
         this.app.settings.twitter_consumer_secret = req.body.twitter_consumer_secret;
         this.app.settings.twitter_access_token_key = req.body.twitter_access_token_key;
         this.app.settings.twitter_access_token_secret = req.body.twitter_access_token_secret;
+        this.app.settings.twitter_live_message = req.body.twitter_live_message;
         this.app.twitter.login();
 
         this.app.settings.donordrive_instance = req.body.donordrive_instance;
