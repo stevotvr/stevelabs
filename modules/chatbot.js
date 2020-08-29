@@ -41,35 +41,29 @@ export default class ChatBot {
    */
   createChatCommands() {
     this.chatCommands = {
-      say: (user, args, resolve, reject) => {
-        resolve(args.join(' '));
+      say: async (user, args) => {
+        this.say(args.join(' '));
       },
-      sfx: (user, args, resolve, reject) => {
+      sfx: async (user, args) => {
         if (this.app.sfx[args[0]] === undefined) {
-          reject();
-
-          return;
+          throw 'sound not found';
         }
 
         this.app.http.sendSfx(args[0]);
-
-        resolve();
       },
-      tip: (user, args, resolve, reject) => {
+      tip: async (user, args) => {
         const cb = (err, row) => {
           if (err) {
             console.warn('error getting tip data');
             console.log(err);
 
-            reject();
-
             return;
           }
 
           if (row) {
-            resolve(`TIP #${row.id}: ${row.message}`);
+            this.say(`TIP #${row.id}: ${row.message}`);
           } else {
-            resolve(`Sorry, ${user}, we're all out of tips!`);
+            this.say(`Sorry, ${user}, we're all out of tips!`);
           }
         }
 
@@ -78,33 +72,31 @@ export default class ChatBot {
         } else {
           this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cb);
         }
-
       },
-      addtip: (user, args, resolve, reject) => {
+      addtip: async (user, args) => {
         const message = args.join(' ');
 
         if (message.length < 2) {
-          reject(`${user} Your tip message is too short (2 characters min, yours was ${message.length})`);
+          this.say(`${user} Your tip message is too short (2 characters min, yours was ${message.length})`);
         } else if (message.length > 80) {
-          reject(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
+          this.say(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
         } else {
+          const chatbot = this;
           this.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
             if (err) {
               console.warn('error saving tip data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Tip #${this.lastID} has been added to the list`);
+            chatbot.say(`Tip #${this.lastID} has been added to the list`);
           });
         }
       },
-      edittip: (user, args, resolve, reject) => {
+      edittip: async (user, args) => {
         if (args.length < 2 || !args[0].match(/\d+/)) {
-          reject();
+          throw 'invalid arguments';
         } else {
           const message = args.slice(1).join(' ').trim();
           this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], err => {
@@ -112,36 +104,32 @@ export default class ChatBot {
               console.warn('error saving tip data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Tip #${args[0]} has been edited!`);
+            this.say(`Tip #${args[0]} has been edited!`);
           });
         }
       },
-      deletetip: (user, args, resolve, reject) => {
+      deletetip: async (user, args) => {
         if (args.length < 1 || !args[0].match(/\d+/)) {
-          reject();
+          throw 'invalid arguments';
         } else {
           this.db.run('DELETE FROM tips WHERE id = ?', args[0], err => {
             if (err) {
               console.warn('error deleting tip data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Tip #${args[0]} has been deleted!`);
+            this.say(`Tip #${args[0]} has been deleted!`);
           });
         }
       },
-      raffle: (user, args, resolve, reject) => {
+      raffle: async (user, args) => {
         if (!this.app.settings.raffle_active) {
-          reject();
+          throw 'raffle not active';
         }
 
         this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], err => {
@@ -149,17 +137,15 @@ export default class ChatBot {
             console.warn('error saving raffle data');
             console.log(err);
 
-            reject();
+            return;
           } else {
-            resolve(args.join(' '));
+            this.say(args.join(' '));
           }
         });
       },
-      endraffle: (user, args, resolve, reject) => {
+      endraffle: async (user, args) => {
         if (!this.app.settings.raffle_active) {
-          reject();
-
-          return;
+          throw 'raffle not active';
         }
 
         this.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
@@ -167,21 +153,19 @@ export default class ChatBot {
             console.warn('error retrieving raffle data');
             console.log(err);
 
-            reject();
+            return;
           } else {
             this.app.settings.raffle_active = false;
             this.app.saveSettings();
 
             this.app.http.sendAlert('rafflewinner', { user: row.user });
-            resolve(row ? args.join(' ').replace('${winner}', row.user) : '');
+            this.say(row ? args.join(' ').replace('${winner}', row.user) : '');
           }
         });
       },
-      startraffle: (user, args, resolve, reject) => {
+      startraffle: async (user, args) => {
         if (this.app.settings.raffle_active) {
-          reject();
-
-          return;
+          throw 'raffle not active';
         }
 
         this.db.get('DELETE FROM raffle', err => {
@@ -189,39 +173,35 @@ export default class ChatBot {
             console.warn('error deleting raffle data');
             console.log(err);
 
-            reject();
+            return;
           } else {
             this.app.settings.raffle_active = true;
             this.app.saveSettings();
 
-            resolve(args.join(' '));
+            this.say(args.join(' '));
           }
         });
       },
-      shoutout: (user, args, resolve, reject) => {
+      shoutout: async (user, args) => {
         if (!args[0]) {
-          reject();
-          return;
+          throw 'invalid arguments';
         }
 
-        this.app.api.client.kraken.users.getUserByName(args[0])
-          .then(user => {
-            this.app.http.sendAlert('shoutout', {
-              user: user.displayName,
-              image: user.logoUrl
-            });
+        const targetUser = await this.app.api.client.kraken.users.getUserByName(args[0]);
+        if (targetUser) {
+          this.app.http.sendAlert('shoutout', {
+            user: targetUser.displayName,
+            image: targetUser.logoUrl
+          });
 
-            resolve(args.length > 1 ? args.slice(1).join(' ') : null);
-          })
-          .catch(() => reject());
+          this.say(args.length > 1 ? args.slice(1).join(' ') : null);
+        }
       },
-      quote: (user, args, resolve, reject) => {
+      quote: async (user, args) => {
         const cb = (err, row) => {
           if (err) {
             console.warn('error getting quote data');
             console.log(err);
-
-            reject();
 
             return;
           }
@@ -232,9 +212,9 @@ export default class ChatBot {
             const endTag = row.game ? `[${row.game}] [${dateString}]` : `[${dateString}]`;
 
             const message = row.message[0] === '"' ? row.message : `"${row.message}"`;
-            resolve(`Quote #${row.id}: ${message} ${endTag}`);
+            this.say(`Quote #${row.id}: ${message} ${endTag}`);
           } else {
-            resolve(`Sorry, ${user}, we're all out of quotes!`);
+            this.say(`Sorry, ${user}, we're all out of quotes!`);
           }
         };
 
@@ -244,13 +224,13 @@ export default class ChatBot {
           this.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
         }
       },
-      addquote: async (user, args, resolve, reject) => {
+      addquote: async (user, args) => {
         const message = args.join(' ').trim();
 
         if (!this.app.islive) {
-          reject(`${user} You can only add a quote when the channel is live`);
+          this.say(`${user} You can only add a quote when the channel is live`);
         } else if (message.length < 2) {
-          reject(`${user} Your quote message is too short (2 characters min, yours was ${message.length})`);
+          this.say(`${user} Your quote message is too short (2 characters min, yours was ${message.length})`);
         } else {
           let game = '';
           try {
@@ -263,23 +243,22 @@ export default class ChatBot {
             console.log(err);
           }
 
+          const chatbot = this;
           this.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
             if (err) {
               console.warn('error saving quote data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Quote #${this.lastID} has been added!`);
+            chatbot.say(`Quote #${this.lastID} has been added!`);
           });
         }
       },
-      editquote: (user, args, resolve, reject) => {
+      editquote: async (user, args) => {
         if (args.length < 2 || !args[0].match(/\d+/)) {
-          reject();
+          throw 'invalid arguments';
         } else {
           const message = args.slice(1).join(' ').trim();
           this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], err => {
@@ -287,30 +266,26 @@ export default class ChatBot {
               console.warn('error saving quote data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Quote #${args[0]} has been edited!`);
+            this.say(`Quote #${args[0]} has been edited!`);
           });
         }
       },
-      deletequote: (user, args, resolve, reject) => {
+      deletequote: async (user, args) => {
         if (args.length < 1 || !args[0].match(/\d+/)) {
-          reject();
+          throw 'invalid arguments';
         } else {
           this.db.run('DELETE FROM quotes WHERE id = ?', args[0], err => {
             if (err) {
               console.warn('error deleting quote data');
               console.log(err);
 
-              reject();
-
               return;
             }
 
-            resolve(`Quote #${args[0]} has been deleted!`);
+            this.say(`Quote #${args[0]} has been deleted!`);
           });
         }
       }
@@ -558,22 +533,23 @@ export default class ChatBot {
       return;
     }
 
-    new Promise((resolve, reject) => {
-      this.chatCommands[parsed[0]](user, parsed.slice(1), resolve, reject);
-    })
-    .then(response => {
-      if (response) {
-        this.bot.say(channel, response);
-      }
+    this.chatCommands[parsed[0]](user, parsed.slice(1))
+      .then(() => {
+        command.timeouts.global = Date.now() + command.global_timeout * 1000;
+        command.timeouts.user[user] = Date.now() + command.user_timeout * 1000;
+      })
+      .catch(() => {});
+  }
 
-      command.timeouts.global = Date.now() + command.global_timeout * 1000;
-      command.timeouts.user[user] = Date.now() + command.user_timeout * 1000;
-    })
-    .catch(response => {
-      if (response) {
-        this.bot.say(channel, response);
-      }
-    });
+  /**
+   * Send a message from the bot to the host channel.
+   *
+   * @param {string} message The message to send
+   */
+  say(message) {
+    if (typeof message === 'string') {
+      this.bot.say(this.app.config.users.host, message);
+    }
   }
 
   /**
