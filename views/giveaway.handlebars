@@ -1,0 +1,99 @@
+<h2>Giveaways</h2>
+{{#if data.group}}
+<h3>Group: {{data.group.name}}</h3>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<input type="hidden" name="group" value="{{data.group.id}}">
+	<fieldset>
+		<legend>Add Item</legend>
+		<table>
+			<tr>
+				<th style="width: 50%;">Name</th>
+				<th style="width: 50%;">Key</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="name"></td>
+				<td><input type="text" name="key"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="group" value="{{data.group.id}}">
+	<fieldset>
+		<legend>Edit Items</legend>
+		<table>
+			<tr>
+				<th style="width: 48%;">Name</th>
+				<th style="width: 48%;">Key</th>
+				<th style="width: 4%;">Delete</th>
+			</tr>
+			{{#each data.items}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					<input type="text" name="update[{{this.id}}][name]" value="{{this.name}}">
+				</td>
+				<td><input type="text" name="update[{{this.id}}][key]" value="{{this.key}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>
+{{else}}
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<fieldset>
+		<legend>Add Group</legend>
+		<table>
+			<tr>
+				<th style="width: 90%;">Name</th>
+				<th style="width: 10%;">Randomize</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="name"></td>
+				<td><input type="checkbox" name="random"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Groups</legend>
+		<table>
+			<tr>
+				<th style="width: 76%;">Name</th>
+				<th style="width: 10%;">Randomize</th>
+				<th style="width: 4%;">Delete</th>
+				<th style="width: 10%;"></th>
+			</tr>
+			{{#each data.groups}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					<input type="text" name="update[{{this.id}}][name]" value="{{this.name}}">
+				</td>
+				<td><input type="checkbox" name="update[{{this.id}}][random]"{{#if this.random}} checked{{/if}}></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+				<td><a href="?group={{this.id}}">See Items</a></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>
+{{/if}}
