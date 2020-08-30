@@ -288,6 +288,19 @@ export default class ChatBot {
             this.say(`Quote #${args[0]} has been deleted!`);
           });
         }
+      },
+      followage: async (user, args) => {
+        const target = args.length > 0 ? args[0] : user;
+        const targetUser = await this.app.api.client.kraken.users.getUserByName(target);
+        if (targetUser) {
+          const follow = await targetUser.getFollowTo(this.app.api.userId);
+          if (follow) {
+            this.say(`${target} has been following since ${follow.followDate}`);
+            return;
+          }
+        }
+
+        this.say(`${target} is not following`);
       }
     };
   }
