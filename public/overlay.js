@@ -156,8 +156,8 @@ if (config.donordrive && config.donordrive.instance && config.donordrive.partici
  */
 function queryDonorDrive() {
   fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
-  .then(res => res.json())
-  .then(json => {
+  .then((res) => res.json())
+  .then((json) => {
     if (json.length) {
       if (latestDonation !== null) {
         let i = 0;
@@ -180,7 +180,7 @@ function queryDonorDrive() {
       latestDonation = '';
     }
   })
-  .catch(err => {
+  .catch((err) => {
     console.warn('failed to query DonorDrive');
     console.log(err);
   });

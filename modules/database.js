@@ -25,7 +25,7 @@ export default class Database {
     this.app = app;
 
     // Create the database connection
-    const db = new sqlite3.Database('./data/stevelabs.db', err => {
+    const db = new sqlite3.Database('./data/stevelabs.db', (err) => {
       if (err) {
         console.warn('database connection failed');
         console.log(err);
@@ -43,7 +43,7 @@ export default class Database {
               return;
             }
 
-            rows.forEach(row => {
+            rows.forEach((row) => {
               app.settings[row.key] = row.value;
             });
 
@@ -129,7 +129,7 @@ export default class Database {
       }
 
       this.app.alerts = {};
-      rows.forEach(row => {
+      rows.forEach((row) => {
         this.app.alerts[row.key] = {
           message: row.message,
           graphic: row.graphic,
@@ -174,7 +174,7 @@ export default class Database {
 
       this.app.commands = {};
       const keys = [];
-      rows.forEach(row => {
+      rows.forEach((row) => {
         this.app.commands[row.key] = {
           trigger: row.key,
           level: row.level,
@@ -217,7 +217,7 @@ export default class Database {
       }
 
       this.app.timers = [];
-      rows.forEach(row => this.app.timers.push(row.message));
+      rows.forEach((row) => this.app.timers.push(row.message));
     });
   }
 
@@ -234,7 +234,7 @@ export default class Database {
       }
 
       this.app.schedule = [];
-      rows.forEach(row => this.app.schedule.push(row));
+      rows.forEach((row) => this.app.schedule.push(row));
     });
   }
 
@@ -251,7 +251,7 @@ export default class Database {
       }
 
       this.app.sfx = {};
-      rows.forEach(row => {
+      rows.forEach((row) => {
         this.app.sfx[row.key] = {
           file: row.file,
           volume: row.volume

@@ -54,7 +54,7 @@ export default class TwitterBot {
     }
 
     this.client.get('account/verify_credentials')
-      .then(res => {
+      .then((res) => {
         const add = '🔴【LIVE】 ';
         const name = res.name.replace(add, '');
         this.client.post('account/update_profile', {
@@ -64,12 +64,12 @@ export default class TwitterBot {
         .then(() => {
           console.log('updated Twitter name');
         })
-        .catch(err => {
+        .catch((err) => {
           console.warn('could not update Twitter profile');
           console.log(err);
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.warn('failed to get Twitter account');
         console.log(err);
       });

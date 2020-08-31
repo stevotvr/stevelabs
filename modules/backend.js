@@ -49,7 +49,7 @@ export default class Backend {
       new Promise((resolve) => {
         this.getHandlers[req.params.page](resolve, req, res);
       })
-      .then(data => {
+      .then((data) => {
         const options = {
           layout: 'admin',
           data: data
@@ -106,7 +106,7 @@ export default class Backend {
           resolve({
             timer_timeout: this.app.settings.timer_timeout,
             timer_chat_lines: this.app.settings.timer_chat_lines,
-            messages: rows.map(v => v.message).join('\n')
+            messages: rows.map((v) => v.message).join('\n')
           });
         });
       },
@@ -134,14 +134,14 @@ export default class Backend {
         this.db.all('SELECT user FROM raffle ORDER BY user ASC', (err, rows) => {
           resolve({
             raffle_active: this.app.settings.raffle_active,
-            users: rows.map(v => v.user)
+            users: rows.map((v) => v.user)
           });
         });
       },
       autoshoutout: (resolve) => {
         this.db.all('SELECT user FROM autoshoutout ORDER BY user ASC', (err, rows) => {
           resolve({
-            users: rows.map(v => v.user)
+            users: rows.map((v) => v.user)
           });
         });
       },
@@ -229,7 +229,7 @@ export default class Backend {
         }
       },
       commands: (resolve, req) => {
-        const filter = input => {
+        const filter = (input) => {
           const params = [];
           params.push(input.key.replace(/[^a-z\d ]/ig, '').toLowerCase());
           params.push(Math.max(0, input.level));
@@ -276,7 +276,7 @@ export default class Backend {
         if (Array.isArray(req.body.update)) {
           const stmt = this.db.prepare('UPDATE OR IGNORE commands SET key = ?, level = ?, user_timeout = ?, global_timeout = ?, aliases = ?, command = ? WHERE id = ?');
 
-          req.body.update.forEach(row => {
+          req.body.update.forEach((row) => {
             const params = filter(row);
             params.push(+row.id);
 
@@ -305,7 +305,7 @@ export default class Backend {
         this.app.settings.timer_chat_lines = req.body.timer_chat_lines;
         this.app.saveSettings();
 
-        this.db.run('DELETE FROM timers', err => {
+        this.db.run('DELETE FROM timers', (err) => {
           if (err) {
             console.warn('error saving timers');
             console.log(err);
@@ -337,7 +337,7 @@ export default class Backend {
         });
       },
       sfx: (resolve, req) => {
-        const filter = input => {
+        const filter = (input) => {
           const params = [];
           params.push(input.key.replace(/[^a-z\d]/ig, '').toLowerCase());
           params.push(input.file);
@@ -381,7 +381,7 @@ export default class Backend {
         if (Array.isArray(req.body.update)) {
           const stmt = this.db.prepare('UPDATE OR IGNORE sfx SET key = ?, file = ?, volume = ? WHERE id = ?');
 
-          req.body.update.forEach(row => {
+          req.body.update.forEach((row) => {
             const params = filter(row);
             params.push(+row.id);
 
@@ -406,7 +406,7 @@ export default class Backend {
         }
       },
       schedule: (resolve, req) => {
-        const filter = input => {
+        const filter = (input) => {
           const params = [];
           params.push(Math.max(0, Math.min(6, input.day)));
           params.push(Math.max(0, Math.min(23, input.hour)));
@@ -452,7 +452,7 @@ export default class Backend {
         if (Array.isArray(req.body.update)) {
           const stmt = this.db.prepare('UPDATE schedule SET day = ?, hour = ?, minute = ?, length = ?, game = ? WHERE id = ?');
 
-          req.body.update.forEach(row => {
+          req.body.update.forEach((row) => {
             const params = filter(row);
             params.push(+row.id);
 
@@ -477,7 +477,7 @@ export default class Backend {
         }
       },
       tips: (resolve, req) => {
-        const filter = input => {
+        const filter = (input) => {
           const params = [];
           params.push(input.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
           params.push(input.message);
@@ -519,7 +519,7 @@ export default class Backend {
         if (Array.isArray(req.body.update)) {
           const stmt = this.db.prepare('UPDATE tips SET user = ?, message = ? WHERE id = ?');
 
-          req.body.update.forEach(row => {
+          req.body.update.forEach((row) => {
             const params = filter(row);
             params.push(+row.id);
 
@@ -545,7 +545,7 @@ export default class Backend {
         }
       },
       quotes: (resolve, req) => {
-        const filter = input => {
+        const filter = (input) => {
           const params = [];
           params.push(input.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
           params.push(input.game)
@@ -588,7 +588,7 @@ export default class Backend {
         if (Array.isArray(req.body.update)) {
           const stmt = this.db.prepare('UPDATE quotes SET user = ?, game = ?, message = ? WHERE id = ?');
 
-          req.body.update.forEach(row => {
+          req.body.update.forEach((row) => {
             const params = filter(row);
             params.push(+row.id);
 
@@ -698,7 +698,7 @@ export default class Backend {
       },
       giveaway: (resolve, req) => {
         if (req.body.group) {
-          const filter = input => {
+          const filter = (input) => {
             const params = [];
             params.push(input.name);
             params.push(input.key);
@@ -740,7 +740,7 @@ export default class Backend {
           if (Array.isArray(req.body.update)) {
             const stmt = this.db.prepare('UPDATE giveaway SET name = ?, key = ? WHERE id = ?');
 
-            req.body.update.forEach(row => {
+            req.body.update.forEach((row) => {
               const params = filter(row);
               params.push(+row.id);
 
@@ -766,7 +766,7 @@ export default class Backend {
             });
           }
         } else {
-          const filter = input => {
+          const filter = (input) => {
             const params = [];
             params.push(input.name);
             params.push(!!input.random);
@@ -811,7 +811,7 @@ export default class Backend {
           if (Array.isArray(req.body.update)) {
             const stmt = this.db.prepare('UPDATE giveaway_groups SET name = ?, random = ? WHERE id = ?');
 
-            req.body.update.forEach(row => {
+            req.body.update.forEach((row) => {
               const params = filter(row);
               params.push(+row.id);
 

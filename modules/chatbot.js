@@ -99,7 +99,7 @@ export default class ChatBot {
           throw 'invalid arguments';
         } else {
           const message = args.slice(1).join(' ').trim();
-          this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], err => {
+          this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], (err) => {
             if (err) {
               console.warn('error saving tip data');
               console.log(err);
@@ -115,7 +115,7 @@ export default class ChatBot {
         if (args.length < 1 || !args[0].match(/\d+/)) {
           throw 'invalid arguments';
         } else {
-          this.db.run('DELETE FROM tips WHERE id = ?', args[0], err => {
+          this.db.run('DELETE FROM tips WHERE id = ?', args[0], (err) => {
             if (err) {
               console.warn('error deleting tip data');
               console.log(err);
@@ -132,7 +132,7 @@ export default class ChatBot {
           throw 'raffle not active';
         }
 
-        this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], err => {
+        this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], (err) => {
           if (err) {
             console.warn('error saving raffle data');
             console.log(err);
@@ -168,7 +168,7 @@ export default class ChatBot {
           throw 'raffle not active';
         }
 
-        this.db.get('DELETE FROM raffle', err => {
+        this.db.get('DELETE FROM raffle', (err) => {
           if (err) {
             console.warn('error deleting raffle data');
             console.log(err);
@@ -261,7 +261,7 @@ export default class ChatBot {
           throw 'invalid arguments';
         } else {
           const message = args.slice(1).join(' ').trim();
-          this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], err => {
+          this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], (err) => {
             if (err) {
               console.warn('error saving quote data');
               console.log(err);
@@ -277,7 +277,7 @@ export default class ChatBot {
         if (args.length < 1 || !args[0].match(/\d+/)) {
           throw 'invalid arguments';
         } else {
-          this.db.run('DELETE FROM quotes WHERE id = ?', args[0], err => {
+          this.db.run('DELETE FROM quotes WHERE id = ?', args[0], (err) => {
             if (err) {
               console.warn('error deleting quote data');
               console.log(err);
@@ -329,7 +329,7 @@ export default class ChatBot {
     this.host.connect()
     .then(() => {
       console.log('connected to Twitch channel');
-    }).catch(err => {
+    }).catch((err) => {
       console.warn('failed to connect to Twitch channel');
       console.log(err);
     });
@@ -340,7 +340,7 @@ export default class ChatBot {
     this.bot.connect()
     .then(() => {
       console.log('connected to Twitch bot channel');
-    }).catch(err => {
+    }).catch((err) => {
       console.warn('failed to connect to Twitch bot channel');
       console.log(err);
     });
@@ -476,7 +476,7 @@ export default class ChatBot {
             params.push(...(await this.parseCommand(this.app.commands.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
           }
 
-          this.chatCommands.shoutout(null, params, res => {
+          this.chatCommands.shoutout(null, params, (res) => {
             if (res) {
               this.bot.say(channel, res);
             }
@@ -496,7 +496,7 @@ export default class ChatBot {
     const tobot = first.toLowerCase() === this.app.config.users.bot.toLowerCase();
     if (tobot && message.indexOf(' ') !== -1) {
       this.nlp.process(message.substring(message.indexOf(' ') + 1))
-        .then(answer => this.bot.say(channel, `${user}, ${answer}`));
+        .then((answer) => this.bot.say(channel, `${user}, ${answer}`));
     }
 
     if (message[0] !== '!' && !tobot) {

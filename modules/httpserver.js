@@ -86,9 +86,9 @@ export default class HttpServer {
     this.express.get('/login', (req, res) => {
       if (req.query.code) {
         TwitchClient.getAccessToken(this.app.config.oauth.client, this.app.config.oauth.secret, req.query.code, `${this.app.config.url}/login`)
-          .then(token => {
+          .then((token) => {
             this.app.api.login(token.accessToken, token.refreshToken)
-            .then(valid => {
+            .then((valid) => {
               if (valid) {
                 this.app.settings.web_token = crypto.randomBytes(64).toString('hex');
                 this.app.saveSettings();
@@ -164,7 +164,7 @@ export default class HttpServer {
               return;
             }
 
-            rows.forEach(row => {
+            rows.forEach((row) => {
               options.config.tips.push(row.message);
             });
 
