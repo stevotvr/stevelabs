@@ -57,12 +57,27 @@ export default class TwitterBot {
       .then((res) => {
         const add = '🔴【LIVE】 ';
         const name = res.name.replace(add, '');
+
+        let description, savedDescription;
+        if (!live && this.app.settings.twitter_bio) {
+          description = this.app.settings.twitter_bio;
+          savedDescription = null;
+        } else if (live && this.app.settings.twitter_live_message) {
+          description = this.app.settings.twitter_live_message.replace('${name}', this.app.config.users.host).replace('${game}', this.app.api.game);
+          savedDescription = res.description;
+        } else {
+          return;
+        }
+
         this.client.post('account/update_profile', {
           name: live ? add + name : name,
-          description: this.getDescription(live, res.description)
+          description: description
         })
         .then(() => {
           console.log('updated Twitter name');
+
+          this.app.settings.twitter_bio = savedDescription;
+          this.app.saveSettings();
         })
         .catch((err) => {
           console.warn('could not update Twitter profile');
@@ -73,29 +88,5 @@ export default class TwitterBot {
         console.warn('failed to get Twitter account');
         console.log(err);
       });
-  }
-
-  /**
-   * Get the description text for the Twitter profile.
-   *
-   * @param {boolean} live Whether to get the live description
-   * @param {string} current The current profile description
-   */
-  getDescription(live, current) {
-    if (!live && this.app.settings.twitter_bio) {
-      this.app.settings.twitter_bio = null;
-      this.app.saveSettings();
-
-      return this.app.settings.twitter_bio;
-    } else if (live && this.app.settings.twitter_live_message) {
-      if (!this.app.settings.twitter_bio) {
-        this.app.settings.twitter_bio = current;
-        this.app.saveSettings();
-      }
-
-      return this.app.settings.twitter_live_message.replace('${name}', this.app.config.users.host).replace('${game}', this.app.api.game);
-    }
-
-    return current;
   }
 }
