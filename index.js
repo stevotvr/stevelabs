@@ -17,6 +17,7 @@ import ChatBot from './modules/chatbot.js';
 import Database from './modules/database.js';
 import DiscordBot from './modules/discord.js';
 import HttpServer from './modules/httpserver.js';
+import Redemptions from './modules/redemptions.js';
 import TwitchApi from './modules/twitchapi.js';
 import TwitterBot from './modules/twitter.js';
 
@@ -56,6 +57,7 @@ class App {
     this.discord = new DiscordBot(this);
     this.twitter = new TwitterBot(this);
     this.http = new HttpServer(this);
+    this.redemptions = new Redemptions(this);
     new Backend(this);
   }
 
