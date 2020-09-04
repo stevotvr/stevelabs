@@ -155,10 +155,11 @@ export default class Backend {
               return;
             }
 
-            this.db.all('SELECT id, name, key FROM giveaway WHERE groupId = ? ORDER BY name ASC', row.id, (err, rows) => {
+            this.db.all('SELECT id, name, key, recipient FROM giveaway WHERE groupId = ? ORDER BY name ASC', row.id, (err, rows) => {
               resolve({
                 group: row,
-                items: rows
+                items: rows.filter((v) => v.recipient === null),
+                claimed: rows.filter((v) => v.recipient !== null)
               });
             });
           });

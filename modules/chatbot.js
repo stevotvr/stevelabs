@@ -567,6 +567,18 @@ export default class ChatBot {
   }
 
   /**
+   * Send a whisper from the bot to a user.
+   *
+   * @param {string} user The target username
+   * @param {string} message The message to send
+   */
+  whisper(user, message) {
+    if (typeof user === 'string' && typeof message === 'string') {
+      this.bot.whisper(user, message);
+    }
+  }
+
+  /**
    * Parse a chat command string.
    *
    * @param {string} command The command string

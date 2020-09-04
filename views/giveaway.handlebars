@@ -48,6 +48,26 @@
 		</fieldset>
 	</fieldset>
 </form>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="group" value="{{data.group.id}}">
+	<fieldset>
+		<legend>Claimed Items</legend>
+		<table>
+			<tr>
+				<th style="width: 35%;">Name</th>
+				<th style="width: 35%;">Key</th>
+				<th style="width: 30%;">Recipient</th>
+			</tr>
+			{{#each data.claimed}}
+			<tr>
+				<td>{{this.name}}</td>
+				<td>{{this.key}}</td>
+				<td>{{this.recipient}}</td>
+			</tr>
+			{{/each}}
+		</table>
+	</fieldset>
+</form>
 {{else}}
 <form method="post" autocomplete="off">
 	<input type="hidden" name="add" value="1">

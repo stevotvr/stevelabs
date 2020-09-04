@@ -110,6 +110,8 @@ export default class HttpServer {
           'user:read:email',
           'chat:read',
           'chat:edit',
+          'whispers:read',
+          'whispers:edit',
           'channel:read:redemptions'
         ];
         res.render('login', { connectUrl: `https://id.twitch.tv/oauth2/authorize?client_id=${this.app.config.oauth.client}&redirect_uri=${this.app.config.url}/login&response_type=code&scope=${scopes.join('+')}` })
