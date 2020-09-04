@@ -1,6 +1,6 @@
 <h2>Giveaways</h2>
 {{#if data.group}}
-<h3>Group: {{data.group.name}}</h3>
+<h3>Group: {{data.group.name}} ({{data.items.length}} items)</h3>
 <form method="post" autocomplete="off">
 	<input type="hidden" name="add" value="1">
 	<input type="hidden" name="group" value="{{data.group.id}}">
@@ -51,7 +51,7 @@
 <form method="post" autocomplete="off">
 	<input type="hidden" name="group" value="{{data.group.id}}">
 	<fieldset>
-		<legend>Claimed Items</legend>
+		<legend>Claimed Items ({{data.claimed.length}})</legend>
 		<table>
 			<tr>
 				<th style="width: 35%;">Name</th>
