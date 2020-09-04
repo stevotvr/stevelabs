@@ -163,7 +163,7 @@ export default class Backend {
             });
           });
         } else {
-          this.db.all('SELECT id, name, random FROM giveaway_groups ORDER BY name ASC', (err, rows) => {
+          this.db.all('SELECT id, name, random, raffle, redemption FROM giveaway_groups ORDER BY name ASC', (err, rows) => {
             resolve({ groups: rows });
           });
         }
@@ -770,6 +770,8 @@ export default class Backend {
             const params = [];
             params.push(input.name);
             params.push(!!input.random);
+            params.push(!!input.raffle);
+            params.push(input.redemption);
 
             return params;
           };
@@ -809,7 +811,7 @@ export default class Backend {
           }
 
           if (Array.isArray(req.body.update)) {
-            const stmt = this.db.prepare('UPDATE giveaway_groups SET name = ?, random = ? WHERE id = ?');
+            const stmt = this.db.prepare('UPDATE giveaway_groups SET name = ?, random = ?, raffle = ?, redemption = ? WHERE id = ?');
 
             req.body.update.forEach((row) => {
               const params = filter(row);
@@ -826,7 +828,7 @@ export default class Backend {
           }
 
           if (req.body.add) {
-            this.db.run('INSERT INTO giveaway_groups (name, random) VALUES (?, ?)', filter(req.body), () => {
+            this.db.run('INSERT INTO giveaway_groups (name, random, raffle, redemption) VALUES (?, ?, ?, ?)', filter(req.body), () => {
               if (!--count) {
                 resolve();
               }
