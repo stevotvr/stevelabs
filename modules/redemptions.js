@@ -83,7 +83,7 @@ export default class Redemptions {
             return;
           }
 
-          this.app.chatbot.say(`${message.userDisplayName} check your whispers!`);
+          this.app.chatbot.say(`${message.userDisplayName} check your whispers for your key for ${row.name}!`);
           this.app.chatbot.whisper(message.userName, `Here is your key for ${row.name}: ${row.key}`);
           this.app.db.db.run('UPDATE giveaway SET recipient = ? WHERE id = ?', message.userName, row.id);
 
