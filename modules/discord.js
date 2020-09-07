@@ -187,8 +187,10 @@ export default class DiscordBot {
    * @param {string} name The channel name
    */
   getMessage(format, name) {
-    if (format) {
-      return format.replace('${name}', name).replace('${game}', this.app.api.game);
+    if (typeof format === 'string') {
+      return format.replace(/\${name}/g, name).replace(/\${game}/g, this.app.api.game);
     }
+
+    return '';
   }
 }

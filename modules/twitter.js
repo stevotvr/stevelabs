@@ -63,7 +63,7 @@ export default class TwitterBot {
           description = this.app.settings.twitter_bio;
           savedDescription = null;
         } else if (live && this.app.settings.twitter_live_message) {
-          description = this.app.settings.twitter_live_message.replace('${name}', this.app.config.users.host).replace('${game}', this.app.api.game);
+          description = this.app.settings.twitter_live_message.replace(/\${name}/g, this.app.config.users.host).replace(/\${game}/g, this.app.api.game);
           savedDescription = res.description;
         } else {
           return;
