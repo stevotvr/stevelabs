@@ -100,7 +100,6 @@ export default class DiscordBot {
       if (message) {
         try {
           await message.edit(this.getMessage(this.app.settings.discord_live_message, user.displayName), options);
-          resolve();
 
           return;
         } catch (err) {
