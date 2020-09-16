@@ -16,17 +16,17 @@
   "homepage": "https://github.com/stevotvr/stevelabs",
   "dependencies": {
     "cookie-parser": "^1.4.5",
-    "discord.js": "^12.2.0",
+    "discord.js": "^12.3.1",
     "express": "^4.17.1",
-    "express-handlebars": "^4.0.4",
-    "node-fetch": "^2.6.0",
-    "node-nlp": "^4.10.1",
+    "express-handlebars": "^4.0.6",
+    "node-fetch": "^2.6.1",
+    "node-nlp": "^4.11.1",
     "socket.io": "^2.3.0",
     "sqlite3": "^4.2.0",
-    "twitch": "^4.1.4",
-    "twitch-chat-client": "^4.1.4",
-    "twitch-pubsub-client": "^4.1.4",
-    "twitch-webhooks": "^4.1.4",
+    "twitch": "^4.2.2",
+    "twitch-chat-client": "^4.2.2",
+    "twitch-pubsub-client": "^4.2.2",
+    "twitch-webhooks": "^4.2.2",
     "twitter-lite": "^0.14.0"
   }
 }
