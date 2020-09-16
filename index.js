@@ -14,6 +14,7 @@ import fs from 'fs';
 // Modules
 import Backend from './modules/backend.js';
 import ChatBot from './modules/chatbot.js';
+import Commands from './modules/commands.js';
 import Database from './modules/database.js';
 import DiscordBot from './modules/discord.js';
 import HttpServer from './modules/httpserver.js';
@@ -53,6 +54,7 @@ class App {
     // Module instances
     this.db = new Database(this);
     this.api = new TwitchApi(this);
+    this.cmds = new Commands(this);
     this.chatbot = new ChatBot(this);
     this.discord = new DiscordBot(this);
     this.twitter = new TwitterBot(this);
