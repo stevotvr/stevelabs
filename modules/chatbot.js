@@ -162,7 +162,7 @@ export default class ChatBot {
       chatbot.timerPos = (chatbot.timerPos + 1) % chatbot.app.timers.length;
       chatbot.nextTimer = Date.now() + chatbot.app.settings.timer_timeout * 1000;
       chatbot.chatLines = 0;
-    }, 1000);
+    }, 30000);
   }
 
   /**
