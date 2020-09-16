@@ -9,6 +9,7 @@
 
 'use strict'
 
+import { ApiClient } from 'twitch';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import express from 'express';
@@ -17,7 +18,6 @@ import handlebars from 'express-handlebars';
 import http from 'http';
 import https from 'https';
 import Socket from 'socket.io';
-import TwitchClient from 'twitch';
 
 /**
  * Provides HTTP server functionality.
@@ -85,7 +85,7 @@ export default class HttpServer {
     // The login page
     this.express.get('/login', (req, res) => {
       if (req.query.code) {
-        TwitchClient.getAccessToken(this.app.config.oauth.client, this.app.config.oauth.secret, req.query.code, `${this.app.config.url}/login`)
+        ApiClient.getAccessToken(this.app.config.oauth.client, this.app.config.oauth.secret, req.query.code, `${this.app.config.url}/login`)
           .then((token) => {
             this.app.api.login(token.accessToken, token.refreshToken)
             .then((valid) => {

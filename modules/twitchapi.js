@@ -9,8 +9,9 @@
 
 'use strict'
 
-import TwitchClient from 'twitch';
-import WebHookListener, { SimpleAdapter } from 'twitch-webhooks';
+import { ApiClient } from 'twitch';
+import { RefreshableAuthProvider, StaticAuthProvider } from 'twitch-auth';
+import { WebHookListener, SimpleAdapter } from 'twitch-webhooks';
 
 /**
  * Handles Twitch API operations.
@@ -31,7 +32,9 @@ export default class TwitchApi {
       return false;
     }
 
-    const client = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+    const sap = new StaticAuthProvider(this.app.config.oauth.client, access_token);
+
+    let rap = new RefreshableAuthProvider(sap, {
       clientSecret: this.app.config.oauth.secret,
       refreshToken: refresh_token,
       onRefresh: (token) => {
@@ -39,6 +42,7 @@ export default class TwitchApi {
         refresh_token = token.refreshToken;
       }
     });
+    const client = new ApiClient({ authProvider: rap });
 
     const token = await client.getTokenInfo();
     if (token.userName === this.app.config.users.host) {
@@ -46,7 +50,7 @@ export default class TwitchApi {
       this.app.settings.oauth_refresh_token = refresh_token;
       this.app.saveSettings();
 
-      this.client = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+      rap = new RefreshableAuthProvider(sap, {
         clientSecret: this.app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
@@ -55,6 +59,7 @@ export default class TwitchApi {
           this.app.saveSettings();
         }
       });
+      this.client = new ApiClient({ authProvider: rap });
       this.userId = token.userId;
 
       this.app.chatbot.setupTwitchClients();
@@ -70,7 +75,7 @@ export default class TwitchApi {
       this.app.settings.bot_refresh_token = refresh_token;
       this.app.saveSettings();
 
-      this.botClient = TwitchClient.withCredentials(this.app.config.oauth.client, access_token, undefined, {
+      rap = new RefreshableAuthProvider(sap, {
         clientSecret: this.app.config.oauth.secret,
         refreshToken: refresh_token,
         onRefresh: (token) => {
@@ -79,6 +84,7 @@ export default class TwitchApi {
           this.app.saveSettings();
         }
       });
+      this.botClient = new ApiClient({ authProvider: rap });
 
       this.app.chatbot.setupTwitchClients();
 

@@ -24,6 +24,7 @@
     "socket.io": "^2.3.0",
     "sqlite3": "^4.2.0",
     "twitch": "^4.2.2",
+    "twitch-auth": "^4.2.2",
     "twitch-chat-client": "^4.2.2",
     "twitch-pubsub-client": "^4.2.2",
     "twitch-webhooks": "^4.2.2",

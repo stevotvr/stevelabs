@@ -9,7 +9,7 @@
 
 'use strict'
 
-import ChatClient from 'twitch-chat-client';
+import { ChatClient } from 'twitch-chat-client';
 import Nlp from './nlp.js';
 
 /**
@@ -51,7 +51,7 @@ export default class ChatBot {
     }
 
     // Create the client for the host channel
-    this.host = ChatClient.forTwitchClient(this.app.api.client, {
+    this.host = new ChatClient(this.app.api.client, {
       channels: [ this.app.config.users.host ]
     });
 
@@ -64,7 +64,7 @@ export default class ChatBot {
     });
 
     // Create the client for the bot channel
-    this.bot = ChatClient.forTwitchClient(this.app.api.botClient);
+    this.bot = new ChatClient(this.app.api.botClient);
 
     this.bot.connect()
     .then(() => {
@@ -79,7 +79,7 @@ export default class ChatBot {
     this.hookEvents();
     this.startTimers();
 
-    this.host.onPrivmsg((channel, user, message, msg) => this.onChat(channel, user, message, msg));
+    this.host.onMessage((channel, user, message, msg) => this.onChat(channel, user, message, msg));
   }
 
   /**
