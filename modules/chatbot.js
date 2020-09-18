@@ -268,16 +268,11 @@ export default class ChatBot {
 
       this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
-          const params = [ user ];
-          if (row && this.triggers.shoutout) {
-            params.push(...(await this.parseCommand(this.triggers.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
+          if (this.triggers.shoutout) {
+            this.app.commands.parseCommand(this.triggers.shoutout.command, [ null, user ], msg.userInfo);
+          } else {
+            this.app.commands.shoutout(null, [ user ]);
           }
-
-          this.app.commands.shoutout(null, params, (res) => {
-            if (res) {
-              this.bot.say(channel, res);
-            }
-          }, () => {});
         }
       });
     }
@@ -306,21 +301,21 @@ export default class ChatBot {
       return;
     }
 
-    let command, alias = false;
+    let trigger, alias = false;
     for (let i = 0; i < this.triggers._keys.length; i++) {
       const key = this.triggers._keys[i];
       if (key === message.substr(1, key.length)) {
-        command = this.triggers[key];
+        trigger = this.triggers[key];
         alias = key;
         break
       }
     }
 
-    if (!command) {
+    if (!trigger) {
       return;
     }
 
-    if (Date.now() < Math.max(command.timeouts.global, command.timeouts.user[user] || 0)) {
+    if (Date.now() < Math.max(trigger.timeouts.global, trigger.timeouts.user[user] || 0)) {
       return;
     }
 
@@ -333,21 +328,16 @@ export default class ChatBot {
       level = 1;
     }
 
-    if (level < command.level) {
+    if (level < trigger.level) {
       return;
     }
 
     const params = message.trim().substring(alias.length + 2).split(/\s+/);
-    params.unshift(command.trigger);
-    const parsed = await this.parseCommand(command.command, params, msg.userInfo);
-    if (!parsed.length || this.app.commands[parsed[0]] === undefined) {
-      return;
-    }
-
-    this.app.commands[parsed[0]](user, parsed.slice(1))
+    params.unshift(trigger.trigger);
+    this.app.commands.parseCommand(trigger.command, params, msg.userInfo)
       .then(() => {
-        command.timeouts.global = Date.now() + command.global_timeout * 1000;
-        command.timeouts.user[user] = Date.now() + command.user_timeout * 1000;
+        trigger.timeouts.global = Date.now() + trigger.global_timeout * 1000;
+        trigger.timeouts.user[user] = Date.now() + trigger.user_timeout * 1000;
       })
       .catch(() => {});
   }
@@ -373,69 +363,6 @@ export default class ChatBot {
     if (typeof user === 'string' && typeof message === 'string') {
       this.bot.whisper(user, message);
     }
-  }
-
-  /**
-   * Parse a chat command string.
-   *
-   * @param {string} command The command string
-   * @param {array} params The parameters
-   * @param {ChatUser} userInfo The user data of the user triggering the command
-   */
-  async parseCommand(command, params, userInfo) {
-    let parsed = command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
-      if (range) {
-        if (end) {
-          if (end >= 0) {
-            end++;
-          }
-
-          return params.slice(start, end).join(' ');
-        }
-
-        return params.slice(start).join(' ');
-      }
-
-      return params[start];
-    });
-
-    const promises = [];
-    parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
-      promises.push(new Promise(async (resolve) => {
-        switch (fn) {
-          case 'user':
-            resolve(userInfo.displayName);
-            break;
-          case 'channel':
-            resolve(p.toLowerCase());
-            break;
-          case 'game':
-            if (!p) {
-              resolve(this.app.api.game);
-              break;
-            }
-
-            const user = await this.app.api.client.kraken.users.getUserByName(p);
-            if (user) {
-              const channel = await user.getChannel();
-              if (channel && channel.game) {
-                resolve(channel.game);
-                break;
-              }
-            }
-
-            resolve('unknown');
-            break;
-          default:
-            resolve(match);
-        }
-      }));
-    });
-
-    const values = await Promise.all(promises);
-    parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, () => values.shift());
-
-    return parsed.split(/\s+/);
   }
 
   /**

@@ -288,4 +288,70 @@ export default class Commands {
 
     this.app.chatbot.say(`${target} is not following`);
   }
+
+  /**
+   * Parse a command string.
+   *
+   * @param {string} command The command string
+   * @param {array} params The parameters
+   * @param {ChatUser} userInfo The user data of the user triggering the command
+   */
+  async parseCommand(command, params, userInfo) {
+    let parsed = command.replace(/\$\{(\d+)(\:(\d*))?\}/g, (match, start, range, end) => {
+      if (range) {
+        if (end) {
+          if (end >= 0) {
+            end++;
+          }
+
+          return params.slice(start, end).join(' ');
+        }
+
+        return params.slice(start).join(' ');
+      }
+
+      return params[start];
+    });
+
+    const promises = [];
+    parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
+      promises.push(new Promise(async (resolve) => {
+        switch (fn) {
+          case 'user':
+            resolve(userInfo ? userInfo.displayName : 'user');
+            break;
+          case 'channel':
+            resolve(p.toLowerCase());
+            break;
+          case 'game':
+            if (!p) {
+              resolve(this.app.api.game);
+              break;
+            }
+
+            const user = await this.app.api.client.kraken.users.getUserByName(p);
+            if (user) {
+              const channel = await user.getChannel();
+              if (channel && channel.game) {
+                resolve(channel.game);
+                break;
+              }
+            }
+
+            resolve('unknown');
+            break;
+          default:
+            resolve(match);
+        }
+      }));
+    });
+
+    const values = await Promise.all(promises);
+    parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, () => values.shift()).split(/\s+/);
+    if (!parsed.length || this[parsed[0]] === undefined) {
+      throw 'command not found';
+    }
+
+    return await this[parsed[0]](userInfo ? userInfo.username : null, parsed.slice(1));
+  }
 }
