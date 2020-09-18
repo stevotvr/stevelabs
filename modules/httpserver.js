@@ -31,6 +31,9 @@ export default class HttpServer {
    */
   constructor(app) {
     this.app = app;
+    this.alerts = {};
+    this.schedule = [];
+    this.sfx = {};
 
     const hbs = handlebars.create({
       helpers: {
@@ -70,6 +73,95 @@ export default class HttpServer {
     httpServer.listen(app.config.port, app.config.host, () => {
       console.log(`listening on ${app.config.host}:${app.config.port}`);
       console.log(`overlay url: ${app.config.url}/overlay`);
+    });
+  }
+
+  /**
+   * Load the alerts from the database.
+   */
+  loadAlerts() {
+    this.app.db.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts', (err, rows) => {
+      if (err) {
+        console.warn('error loading alerts from the database');
+        console.log(err);
+
+        return;
+      }
+
+      const alerts = {};
+      rows.forEach((row) => {
+        alerts[row.key] = {
+          message: row.message,
+          graphic: row.graphic,
+          sound: row.sound,
+          duration: row.duration,
+          videoVolume: row.videoVolume,
+          soundVolume: row.soundVolume
+        };
+      });
+
+      for (const key in alerts) {
+        const alert = alerts[key];
+        if (alert.graphic) {
+          const ext = alert.graphic.substring(alert.graphic.lastIndexOf('.') + 1).toLowerCase();
+          switch (ext) {
+            case 'mp4':
+            case 'mov':
+            case 'webm':
+              alert.video = alert.graphic;
+              break;
+            default:
+              alert.image = alert.graphic;
+          }
+        }
+
+        alert.message = alert.message.replace(/\$\{([a-z]+)\}/gi, '<span class="$1"></span>');
+      }
+
+      this.alerts = alerts;
+    });
+  }
+
+  /**
+   * Load the schedule from the database.
+   */
+  loadSchedule() {
+    this.app.db.db.all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
+      if (err) {
+        console.warn('error loading schedule from the database');
+        console.log(err);
+
+        return;
+      }
+
+      const schedule = [];
+      rows.forEach((row) => schedule.push(row));
+
+      this.schedule = schedule;
+    });
+  }
+
+  /**
+   * Load the sound effects from the database.
+   */
+  loadSfx() {
+    this.app.db.db.all('SELECT key, file, volume FROM sfx', (err, rows) => {
+      if (err) {
+        console.warn('error loading sfx from the database');
+        console.log(err);
+
+        return;
+      }
+
+      const sfx = {};
+      rows.forEach((row) => {
+        sfx[row.key] = {
+          file: row.file,
+          volume: row.volume
+        };
+      });
+
+      this.sfx = sfx;
     });
   }
 
@@ -126,31 +218,31 @@ export default class HttpServer {
       };
 
       if (req.query.alerts) {
-        options.alerts = this.app.alerts;
+        options.alerts = this.alerts;
         options.config.alerts = true;
         options.config.donordrive = {
           instance: this.app.settings.donordrive_instance,
           participant: this.app.settings.donordrive_participant,
-          duration: this.app.alerts.charitydonation.duration * 1000,
-          video_volume: this.app.alerts.charitydonation.videoVolume,
-          sound_volume: this.app.alerts.charitydonation.soundVolume
+          duration: this.alerts.charitydonation.duration * 1000,
+          video_volume: this.alerts.charitydonation.videoVolume,
+          sound_volume: this.alerts.charitydonation.soundVolume
         };
       }
 
       if (req.query.countdown) {
         options.countdown = true;
         options.countdown_audio = this.app.settings.countdown_audio;
-        options.config.schedule = this.app.schedule;
+        options.config.schedule = this.schedule;
         options.config.countdown_audio_volume = this.app.settings.countdown_audio_volume;
       }
 
       if (req.query.nextstream) {
         options.nextstream = true;
-        options.config.schedule = this.app.schedule;
+        options.config.schedule = this.schedule;
       }
 
       if (req.query.sfx) {
-        options.sfx = this.app.sfx;
+        options.sfx = this.sfx;
         options.config.sfx = true;
       }
 
@@ -190,7 +282,7 @@ export default class HttpServer {
    * @param {object} params The alert parameters
    */
   sendAlert(type, params) {
-    const alert = this.app.alerts[type];
+    const alert = this.alerts[type];
 
     if ((!alert.message && !alert.graphic && !alert.sound) || !alert.duration) {
       return;
@@ -208,10 +300,12 @@ export default class HttpServer {
    * @param {string} name The name of the sound effect to send
    */
   sendSfx(name) {
-    if (!this.app.sfx[name]) {
-      return;
+    if (!this.sfx[name]) {
+      return false;
     }
 
-    this.io.emit('sfx', name, this.app.sfx[name].volume);
+    this.io.emit('sfx', name, this.sfx[name].volume);
+
+    return true;
   }
 }

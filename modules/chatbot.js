@@ -32,6 +32,72 @@ export default class ChatBot {
     this.chatLines = 0;
 
     this.sessionUsers = new Set();
+
+    this.triggers = { _keys: [] };
+    this.timers = [];
+  }
+
+  /**
+   * Load the chat triggers from the database.
+   */
+  loadTriggers() {
+    this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM triggers', (err, rows) => {
+      if (err) {
+        console.warn('error loading triggers from the database');
+        console.log(err);
+
+        return;
+      }
+
+      const triggers = { _keys: [] };
+      rows.forEach((row) => {
+        triggers[row.key] = {
+          trigger: row.key,
+          level: row.level,
+          user_timeout: row.user_timeout,
+          global_timeout: row.global_timeout,
+          aliases: row.aliases ? row.aliases.split(',') : [],
+          command: row.command
+        };
+
+        triggers._keys.push(row.key);
+      });
+
+      for (const k in triggers) {
+        for (const k2 in triggers[k].aliases) {
+          triggers[triggers[k].aliases[k2]] = triggers[k];
+          triggers._keys.push(triggers[k].aliases[k2]);
+        }
+
+        triggers[k].timeouts = {
+          global: 0,
+          user: {}
+        };
+      }
+
+      triggers._keys.sort((a, b) => b.length - a.length);
+
+      this.triggers = triggers;
+    });
+  }
+
+  /**
+   * Load the timers from the database.
+   */
+  loadTimers() {
+    this.db.all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
+      if (err) {
+        console.warn('error loading timers from the database');
+        console.log(err);
+
+        return;
+      }
+
+      const timers = [];
+      rows.forEach((row) => timers.push(row.message));
+
+      this.timers = timers;
+    });
   }
 
   /**
@@ -154,12 +220,12 @@ export default class ChatBot {
     const chatbot = this;
 
     setInterval(() => {
-      if (!chatbot.app.timers || !chatbot.app.islive || chatbot.chatLines < chatbot.app.settings.timer_chat_lines || Date.now() < chatbot.nextTimer) {
+      if (!chatbot.timers.length || !chatbot.app.islive || chatbot.chatLines < chatbot.app.settings.timer_chat_lines || Date.now() < chatbot.nextTimer) {
         return;
       }
 
-      chatbot.bot.say(chatbot.app.config.users.host, chatbot.app.timers[chatbot.timerPos]);
-      chatbot.timerPos = (chatbot.timerPos + 1) % chatbot.app.timers.length;
+      chatbot.bot.say(chatbot.app.config.users.host, chatbot.timers[chatbot.timerPos]);
+      chatbot.timerPos = (chatbot.timerPos + 1) % chatbot.timers.length;
       chatbot.nextTimer = Date.now() + chatbot.app.settings.timer_timeout * 1000;
       chatbot.chatLines = 0;
     }, 30000);
@@ -201,8 +267,8 @@ export default class ChatBot {
       this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
           const params = [ user ];
-          if (row && this.app.triggers.shoutout) {
-            params.push(...(await this.parseCommand(this.app.triggers.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
+          if (row && this.triggers.shoutout) {
+            params.push(...(await this.parseCommand(this.triggers.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
           }
 
           this.app.commands.shoutout(null, params, (res) => {
@@ -239,10 +305,10 @@ export default class ChatBot {
     }
 
     let command, alias = false;
-    for (let i = 0; i < this.app.triggers._keys.length; i++) {
-      const key = this.app.triggers._keys[i];
+    for (let i = 0; i < this.triggers._keys.length; i++) {
+      const key = this.triggers._keys[i];
       if (key === message.substr(1, key.length)) {
-        command = this.app.triggers[key];
+        command = this.triggers[key];
         alias = key;
         break
       }

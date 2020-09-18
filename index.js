@@ -43,13 +43,8 @@ class App {
       // Do nothing; directory probably exists
     }
 
-    // Application data
+    // Application settings
     this.settings = {};
-    this.alerts = {};
-    this.triggers = {};
-    this.timers = [];
-    this.schedule = [];
-    this.sfx = {};
 
     // Module instances
     this.db = new Database(this);

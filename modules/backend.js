@@ -220,7 +220,7 @@ export default class Backend {
             const soundVolume = row.soundVolume ? Math.min(100, Math.max(0, row.soundVolume)) : 100;
             stmt.run(row.message, row.graphic, row.sound, Math.max(1, row.duration), videoVolume, soundVolume, key, () => {
               if (!--count) {
-                this.app.db.loadAlerts();
+                this.app.http.loadAlerts();
                 resolve();
               }
             });
@@ -265,7 +265,7 @@ export default class Backend {
           for (const key in req.body.delete) {
             stmt.run(+key.substr(1), () => {
               if (!--count) {
-                this.app.db.loadTriggers();
+                this.app.chatbot.loadTriggers();
                 resolve();
               }
             });
@@ -283,7 +283,7 @@ export default class Backend {
 
             stmt.run(params, () => {
               if (!--count) {
-                this.app.db.loadTriggers();
+                this.app.chatbot.loadTriggers();
                 resolve();
               }
             });
@@ -295,7 +295,7 @@ export default class Backend {
         if (req.body.add) {
           this.db.run('INSERT OR IGNORE INTO triggers (key, level, user_timeout, global_timeout, aliases, command) VALUES (?, ?, ?, ?, ?, ?)', filter(req.body), () => {
             if (!--count) {
-              this.app.db.loadTriggers();
+              this.app.chatbot.loadTriggers();
               resolve();
             }
           });
@@ -328,7 +328,7 @@ export default class Backend {
           for (let i = 0; i < messages.length; i++) {
             stmt.run(i, messages[i], () => {
               if (!--count) {
-                this.app.db.loadTimers();
+                this.app.http.loadTimers();
                 resolve();
               }
             });
@@ -370,7 +370,7 @@ export default class Backend {
           for (const key in req.body.delete) {
             stmt.run(+key.substr(1), () => {
               if (!--count) {
-                this.app.db.loadSfx();
+                this.app.http.loadSfx();
                 resolve();
               }
             });
@@ -388,7 +388,7 @@ export default class Backend {
 
             stmt.run(params, () => {
               if (!--count) {
-                this.app.db.loadSfx();
+                this.app.http.loadSfx();
                 resolve();
               }
             });
@@ -400,7 +400,7 @@ export default class Backend {
         if (req.body.add) {
           this.db.run('INSERT OR IGNORE INTO sfx (key, file, volume) VALUES (?, ?, ?)', filter(req.body), () => {
             if (!--count) {
-              this.app.db.loadSfx();
+              this.app.http.loadSfx();
               resolve();
             }
           });
@@ -441,7 +441,7 @@ export default class Backend {
           for (const key in req.body.delete) {
             stmt.run(+key.substr(1), () => {
               if (!--count) {
-                this.app.db.loadSchedule();
+                this.app.http.loadSchedule();
                 resolve();
               }
             });
@@ -459,7 +459,7 @@ export default class Backend {
 
             stmt.run(params, () => {
               if (!--count) {
-                this.app.db.loadSchedule();
+                this.app.http.loadSchedule();
                 resolve();
               }
             });
@@ -471,7 +471,7 @@ export default class Backend {
         if (req.body.add) {
           this.db.run('INSERT INTO schedule (day, hour, minute, length, game) VALUES (?, ?, ?, ?, ?)', filter(req.body), () => {
             if (!--count) {
-              this.app.db.loadSchedule();
+              this.app.http.loadSchedule();
               resolve();
             }
           });
@@ -761,7 +761,7 @@ export default class Backend {
 
             this.db.run('INSERT INTO giveaway (groupId, name, key) VALUES (?, ?, ?)', params, () => {
               if (!--count) {
-                this.app.db.loadSchedule();
+                this.app.http.loadSchedule();
                 resolve();
               }
             });

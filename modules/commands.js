@@ -20,11 +20,9 @@ export default class Commands {
   }
 
   async sfx(user, args) {
-    if (this.app.sfx[args[0]] === undefined) {
+    if(!this.app.http.sendSfx(args[0])) {
       throw 'sound not found';
     }
-
-    this.app.http.sendSfx(args[0]);
   }
 
   async tip(user, args) {
