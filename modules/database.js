@@ -84,8 +84,8 @@ export default class Database {
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS commands (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
-              this.loadCommands();
+              db.run('CREATE TABLE IF NOT EXISTS triggers (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
+              this.loadTriggers();
             });
 
             db.serialize(() => {
@@ -161,21 +161,21 @@ export default class Database {
   }
 
   /**
-   * Load the chat commands from the database.
+   * Load the chat triggers from the database.
    */
-  loadCommands() {
-    this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM commands', (err, rows) => {
+  loadTriggers() {
+    this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM triggers', (err, rows) => {
       if (err) {
-        console.warn('error loading commands from the database');
+        console.warn('error loading triggers from the database');
         console.log(err);
 
         return;
       }
 
-      this.app.commands = {};
+      this.app.triggers = {};
       const keys = [];
       rows.forEach((row) => {
-        this.app.commands[row.key] = {
+        this.app.triggers[row.key] = {
           trigger: row.key,
           level: row.level,
           user_timeout: row.user_timeout,
@@ -187,20 +187,20 @@ export default class Database {
         keys.push(row.key);
       });
 
-      for (const k in this.app.commands) {
-        for (const k2 in this.app.commands[k].aliases) {
-          this.app.commands[this.app.commands[k].aliases[k2]] = this.app.commands[k];
-          keys.push(this.app.commands[k].aliases[k2]);
+      for (const k in this.app.triggers) {
+        for (const k2 in this.app.triggers[k].aliases) {
+          this.app.triggers[this.app.triggers[k].aliases[k2]] = this.app.triggers[k];
+          keys.push(this.app.triggers[k].aliases[k2]);
         }
 
-        this.app.commands[k].timeouts = {
+        this.app.triggers[k].timeouts = {
           global: 0,
           user: {}
         };
       }
 
       keys.sort((a, b) => b.length - a.length);
-      this.app.commands._keys = keys;
+      this.app.triggers._keys = keys;
     });
   }
 

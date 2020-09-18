@@ -96,9 +96,9 @@ export default class Backend {
           resolve({ alerts: rows });
         });
       },
-      commands: (resolve) => {
-        this.db.all('SELECT id, key, level, user_timeout, global_timeout, aliases, command FROM commands ORDER BY key ASC', (err, rows) => {
-          resolve({ commands: rows });
+      triggers: (resolve) => {
+        this.db.all('SELECT id, key, level, user_timeout, global_timeout, aliases, command FROM triggers ORDER BY key ASC', (err, rows) => {
+          resolve({ triggers: rows });
         });
       },
       timers: (resolve) => {
@@ -229,7 +229,7 @@ export default class Backend {
           stmt.finalize();
         }
       },
-      commands: (resolve, req) => {
+      triggers: (resolve, req) => {
         const filter = (input) => {
           const params = [];
           params.push(input.key.replace(/[^a-z\d ]/ig, '').toLowerCase());
@@ -260,12 +260,12 @@ export default class Backend {
         }
 
         if (typeof req.body.delete === "object") {
-          const stmt = this.db.prepare('DELETE FROM commands WHERE id = ?');
+          const stmt = this.db.prepare('DELETE FROM triggers WHERE id = ?');
 
           for (const key in req.body.delete) {
             stmt.run(+key.substr(1), () => {
               if (!--count) {
-                this.app.db.loadCommands();
+                this.app.db.loadTriggers();
                 resolve();
               }
             });
@@ -275,7 +275,7 @@ export default class Backend {
         }
 
         if (Array.isArray(req.body.update)) {
-          const stmt = this.db.prepare('UPDATE OR IGNORE commands SET key = ?, level = ?, user_timeout = ?, global_timeout = ?, aliases = ?, command = ? WHERE id = ?');
+          const stmt = this.db.prepare('UPDATE OR IGNORE triggers SET key = ?, level = ?, user_timeout = ?, global_timeout = ?, aliases = ?, command = ? WHERE id = ?');
 
           req.body.update.forEach((row) => {
             const params = filter(row);
@@ -283,7 +283,7 @@ export default class Backend {
 
             stmt.run(params, () => {
               if (!--count) {
-                this.app.db.loadCommands();
+                this.app.db.loadTriggers();
                 resolve();
               }
             });
@@ -293,9 +293,9 @@ export default class Backend {
         }
 
         if (req.body.add) {
-          this.db.run('INSERT OR IGNORE INTO commands (key, level, user_timeout, global_timeout, aliases, command) VALUES (?, ?, ?, ?, ?, ?)', filter(req.body), () => {
+          this.db.run('INSERT OR IGNORE INTO triggers (key, level, user_timeout, global_timeout, aliases, command) VALUES (?, ?, ?, ?, ?, ?)', filter(req.body), () => {
             if (!--count) {
-              this.app.db.loadCommands();
+              this.app.db.loadTriggers();
               resolve();
             }
           });

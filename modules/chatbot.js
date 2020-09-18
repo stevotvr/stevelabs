@@ -201,11 +201,11 @@ export default class ChatBot {
       this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
           const params = [ user ];
-          if (row && this.app.commands.shoutout) {
-            params.push(...(await this.parseCommand(this.app.commands.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
+          if (row && this.app.triggers.shoutout) {
+            params.push(...(await this.parseCommand(this.app.triggers.shoutout.command, [ null, user ], msg.userInfo)).slice(2));
           }
 
-          this.app.cmds.shoutout(null, params, (res) => {
+          this.app.commands.shoutout(null, params, (res) => {
             if (res) {
               this.bot.say(channel, res);
             }
@@ -239,10 +239,10 @@ export default class ChatBot {
     }
 
     let command, alias = false;
-    for (let i = 0; i < this.app.commands._keys.length; i++) {
-      const key = this.app.commands._keys[i];
+    for (let i = 0; i < this.app.triggers._keys.length; i++) {
+      const key = this.app.triggers._keys[i];
       if (key === message.substr(1, key.length)) {
-        command = this.app.commands[key];
+        command = this.app.triggers[key];
         alias = key;
         break
       }
@@ -272,11 +272,11 @@ export default class ChatBot {
     const params = message.trim().substring(alias.length + 2).split(/\s+/);
     params.unshift(command.trigger);
     const parsed = await this.parseCommand(command.command, params, msg.userInfo);
-    if (!parsed.length || this.app.cmds[parsed[0]] === undefined) {
+    if (!parsed.length || this.app.commands[parsed[0]] === undefined) {
       return;
     }
 
-    this.app.cmds[parsed[0]](user, parsed.slice(1))
+    this.app.commands[parsed[0]](user, parsed.slice(1))
       .then(() => {
         command.timeouts.global = Date.now() + command.global_timeout * 1000;
         command.timeouts.user[user] = Date.now() + command.user_timeout * 1000;

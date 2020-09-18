@@ -46,7 +46,7 @@ class App {
     // Application data
     this.settings = {};
     this.alerts = {};
-    this.commands = {};
+    this.triggers = {};
     this.timers = [];
     this.schedule = [];
     this.sfx = {};
@@ -54,7 +54,7 @@ class App {
     // Module instances
     this.db = new Database(this);
     this.api = new TwitchApi(this);
-    this.cmds = new Commands(this);
+    this.commands = new Commands(this);
     this.chatbot = new ChatBot(this);
     this.discord = new DiscordBot(this);
     this.twitter = new TwitterBot(this);

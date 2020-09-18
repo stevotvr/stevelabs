@@ -1,8 +1,8 @@
-<h2>Commands</h2>
+<h2>Triggers</h2>
 <form method="post" autocomplete="off">
 	<input type="hidden" name="add" value="1">
 	<fieldset>
-		<legend>Add Command</legend>
+		<legend>Add Trigger</legend>
 		<table>
 			<tr>
 				<th style="width: 15%;">Trigger</th>
@@ -35,7 +35,7 @@
 </form>
 <form method="post" autocomplete="off">
 	<fieldset>
-		<legend>Edit Commands</legend>
+		<legend>Edit Triggers</legend>
 		<table>
 			<tr>
 				<th style="width: 15%;">Trigger</th>
@@ -46,7 +46,7 @@
 				<th style="width: 46%;">Command</th>
 				<th style="width: 4%;">Delete</th>
 			</tr>
-			{{#each data.commands}}
+			{{#each data.triggers}}
 			<tr>
 				<td>
 					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
