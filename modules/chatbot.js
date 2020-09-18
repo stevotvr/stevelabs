@@ -10,7 +10,7 @@
 'use strict'
 
 import { ChatClient } from 'twitch-chat-client';
-import Nlp from './nlp.js';
+import nlp from 'node-nlp';
 
 /**
  * Provides chat functionality.
@@ -25,7 +25,9 @@ export default class ChatBot {
   constructor(app) {
     this.app = app;
     this.db = app.db.db;
-    this.nlp = new Nlp(app);
+
+    this.nlp = new nlp.NlpManager({ languages: ['en'] });
+    this.nlp.load('./data/model.nlp');
 
     this.timerPos = 0;
     this.nextTimer = Infinity;
@@ -290,7 +292,7 @@ export default class ChatBot {
     const first = message.substring(message[0] === '@' ? 1 : 0, message.indexOf(' '));
     const tobot = first.toLowerCase() === this.app.config.users.bot.toLowerCase();
     if (tobot && message.indexOf(' ') !== -1) {
-      this.nlp.process(message.substring(message.indexOf(' ') + 1))
+      this.processNlp(message.substring(message.indexOf(' ') + 1))
         .then((answer) => this.bot.say(channel, `${user}, ${answer}`));
     }
 
@@ -434,5 +436,20 @@ export default class ChatBot {
     parsed = parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, () => values.shift());
 
     return parsed.split(/\s+/);
+  }
+
+  /**
+   * Process input text and generate a response.
+   *
+   * @param {string} text The input text
+   */
+  async processNlp(text) {
+    const result = await this.nlp.process(text);
+    let answer = result.score > 0.5 && result.answer ? result.answer : "Sorry, I don't understand";
+    if (result.sentiment.score !== 0) {
+      answer += result.sentiment.score > 0 ? ' :)' : ' :(';
+    }
+
+    return answer;
   }
 }
