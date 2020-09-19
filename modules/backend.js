@@ -328,7 +328,7 @@ export default class Backend {
           for (let i = 0; i < messages.length; i++) {
             stmt.run(i, messages[i], () => {
               if (!--count) {
-                this.app.http.loadTimers();
+                this.app.chatbot.loadTimers();
                 resolve();
               }
             });
