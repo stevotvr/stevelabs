@@ -15,17 +15,17 @@ export default class Commands {
     this.db = app.db.db;
   }
 
-  async say(user, args) {
+  async say(user, args = []) {
     this.app.chatbot.say(args.join(' '));
   }
 
-  async sfx(user, args) {
-    if(!this.app.http.sendSfx(args[0])) {
+  async sfx(user, args = []) {
+    if(!args[0] || !this.app.http.sendSfx(args[0])) {
       throw 'sound not found';
     }
   }
 
-  async tip(user, args) {
+  async tip(user, args = []) {
     const cb = (err, row) => {
       if (err) {
         console.warn('error getting tip data');
@@ -41,14 +41,14 @@ export default class Commands {
       }
     }
 
-    if (args && args[0].match(/\d+/)) {
+    if (args[0] && args[0].match(/\d+/)) {
       this.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
     } else {
       this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 
-  async addtip(user, args) {
+  async addtip(user, args = []) {
     const message = args.join(' ');
 
     if (message.length < 2) {
@@ -70,42 +70,42 @@ export default class Commands {
     }
   }
 
-  async edittip(user, args) {
+  async edittip(user, args = []) {
     if (args.length < 2 || !args[0].match(/\d+/)) {
       throw 'invalid arguments';
-    } else {
-      const message = args.slice(1).join(' ').trim();
-      this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], (err) => {
-        if (err) {
-          console.warn('error saving tip data');
-          console.log(err);
-
-          return;
-        }
-
-        this.app.chatbot.say(`Tip #${args[0]} has been edited!`);
-      });
     }
+
+    const message = args.slice(1).join(' ').trim();
+    this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], (err) => {
+      if (err) {
+        console.warn('error saving tip data');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.chatbot.say(`Tip #${args[0]} has been edited!`);
+    });
   }
 
-  async deletetip(user, args) {
+  async deletetip(user, args = []) {
     if (args.length < 1 || !args[0].match(/\d+/)) {
       throw 'invalid arguments';
-    } else {
-      this.db.run('DELETE FROM tips WHERE id = ?', args[0], (err) => {
-        if (err) {
-          console.warn('error deleting tip data');
-          console.log(err);
-
-          return;
-        }
-
-        this.app.chatbot.say(`Tip #${args[0]} has been deleted!`);
-      });
     }
+
+    this.db.run('DELETE FROM tips WHERE id = ?', args[0], (err) => {
+      if (err) {
+        console.warn('error deleting tip data');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.chatbot.say(`Tip #${args[0]} has been deleted!`);
+    });
   }
 
-  async raffle(user, args) {
+  async raffle(user, args = []) {
     if (!this.app.settings.raffle_active) {
       throw 'raffle not active';
     }
@@ -122,7 +122,7 @@ export default class Commands {
     });
   }
 
-  async endraffle(user, args) {
+  async endraffle(user, args = []) {
     if (!this.app.settings.raffle_active) {
       throw 'raffle not active';
     }
@@ -143,7 +143,7 @@ export default class Commands {
     });
   }
 
-  async startraffle(user, args) {
+  async startraffle(user, args = []) {
     if (this.app.settings.raffle_active) {
       throw 'raffle not active';
     }
@@ -163,7 +163,7 @@ export default class Commands {
     });
   }
 
-  async shoutout(user, args) {
+  async shoutout(user, args = []) {
     if (!args[0]) {
       throw 'invalid arguments';
     }
@@ -179,7 +179,7 @@ export default class Commands {
     }
   }
 
-  async quote(user, args) {
+  async quote(user, args = []) {
     const cb = (err, row) => {
       if (err) {
         console.warn('error getting quote data');
@@ -200,14 +200,14 @@ export default class Commands {
       }
     };
 
-    if (args && args[0].match(/\d+/)) {
+    if (args[0] && args[0].match(/\d+/)) {
       this.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
     } else {
       this.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 
-  async addquote(user, args) {
+  async addquote(user, args = []) {
     const message = args.join(' ').trim();
 
     if (!this.app.islive) {
@@ -240,43 +240,43 @@ export default class Commands {
     }
   }
 
-  async editquote(user, args) {
+  async editquote(user, args = []) {
     if (args.length < 2 || !args[0].match(/\d+/)) {
       throw 'invalid arguments';
-    } else {
-      const message = args.slice(1).join(' ').trim();
-      this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], (err) => {
-        if (err) {
-          console.warn('error saving quote data');
-          console.log(err);
-
-          return;
-        }
-
-        this.app.chatbot.say(`Quote #${args[0]} has been edited!`);
-      });
     }
+
+    const message = args.slice(1).join(' ').trim();
+    this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], (err) => {
+      if (err) {
+        console.warn('error saving quote data');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.chatbot.say(`Quote #${args[0]} has been edited!`);
+    });
   }
 
-  async deletequote(user, args) {
+  async deletequote(user, args = []) {
     if (args.length < 1 || !args[0].match(/\d+/)) {
       throw 'invalid arguments';
-    } else {
-      this.db.run('DELETE FROM quotes WHERE id = ?', args[0], (err) => {
-        if (err) {
-          console.warn('error deleting quote data');
-          console.log(err);
-
-          return;
-        }
-
-        this.app.chatbot.say(`Quote #${args[0]} has been deleted!`);
-      });
     }
+
+    this.db.run('DELETE FROM quotes WHERE id = ?', args[0], (err) => {
+      if (err) {
+        console.warn('error deleting quote data');
+        console.log(err);
+
+        return;
+      }
+
+      this.app.chatbot.say(`Quote #${args[0]} has been deleted!`);
+    });
   }
 
-  async followage(user, args) {
-    const target = args.length > 0 && args[0] ? args[0] : user;
+  async followage(user, args = []) {
+    const target = args[0] ? args[0] : user;
     const targetUser = await this.app.api.client.kraken.users.getUserByName(target);
     if (targetUser) {
       const follow = await targetUser.getFollowTo(this.app.api.userId);
