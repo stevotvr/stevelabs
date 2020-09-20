@@ -102,11 +102,12 @@ export default class Backend {
         });
       },
       timers: (resolve) => {
-        this.db.all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
+        this.db.all('SELECT id, command, pos FROM timers ORDER BY pos', (err, rows) => {
           resolve({
             timer_timeout: this.app.settings.timer_timeout,
             timer_chat_lines: this.app.settings.timer_chat_lines,
-            messages: rows.map((v) => v.message).join('\n')
+            commands: rows,
+            pos: rows.length ? rows[rows.length - 1].pos + 1 : 0
           });
         });
       },
@@ -302,31 +303,36 @@ export default class Backend {
         }
       },
       timers: (resolve, req) => {
-        this.app.settings.timer_timeout = req.body.timer_timeout;
-        this.app.settings.timer_chat_lines = req.body.timer_chat_lines;
-        this.app.saveSettings();
+        if (req.body.settings) {
+          this.app.settings.timer_timeout = Math.max(30, req.body.timer_timeout);
+          this.app.settings.timer_chat_lines = req.body.timer_chat_lines;
+          this.app.saveSettings();
 
-        this.db.run('DELETE FROM timers', (err) => {
-          if (err) {
-            console.warn('error saving timers');
-            console.log(err);
+          resolve();
+        }
 
-            resolve();
+        let count = 0;
+        if (typeof req.body.delete === "object") {
+          count += Object.keys(req.body.delete).length;
+        }
 
-            return;
-          }
+        if (Array.isArray(req.body.update)) {
+          count += req.body.update.length;
+        }
 
-          const messages = req.body.messages.split('\n');
+        if (req.body.add) {
+          count++;
+        }
 
-          let count = messages.length;
-          if (!count) {
-            resolve();
-          }
+        if (!count) {
+          resolve();
+        }
 
-          const stmt = this.db.prepare('INSERT INTO timers (pos, message) VALUES (?, ?)');
+        if (typeof req.body.delete === "object") {
+          const stmt = this.db.prepare('DELETE FROM timers WHERE id = ?');
 
-          for (let i = 0; i < messages.length; i++) {
-            stmt.run(i, messages[i], () => {
+          for (const key in req.body.delete) {
+            stmt.run(+key.substr(1), () => {
               if (!--count) {
                 this.app.chatbot.loadTimers();
                 resolve();
@@ -335,7 +341,31 @@ export default class Backend {
           }
 
           stmt.finalize();
-        });
+        }
+
+        if (Array.isArray(req.body.update)) {
+          const stmt = this.db.prepare('UPDATE timers SET command = ? WHERE id = ?');
+
+          req.body.update.forEach((row) => {
+            stmt.run([ row.command, +row.id ], () => {
+              if (!--count) {
+                this.app.chatbot.loadTimers();
+                resolve();
+              }
+            });
+          });
+
+          stmt.finalize();
+        }
+
+        if (req.body.add) {
+          this.db.run('INSERT INTO timers (command, pos) VALUES (?, ?)', [ req.body.command, +req.body.pos ], () => {
+            if (!--count) {
+              this.app.chatbot.loadTimers();
+              resolve();
+            }
+          });
+        }
       },
       sfx: (resolve, req) => {
         const filter = (input) => {

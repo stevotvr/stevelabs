@@ -87,7 +87,7 @@ export default class ChatBot {
    * Load the timers from the database.
    */
   loadTimers() {
-    this.db.all('SELECT message FROM timers ORDER BY pos', (err, rows) => {
+    this.db.all('SELECT command FROM timers ORDER BY pos', (err, rows) => {
       if (err) {
         console.warn('error loading timers from the database');
         console.log(err);
@@ -96,7 +96,7 @@ export default class ChatBot {
       }
 
       const timers = [];
-      rows.forEach((row) => timers.push(row.message));
+      rows.forEach((row) => timers.push(row.command));
 
       this.timers = timers;
     });
@@ -226,7 +226,7 @@ export default class ChatBot {
         return;
       }
 
-      chatbot.bot.say(chatbot.app.config.users.host, chatbot.timers[chatbot.timerPos]);
+      chatbot.app.commands.parseCommand(chatbot.timers[chatbot.timerPos], [], null);
       chatbot.timerPos = (chatbot.timerPos + 1) % chatbot.timers.length;
       chatbot.nextTimer = Date.now() + chatbot.app.settings.timer_timeout * 1000;
       chatbot.chatLines = 0;

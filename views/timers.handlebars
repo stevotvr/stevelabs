@@ -1,16 +1,56 @@
 <h2>Timers</h2>
-<form method="post" autocomplete="off">
+<form method="post">
+	<input type="hidden" name="settings" value="1">
 	<fieldset>
 		<legend>Settings</legend>
-		<label>Interval: <input type="number" name="timer_timeout" min="1" value="{{data.timer_timeout}}"></label>
+		<label>Interval: <input type="number" name="timer_timeout" min="30" value="{{data.timer_timeout}}"></label>
 		<label>Chat Lines: <input type="number" name="timer_chat_lines" min="0" value="{{data.timer_chat_lines}}"></label>
+		<fieldset class="buttons">
+			<input type="submit" value="Save">
+		</fieldset>
 	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<input type="hidden" name="pos" value="{{data.pos}}">
 	<fieldset>
-		<legend>Messages</legend>
-		<textarea name="messages" cols="100" rows="10">{{data.messages}}</textarea>
+		<legend>Add Timer</legend>
+		<table>
+			<tr>
+				<th style="width: 100%;">Command</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="command"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
 	</fieldset>
-	<fieldset class="buttons"t>
-		<input type="reset" value="Reset">
-		<input type="submit" value="Save">
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Timers</legend>
+		<table>
+			<tr>
+				<th style="width: 4%;">ID</th>
+				<th style="width: 92%;">Command</th>
+				<th style="width: 4%;">Delete</th>
+			</tr>
+			{{#each data.commands}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					{{this.id}}
+				</td>
+				<td><input type="text" name="update[{{this.id}}][command]" value="{{this.command}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
 	</fieldset>
 </form>

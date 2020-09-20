@@ -89,7 +89,7 @@ export default class Database {
             });
 
             db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, message TEXT NOT NULL)');
+              db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, command TEXT NOT NULL)');
               this.app.chatbot.loadTimers();
             });
 
