@@ -304,7 +304,7 @@ export default class ChatBot {
     let trigger, alias = false;
     for (let i = 0; i < this.triggers._keys.length; i++) {
       const key = this.triggers._keys[i];
-      if (key === message.substr(1, key.length)) {
+      if (key === message.substr(1, key.length + 1).trimRight()) {
         trigger = this.triggers[key];
         alias = key;
         break
