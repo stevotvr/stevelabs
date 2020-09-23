@@ -1,0 +1,46 @@
+<h2>Redemptions</h2>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<fieldset>
+		<legend>Add Redemption</legend>
+		<table>
+			<tr>
+				<th style="width: 25%;">Name</th>
+				<th style="width: 75%;">Command</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="name"></td>
+				<td><input type="text" name="command"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Redemptions</legend>
+		<table>
+			<tr>
+				<th style="width: 25%;">Name</th>
+				<th style="width: 71%;">Command</th>
+				<th style="width: 4%;">Delete</th>
+			</tr>
+			{{#each data.redemptions}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					<input type="text" name="update[{{this.id}}][name]" value="{{this.name}}">
+				</td>
+				<td><input type="text" name="update[{{this.id}}][command]" value="{{this.command}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>

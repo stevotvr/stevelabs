@@ -75,16 +75,14 @@
 		<legend>Add Group</legend>
 		<table>
 			<tr>
-				<th style="width: 40%;">Name</th>
+				<th style="width: 80%;">Name</th>
 				<th style="width: 10%;">Randomize</th>
 				<th style="width: 10%;">Raffle</th>
-				<th style="width: 40%;">Redemption Name</th>
 			</tr>
 			<tr>
 				<td><input type="text" name="name"></td>
 				<td><input type="checkbox" name="random"></td>
 				<td><input type="checkbox" name="raffle"></td>
-				<td><input type="text" name="redemption"></td>
 			</tr>
 		</table>
 		<fieldset class="buttons">
@@ -97,10 +95,9 @@
 		<legend>Edit Groups</legend>
 		<table>
 			<tr>
-				<th style="width: 33%;">Name</th>
+				<th style="width: 66%;">Name</th>
 				<th style="width: 10%;">Randomize</th>
 				<th style="width: 10%;">Raffle</th>
-				<th style="width: 33%;">Redemption Name</th>
 				<th style="width: 4%;">Delete</th>
 				<th style="width: 10%;"></th>
 			</tr>
@@ -112,7 +109,6 @@
 				</td>
 				<td><input type="checkbox" name="update[{{this.id}}][random]"{{#if this.random}} checked{{/if}}></td>
 				<td><input type="checkbox" name="update[{{this.id}}][raffle]"{{#if this.raffle}} checked{{/if}}></td>
-				<td><input type="text" name="update[{{this.id}}][redemption]" value="{{this.redemption}}"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
 				<td><a href="?group={{this.id}}">See Items</a></td>
 			</tr>

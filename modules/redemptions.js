@@ -58,38 +58,18 @@ export default class Redemptions {
    * @param {PubSubRedemptionMessage} message The redemption data
    */
   async redemptionCallback(message) {
-    this.app.db.db.all('SELECT id, name, random FROM giveaway_groups WHERE redemption = ?', message.rewardName, (err, rows) => {
+    this.app.db.db.get('SELECT command FROM redemptions WHERE name = ?', message.rewardName, (err, row) => {
       if (err) {
-        console.warn('error loading giveaways');
+        console.warn('error checking redemptions');
         console.log(err);
 
         return;
       }
 
-      rows.forEach(giveaway => {
-        const sql = `SELECT id, name, key FROM giveaway WHERE groupId = ? AND recipient IS NULL${giveaway.random ? ' ORDER BY RANDOM()' : ''} LIMIT 1`;
-        this.app.db.db.get(sql, giveaway.id, (err, row) => {
-          if (err) {
-            console.warn(`error loading item from giveaway #${giveaway.id}`);
-            console.log(err);
-
-            return;
-          }
-
-          if (!row) {
-            console.log(`attempted to give item from empty giveaway ${giveaway.name} to ${message.userName}`);
-            this.app.chatbot.say(`${message.userDisplayName} oops, it looks like we are all out of items for ${message.rewardName}. :(`);
-
-            return;
-          }
-
-          this.app.chatbot.say(`${message.userDisplayName} check your whispers for your key for ${row.name}!`);
-          this.app.chatbot.whisper(message.userName, `Here is your key for ${row.name}: ${row.key}`);
-          this.app.db.db.run('UPDATE giveaway SET recipient = ? WHERE id = ?', message.userName, row.id);
-
-          console.log(`key ${row.key} for ${row.name} given to ${message.userName}`);
-        });
-      });
+      if (row) {
+        console.log(`processing redemption ${message.rewardName} for user ${message.userName}`);
+        this.app.commands.parseCommand(row.command, [], { username: message.userName, displayName: message.userDisplayName });
+      }
     });
   }
 }
