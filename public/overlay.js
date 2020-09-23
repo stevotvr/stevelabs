@@ -97,7 +97,7 @@ function showNextAlert() {
     }
   }
 
-  if (type === 'shoutout') {
+  if (type === 'greet') {
     const imgElement = alertElem.getElementsByTagName('img');
     if (imgElement && imgElement.length) {
       imgElement[0].src = params.image;

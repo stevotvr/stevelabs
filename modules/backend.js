@@ -139,8 +139,8 @@ export default class Backend {
           });
         });
       },
-      autoshoutout: (resolve) => {
-        this.db.all('SELECT user FROM autoshoutout ORDER BY user ASC', (err, rows) => {
+      autogreet: (resolve) => {
+        this.db.all('SELECT user FROM autogreet ORDER BY user ASC', (err, rows) => {
           resolve({
             users: rows.map((v) => v.user)
           });
@@ -688,7 +688,7 @@ export default class Backend {
           });
         }
       },
-      autoshoutout: (resolve, req) => {
+      autogreet: (resolve, req) => {
         let count = 0;
         if (typeof req.body.delete === "object") {
           count += Object.keys(req.body.delete).length;
@@ -703,7 +703,7 @@ export default class Backend {
         }
 
         if (typeof req.body.delete === "object") {
-          const stmt = this.db.prepare('DELETE FROM autoshoutout WHERE user = ?');
+          const stmt = this.db.prepare('DELETE FROM autogreet WHERE user = ?');
 
           for (const key in req.body.delete) {
             stmt.run(key, () => {
@@ -720,7 +720,7 @@ export default class Backend {
           const params = [];
           params.push(req.body.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
 
-          this.db.run('INSERT OR IGNORE INTO autoshoutout (user) VALUES (?)', params, () => {
+          this.db.run('INSERT OR IGNORE INTO autogreet (user) VALUES (?)', params, () => {
             if (!--count) {
               resolve();
             }

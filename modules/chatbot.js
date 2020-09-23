@@ -266,12 +266,18 @@ export default class ChatBot {
     if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
       this.sessionUsers.add(user);
 
-      this.app.db.db.get('SELECT 1 FROM autoshoutout WHERE user = ?', [ user ], async (err, row) => {
+      this.app.db.db.get('SELECT 1 FROM autogreet WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
+          const asoUser = await this.app.api.client.kraken.users.getUser(msg.userInfo.userId);
+          if (asoUser) {
+            this.app.http.sendAlert('greet', {
+              user: asoUser.displayName,
+              image: asoUser.logoUrl
+            });
+          }
+
           if (this.triggers.shoutout) {
             this.app.commands.parseCommand(this.triggers.shoutout.command, [ null, user ], msg.userInfo);
-          } else {
-            this.app.commands.shoutout(null, [ user ]);
           }
         }
       });

@@ -163,22 +163,6 @@ export default class Commands {
     });
   }
 
-  async shoutout(user, args = []) {
-    if (!args[0]) {
-      throw 'invalid arguments';
-    }
-
-    const targetUser = await this.app.api.client.kraken.users.getUserByName(args[0]);
-    if (targetUser) {
-      this.app.http.sendAlert('shoutout', {
-        user: targetUser.displayName,
-        image: targetUser.logoUrl
-      });
-
-      this.app.chatbot.say(args.length > 1 ? args.slice(1).join(' ') : null);
-    }
-  }
-
   async quote(user, args = []) {
     const cb = (err, row) => {
       if (err) {

@@ -78,7 +78,7 @@ export default class Database {
                 .run('host', '${user} hosted the channel with ${viewers} viewers!')
                 .run('charitydonation', '${user} donated ${amount} to charity!')
                 .run('rafflewinner', '${user} won the raffle!')
-                .run('shoutout', 'Welcome, ${user}!')
+                .run('greet', 'Welcome, ${user}!')
                 .finalize();
                 this.app.http.loadAlerts();
             });
@@ -105,7 +105,7 @@ export default class Database {
 
             db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS raffle (user TEXT PRIMARY KEY, tickets INTEGER NOT NULL DEFAULT 1)');
-            db.run('CREATE TABLE IF NOT EXISTS autoshoutout (user TEXT PRIMARY KEY)');
+            db.run('CREATE TABLE IF NOT EXISTS autogreet (user TEXT PRIMARY KEY)');
             db.run('CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL, game TEXT NOT NULL, message TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS giveaway (id INTEGER PRIMARY KEY AUTOINCREMENT, groupId INTEGER NOT NULL, name TEXT NOT NULL, key TEXT NOT NULL, recipient TEXT)');
             db.run('CREATE TABLE IF NOT EXISTS giveaway_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, random INTEGER NOT NULL DEFAULT 0, raffle INTEGER NOT NULL DEFAULT 0, redemption TEXT)');
