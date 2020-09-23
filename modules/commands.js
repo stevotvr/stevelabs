@@ -273,6 +273,53 @@ export default class Commands {
     this.app.chatbot.say(`${target} is not following`);
   }
 
+  async giveaway(user, args = []) {
+    if (args.length < 2) {
+      throw 'invalid arguments';
+    }
+
+    const targetUser = args.pop();
+    const targetItem = args.join(' ');
+
+    this.app.db.db.get('SELECT id, name, random FROM giveaway_groups WHERE name = ?', targetItem, (err, giveaway) => {
+      if (err) {
+        console.warn('error loading giveaways');
+        console.log(err);
+
+        return;
+      }
+
+      if (!giveaway) {
+        this.app.chatbot.say(`@${user} There is no giveaway named ${targetItem}`);
+
+        throw 'invalid giveaway';
+      }
+
+      const sql = `SELECT id, name, key FROM giveaway WHERE groupId = ? AND recipient IS NULL${giveaway.random ? ' ORDER BY RANDOM()' : ''} LIMIT 1`;
+      this.app.db.db.get(sql, giveaway.id, (err, row) => {
+        if (err) {
+          console.warn(`error loading item from giveaway #${giveaway.id}`);
+          console.log(err);
+
+          return;
+        }
+
+        if (!row) {
+          console.log(`attempted to give item from empty giveaway ${giveaway.name} to ${targetUser}`);
+          this.app.chatbot.say(`@${user} oops, it looks like we are all out of items for ${giveaway.name}. :(`);
+
+          throw 'empty giveaway';
+        }
+
+        this.app.chatbot.say(`@${targetUser} check your whispers for your key for ${row.name}!`);
+        this.app.chatbot.whisper(targetUser, `Here is your key for ${row.name}: ${row.key}`);
+        this.app.db.db.run('UPDATE giveaway SET recipient = ? WHERE id = ?', targetUser, row.id);
+
+        console.log(`key ${row.key} for ${row.name} given to ${targetUser}`);
+      });
+    });
+  }
+
   /**
    * Parse a command string.
    *
