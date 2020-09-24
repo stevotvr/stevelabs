@@ -236,7 +236,7 @@ if (countdownElem && config.schedule) {
       musicElem.loop = false;
     }
 
-    countdownElem.innerHTML = `Starting: ${timeLeft}<br>${next.game}`;
+    countdownElem.innerHTML = `Starting: ${timeLeft}<br>Playing: ${next.game}`;
   }, 100);
 }
 
