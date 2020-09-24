@@ -268,11 +268,11 @@ export default class ChatBot {
 
       this.app.db.db.get('SELECT 1 FROM autogreet WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
-          const asoUser = await this.app.api.client.kraken.users.getUser(msg.userInfo.userId);
-          if (asoUser) {
+          const greetUser = await this.app.api.client.kraken.users.getUser(msg.userInfo.userId);
+          if (greetUser) {
             this.app.http.sendAlert('greet', {
-              user: asoUser.displayName,
-              image: asoUser.logoUrl
+              user: greetUser.displayName,
+              image: greetUser.logoUrl
             });
           }
 
