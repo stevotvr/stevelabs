@@ -13,7 +13,7 @@
  * Socket
  */
 
-if (config.alerts || config.sfx) {
+if (config.alerts || config.sfx || config.tts) {
   // Create the socket connection
   const socket = io('//' + window.location.host);
 
@@ -374,6 +374,21 @@ function playSound(key, volume) {
  * Text-to-speech
  */
 
+var ttsVoice;
+if (config.tts) {
+  speechSynthesis.onvoiceschanged = () => {
+    const voices = speechSynthesis.getVoices();
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].name === config.tts.voice) {
+        ttsVoice = voices[i];
+        break;
+      }
+    }
+
+    speechSynthesis.onvoiceschanged = null;
+  };
+}
+
 /**
  * Add a new text-to-speech message to the queue.
  *
@@ -395,7 +410,16 @@ function addTts(message) {
  * @param {message} message The message to speak
  */
 function playTts(message) {
+  if (!config.tts) {
+    return;
+  }
+
   const tts = new SpeechSynthesisUtterance(message);
+  tts.volume = config.tts.volume / 100;
+  if (ttsVoice) {
+    tts.voice = ttsVoice;
+  }
+
   tts.onend = (() => {
     return () => {
       tts.onend = null;
@@ -403,5 +427,5 @@ function playTts(message) {
     };
   })();
 
-  window.speechSynthesis.speak(tts);
+  speechSynthesis.speak(tts);
 }

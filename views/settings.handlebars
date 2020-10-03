@@ -25,6 +25,13 @@
 		<label>Audio File: <input type="text" name="countdown_audio" value="{{data.countdown_audio}}"></label>
 		<label>Volume: <input type="number" name="countdown_audio_volume" value="{{data.countdown_audio_volume}}" min="0" max="100"></label>
 	</fieldset>
+	<fieldset>
+		<legend>Text-to-speech</legend>
+		<label>TTS Voice: <select name="tts_voice" id="tts_voice">
+			<option value="{{data.tts_voice}}">{{data.tts_voice}}</option>
+		</select></label><br>
+		<label>TTS Volume: <input type="number" name="tts_volume" value="{{data.tts_volume}}" min="0" max="100"></label>
+	</fieldset>
 	<fieldset class="buttons">
 		<input type="reset" value="Reset">
 		<input type="submit" value="Save">

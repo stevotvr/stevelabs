@@ -23,3 +23,18 @@ function sendTest(type, key) {
   xlr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xlr.send(`${type}=${key}`);
 }
+
+const ttsVoiceSelect = document.getElementById('tts_voice');
+if (ttsVoiceSelect) {
+  speechSynthesis.onvoiceschanged = () => {
+    const voices = speechSynthesis.getVoices();
+    for (var i = 0; i < voices.length; i++) {
+      const option = document.createElement('option');
+      option.value = voices[i].name;
+      option.textContent = voices[i].name;
+      ttsVoiceSelect.appendChild(option);
+    }
+
+    speechSynthesis.onvoiceschanged = null;
+  };
+}

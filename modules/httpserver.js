@@ -246,6 +246,13 @@ export default class HttpServer {
         options.config.sfx = true;
       }
 
+      if (req.query.tts) {
+        options.config.tts = {
+          voice: this.app.settings.tts_voice,
+          volume: this.app.settings.tts_volume
+        };
+      }
+
       new Promise((resolve, reject) => {
         if (req.query.tips) {
           options.config.tips = [];
