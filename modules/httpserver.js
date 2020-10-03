@@ -308,4 +308,13 @@ export default class HttpServer {
 
     return true;
   }
+
+  /**
+   * Send a new text-to-speech message to the overlay page.
+   *
+   * @param {string} message The message to send
+   */
+  sendTts(message) {
+    this.io.emit('tts', message);
+  }
 }

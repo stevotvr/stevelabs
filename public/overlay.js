@@ -36,6 +36,10 @@ if (config.alerts || config.sfx) {
   socket.on('sfx', (key, volume) => {
     addSound(key, volume);
   });
+
+  socket.on('tts', (message) => {
+    addTts(message);
+  });
 }
 
 /**
@@ -43,7 +47,7 @@ if (config.alerts || config.sfx) {
  */
 
 // Queue of events ready to be displayed
-const alertQueue = [];
+const queue = [];
 
 /**
  * Add a new alert to the queue.
@@ -55,31 +59,44 @@ const alertQueue = [];
  * @param {int} soundVolume The audio level for the sound element (0-100)
  */
 function addAlert(type, params, duration, videoVolume, soundVolume) {
-  alertQueue.push({
-    type: type,
-    params: params,
-    duration: duration,
-    videoVolume: videoVolume,
-    soundVolume: soundVolume
-  });
+  queue.push(() => showAlert(type, params, duration, videoVolume, soundVolume));
 
   console.log(type, params, duration, videoVolume, soundVolume);
 
-  if (alertQueue.length === 1) {
-    showNextAlert();
+  if (queue.length === 1) {
+    runQueue();
   }
 }
 
 /**
- * Show the next alert in the queue.
+ * Run the next function in the queue.
  */
-function showNextAlert() {
-  if (!alertQueue.length) {
+function runQueue() {
+  if (!queue.length) {
     return;
   }
 
-  const { type, params, duration, videoVolume, soundVolume } = alertQueue[0];
+  queue[0]();
+}
 
+/**
+ * Remove an item from the queue and run it.
+ */
+function popQueue() {
+  queue.shift();
+  runQueue();
+}
+
+/**
+ * Show an alert from the queue.
+ *
+ * @param {string} type The type of event
+ * @param {object} params The event parameters
+ * @param {int} duration The event duration in milliseconds
+ * @param {int} videoVolume The audio level for the video element (0-100)
+ * @param {int} soundVolume The audio level for the sound element (0-100)
+ */
+function showAlert(type, params, duration, videoVolume, soundVolume) {
   const alertElem = document.getElementById(type);
   if (!alertElem) {
     return;
@@ -118,8 +135,7 @@ function showNextAlert() {
   setTimeout(() => {
     alertElem.style.opacity = 0;
     setTimeout(() => {
-      alertQueue.shift();
-      showNextAlert();
+      popQueue();
     }, 1000);
   }, duration);
 
@@ -314,9 +330,6 @@ function getNextScheduled(schedule, useEnd = false) {
  * Sound effects
  */
 
-// Queue of sounds ready to be played
-const soundQueue = [];
-
 /**
  * Add a new sound to the queue.
  *
@@ -324,28 +337,22 @@ const soundQueue = [];
  * @param {int} volume The audio level (0-100)
  */
 function addSound(key, volume) {
-  soundQueue.push({
-    key: key,
-    volume: volume
-  });
+  queue.push(() => playSound(key, volume));
 
   console.log('sfx', key, volume);
 
-  if (soundQueue.length === 1) {
-    playNextSound();
+  if (queue.length === 1) {
+    runQueue();
   }
 }
 
 /**
- * Play the next sound in the queue.
+ * Play a sound from the queue.
+ *
+ * @param {string} key The sound effect key
+ * @param {int} volume The audio level (0-100)
  */
-function playNextSound() {
-  if (!soundQueue.length) {
-    return;
-  }
-
-  const { key, volume } = soundQueue[0];
-
+function playSound(key, volume) {
   const soundElem = document.getElementById(`sfx_${key}`);
   if (!soundElem) {
     return;
@@ -358,8 +365,43 @@ function playNextSound() {
   soundElem.onended = (() => {
     return () => {
       soundElem.onended = null;
-      soundQueue.shift();
-      playNextSound();
+      popQueue();
     };
   })();
+}
+
+/**
+ * Text-to-speech
+ */
+
+/**
+ * Add a new text-to-speech message to the queue.
+ *
+ * @param {string} message The message to speak
+ */
+function addTts(message) {
+  queue.push(() => playTts(message));
+
+  console.log('tts', message);
+
+  if (queue.length === 1) {
+    runQueue();
+  }
+}
+
+/**
+ * Play a text-to-speech message from the queue.
+ *
+ * @param {message} message The message to speak
+ */
+function playTts(message) {
+  const tts = new SpeechSynthesisUtterance(message);
+  tts.onend = (() => {
+    return () => {
+      tts.onend = null;
+      popQueue();
+    };
+  })();
+
+  window.speechSynthesis.speak(tts);
 }
