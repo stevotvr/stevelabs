@@ -13,6 +13,7 @@ import { ApiClient } from 'twitch';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import express from 'express';
+import fetch from 'node-fetch';
 import fs from 'fs';
 import handlebars from 'express-handlebars';
 import http from 'http';
@@ -248,8 +249,6 @@ export default class HttpServer {
 
       if (req.query.tts) {
         options.config.tts = {
-          key: this.app.settings.tts_api_key,
-          voice: this.app.settings.tts_voice,
           volume: this.app.settings.tts_volume
         };
       }
@@ -279,6 +278,44 @@ export default class HttpServer {
       .then(() => {
         options.config = JSON.stringify(options.config);
         res.render('overlay', options);
+      });
+    });
+
+    this.express.get('/tts', (req, res) => {
+      if (!this.app.settings.tts_api_key || !this.app.islive) {
+        res.status(404).end();
+        return;
+      }
+
+      if (!req.query.message) {
+        res.status(400).end();
+        return;
+      }
+
+      fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + this.app.settings.tts_api_key, {
+        method: 'post',
+        body: JSON.stringify({
+          input: {
+            text: req.query.message
+          },
+          voice: {
+            languageCode: 'en-US',
+            ssmlGender: this.app.settings.tts_voice ? this.app.settings.tts_voice : 'MALE'
+          },
+          audioConfig: {
+            audioEncoding: 'MP3'
+          }
+        })
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        res.type('mp3').end(Buffer.from(data.audioContent, 'base64'));
+      })
+      .catch((err) => {
+        console.warn('tts request failed');
+        console.log(err);
+
+        res.status(500).end();
       });
     });
   }

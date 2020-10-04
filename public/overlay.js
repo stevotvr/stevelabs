@@ -362,9 +362,9 @@ function playSound(key, volume) {
   soundElem.volume = volume / 100;
   soundElem.play();
 
-  soundElem.onended = (() => {
+  soundElem.onerror = soundElem.onended = (() => {
     return () => {
-      soundElem.onended = null;
+      soundElem.onerror = soundElem.onended = null;
       popQueue();
     };
   })();
@@ -373,21 +373,6 @@ function playSound(key, volume) {
 /**
  * Text-to-speech
  */
-
-var ttsVoice;
-if (config.tts) {
-  speechSynthesis.onvoiceschanged = () => {
-    const voices = speechSynthesis.getVoices();
-    for (var i = 0; i < voices.length; i++) {
-      if (voices[i].name === config.tts.voice) {
-        ttsVoice = voices[i];
-        break;
-      }
-    }
-
-    speechSynthesis.onvoiceschanged = null;
-  };
-}
 
 /**
  * Add a new text-to-speech message to the queue.
@@ -410,37 +395,18 @@ function addTts(message) {
  * @param {message} message The message to speak
  */
 function playTts(message) {
-  if (!config.tts || !config.tts.key) {
+  if (!config.tts) {
     return;
   }
 
-  fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + config.tts.key, {
-    method: 'post',
-    body: JSON.stringify({
-      input: {
-        text: message
-      },
-      voice: {
-        languageCode: 'en-US',
-        ssmlGender: config.tts.voice ? config.tts.voice : 'MALE'
-      },
-      audioConfig: {
-        audioEncoding: 'MP3'
-      }
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    const tts = new Audio('data:audio/mp3;base64,' + data.audioContent);
-    tts.volume = config.tts.volume / 100;
-    tts.play();
+  const tts = new Audio('/tts?message=' + encodeURIComponent(message));
+  tts.volume = config.tts.volume / 100;
+  tts.play();
 
-    tts.onended = (() => {
-      return () => {
-        tts.onended = null;
-        popQueue();
-      };
-    })();
-  })
-  .catch(err => console.log(err));
+  tts.onerror = tts.onended = (() => {
+    return () => {
+      tts.onerror = tts.onended = null;
+      popQueue();
+    };
+  })();
 }
