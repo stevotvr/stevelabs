@@ -410,22 +410,37 @@ function addTts(message) {
  * @param {message} message The message to speak
  */
 function playTts(message) {
-  if (!config.tts) {
+  if (!config.tts || !config.tts.key) {
     return;
   }
 
-  const tts = new SpeechSynthesisUtterance(message);
-  tts.volume = config.tts.volume / 100;
-  if (ttsVoice) {
-    tts.voice = ttsVoice;
-  }
+  fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + config.tts.key, {
+    method: 'post',
+    body: JSON.stringify({
+      input: {
+        text: message
+      },
+      voice: {
+        languageCode: 'en-US',
+        ssmlGender: config.tts.voice ? config.tts.voice : 'MALE'
+      },
+      audioConfig: {
+        audioEncoding: 'MP3'
+      }
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    const tts = new Audio('data:audio/mp3;base64,' + data.audioContent);
+    tts.volume = config.tts.volume / 100;
+    tts.play();
 
-  tts.onend = (() => {
-    return () => {
-      tts.onend = null;
-      popQueue();
-    };
-  })();
-
-  speechSynthesis.speak(tts);
+    tts.onended = (() => {
+      return () => {
+        tts.onended = null;
+        popQueue();
+      };
+    })();
+  })
+  .catch(err => console.log(err));
 }

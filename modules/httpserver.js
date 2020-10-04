@@ -248,6 +248,7 @@ export default class HttpServer {
 
       if (req.query.tts) {
         options.config.tts = {
+          key: this.app.settings.tts_api_key,
           voice: this.app.settings.tts_voice,
           volume: this.app.settings.tts_volume
         };

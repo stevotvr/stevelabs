@@ -41,6 +41,7 @@ export default class SettingsBackend {
     this.app.settings.countdown_audio = req.body.countdown_audio;
     this.app.settings.countdown_audio_volume = Math.max(0, Math.min(100, req.body.countdown_audio_volume));
 
+    this.app.settings.tts_api_key = req.body.tts_api_key;
     this.app.settings.tts_voice = req.body.tts_voice;
     this.app.settings.tts_volume = Math.max(0, Math.min(100, req.body.tts_volume));
 
