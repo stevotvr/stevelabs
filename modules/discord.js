@@ -187,7 +187,9 @@ export default class DiscordBot {
    */
   getMessage(format, name) {
     if (typeof format === 'string') {
-      return format.replace(/\${name}/g, name).replace(/\${game}/g, this.app.api.game);
+      name = name.replace(/[-_\*>`]/g, '\\$&');
+      const game = this.app.api.game.replace(/[-_\*>`]/g, '\\$&');
+      return format.replace(/\${name}/g, name).replace(/\${game}/g, game);
     }
 
     return '';
