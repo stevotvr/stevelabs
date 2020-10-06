@@ -190,7 +190,7 @@ export default class DiscordBot {
       const game = this.app.api.game.replace(/[-_\*>`]/g, '\\$&');
       const url = `https://www.twitch.tv/${name.toLowerCase()}`;
       name = name.replace(/[-_\*>`]/g, '\\$&');
-      return format.replace(/\${name}/g, name).replace(/\${game}/g, game).replace(/${url}/g, url);
+      return format.replace(/\${name}/g, name).replace(/\${game}/g, game).replace(/\${url}/g, url);
     }
 
     return '';
