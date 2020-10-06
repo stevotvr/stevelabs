@@ -187,12 +187,10 @@ export default class DiscordBot {
    */
   getMessage(format, name) {
     if (typeof format === 'string') {
-      let message = format.replace(/\${name}/g, name).replace(/\${game}/g, this.app.api.game);
-      message = message.replace(/\${escape (.+)}/g, (match, str) => {
-        return str.replace(/[-_\*>`]/g, '\\$&');
-      });
-
-      return message;
+      const game = this.app.api.game.replace(/[-_\*>`]/g, '\\$&');
+      const url = `https://www.twitch.tv/${name.toLowerCase()}`;
+      name = name.replace(/[-_\*>`]/g, '\\$&');
+      return format.replace(/\${name}/g, name).replace(/\${game}/g, game).replace(/${url}/g, url);
     }
 
     return '';
