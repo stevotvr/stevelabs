@@ -120,7 +120,7 @@ export default class TwitchApi {
   async streamCallback(stream) {
     if (stream) {
       const game = await stream.getGame();
-      this.game = game.name;
+      this.game = game ? game.name : '';
 
       if (!this.app.islive) {
         this.app.chatbot.sessionUsers.clear();
