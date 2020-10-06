@@ -70,7 +70,7 @@ export default class DiscordBot {
       return;
     }
 
-    const url = `https://www.twitch.tv/${this.app.settings.twitch_channel_username}`;
+    const url = `https://www.twitch.tv/${this.app.config.users.host}`;
     const options = {
       embed: {
         author: {
