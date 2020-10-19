@@ -68,6 +68,8 @@ export default class Database {
 
             app.twitter.login();
 
+            app.charity.init();
+
             app.http.setupHttpRoutes();
 
             db.serialize(() => {

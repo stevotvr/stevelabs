@@ -221,13 +221,6 @@ export default class HttpServer {
       if (req.query.alerts) {
         options.alerts = this.alerts;
         options.config.alerts = true;
-        options.config.donordrive = {
-          instance: this.app.settings.donordrive_instance,
-          participant: this.app.settings.donordrive_participant,
-          duration: this.alerts.charitydonation.duration * 1000,
-          video_volume: this.alerts.charitydonation.videoVolume,
-          sound_volume: this.alerts.charitydonation.soundVolume
-        };
       }
 
       if (req.query.countdown) {

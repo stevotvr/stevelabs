@@ -35,8 +35,11 @@ export default class SettingsBackend {
     this.app.settings.twitter_live_message = req.body.twitter_live_message;
     this.app.twitter.login();
 
+    this.app.settings.tiltify_access_token = req.body.tiltify_access_token;
+    this.app.settings.tiltify_campaign = req.body.tiltify_campaign;
     this.app.settings.donordrive_instance = req.body.donordrive_instance;
     this.app.settings.donordrive_participant = req.body.donordrive_participant;
+    this.app.charity.init();
 
     this.app.settings.countdown_audio = req.body.countdown_audio;
     this.app.settings.countdown_audio_volume = Math.max(0, Math.min(100, req.body.countdown_audio_volume));

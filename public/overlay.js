@@ -155,54 +155,6 @@ function showAlert(type, params, duration, videoVolume, soundVolume) {
 }
 
 /**
- * DonorDrive
- */
-
-// The ID of the latest donation
-let latestDonation = null;
-
-// Start querying the DonorDrive API
-if (config.donordrive && config.donordrive.instance && config.donordrive.participant) {
-  queryDonorDrive();
-  setInterval(queryDonorDrive, 15000);
-}
-
-/**
- * Query the DonorDrive API
- */
-function queryDonorDrive() {
-  fetch(`https://${config.donordrive.instance}.donordrive.com/api/participants/${config.donordrive.participant}/donations`)
-  .then((res) => res.json())
-  .then((json) => {
-    if (json.length) {
-      if (latestDonation !== null) {
-        let i = 0;
-        while (latestDonation !== json[i].donationID) {
-          i++;
-        }
-
-        i--;
-
-        for (; i >= 0; i--) {
-          addAlert('charitydonation', {
-            user: json[i].displayName,
-            amount: `\$${json[i].amount}`
-          }, config.donordrive.duration, config.donordrive.video_volume, config.donordrive.sound_volume);
-        }
-      }
-
-      latestDonation = json[0].donationID;
-    } else {
-      latestDonation = '';
-    }
-  })
-  .catch((err) => {
-    console.warn('failed to query DonorDrive');
-    console.log(err);
-  });
-}
-
-/**
  * Overlays
  */
 

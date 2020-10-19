@@ -14,6 +14,7 @@ import fs from 'fs';
 // Modules
 import Backend from './modules/backend.js';
 import ChatBot from './modules/chatbot.js';
+import Charity from './modules/charity.js';
 import Commands from './modules/commands.js';
 import Database from './modules/database.js';
 import DiscordBot from './modules/discord.js';
@@ -55,6 +56,7 @@ class App {
     this.twitter = new TwitterBot(this);
     this.http = new HttpServer(this);
     this.redemptions = new Redemptions(this);
+    this.charity = new Charity(this);
     new Backend(this);
   }
 
