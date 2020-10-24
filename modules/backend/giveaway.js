@@ -13,7 +13,7 @@
  * Handler for the giveaway backend.
  */
 export default class GiveawayBackend {
-  get(resolve) {
+  get(resolve, req) {
     if (req.query.group) {
       this.db.get('SELECT id, name FROM giveaway_groups WHERE id = ?', req.query.group, (err, row) => {
         if (!row) {
