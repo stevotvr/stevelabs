@@ -158,7 +158,7 @@ export default class DiscordBot {
           name: this.app.settings.live_channel_name,
           url: url
         },
-        description: `**Duration** ${Math.floor(duration / 3600000)} hours, ${Math.floor(duration / 60000 % 60)} minutes, ${Math.floor(duration / 1000 % 60)} seconds`
+        description: `**The stream has ended.** Duration: ${Math.floor(duration / 3600000)} hours, ${Math.floor(duration / 60000 % 60)} minutes, ${Math.floor(duration / 1000 % 60)} seconds`
       }
     };
 
