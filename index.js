@@ -20,6 +20,7 @@ import Database from './modules/database.js';
 import DiscordBot from './modules/discord.js';
 import HttpServer from './modules/httpserver.js';
 import Redemptions from './modules/redemptions.js';
+import Stats from './modules/stats.js';
 import TwitchApi from './modules/twitchapi.js';
 import TwitterBot from './modules/twitter.js';
 
@@ -57,6 +58,7 @@ class App {
     this.http = new HttpServer(this);
     this.redemptions = new Redemptions(this);
     this.charity = new Charity(this);
+    this.stats = new Stats(this);
     new Backend(this);
   }
 

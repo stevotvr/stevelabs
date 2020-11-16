@@ -263,6 +263,8 @@ export default class ChatBot {
 
     this.chatLines++;
 
+    this.app.stats.addUserChat(user);
+
     if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
       this.sessionUsers.add(user);
 
