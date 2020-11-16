@@ -62,7 +62,7 @@ export default class Charity {
       if (json.length) {
         if (this.latestDonordriveDono !== null) {
           let i = 0;
-          while (this.latestDonordriveDono !== json[i].donationID) {
+          while (i < json.length && this.latestDonordriveDono !== json[i].donationID) {
             i++;
           }
 
@@ -101,7 +101,7 @@ export default class Charity {
       if (json.data && json.data.length) {
         if (this.latestTiltifyDono !== null) {
           let i = 0;
-          while (this.latestTiltifyDono !== json.data[i].id) {
+          while (i < json.data.length && this.latestTiltifyDono !== json.data[i].id) {
             i++;
           }
 
