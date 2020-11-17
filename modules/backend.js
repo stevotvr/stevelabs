@@ -22,6 +22,7 @@ import TestBackend from './backend/test.js';
 import TimersBackend from './backend/timers.js';
 import TipsBackend from './backend/tips.js';
 import TriggersBackend from './backend/triggers.js';
+import TriviaBackend from './backend/trivia.js';
 
 /**
  * Provides the backend interface.
@@ -51,6 +52,7 @@ export default class Backend {
     this.loadHandler('timers', new TimersBackend());
     this.loadHandler('tips', new TipsBackend());
     this.loadHandler('triggers', new TriggersBackend());
+    this.loadHandler('trivia', new TriviaBackend());
 
     this.setupRoutes(app);
   }

@@ -16,6 +16,7 @@ import RaffleCommand from './commands/raffle.js';
 import SayCommand from './commands/say.js';
 import SfxCommand from './commands/sfx.js';
 import TipCommand from './commands/tip.js';
+import TriviaCommand from './commands/trivia.js';
 import TtsCommand from './commands/tts.js';
 
 /**
@@ -39,6 +40,7 @@ export default class Commands {
     new SayCommand(this);
     new SfxCommand(this);
     new TipCommand(this);
+    new TriviaCommand(this);
     new TtsCommand(this);
   }
 

@@ -1,0 +1,71 @@
+<h2>Trivia</h2>
+<form method="post" autocomplete="off">
+	<input type="hidden" name="add" value="1">
+	<fieldset>
+		<legend>Add Question</legend>
+		<table>
+			<tr>
+				<th style="width: 40%;">Question</th>
+				<th style="width: 10%;">Answer</th>
+				<th style="width: 50%;">Detailed Answer</th>
+			</tr>
+			<tr>
+				<td><input type="text" name="question"></td>
+				<td><input type="text" name="answer"></td>
+				<td><input type="text" name="details"></td>
+			</tr>
+		</table>
+		<fieldset class="buttons">
+			<input type="submit" value="Add">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Questions</legend>
+		<table>
+			<tr>
+				<th style="width: 38%;">Question</th>
+				<th style="width: 10%;">Answer</th>
+				<th style="width: 48%;">Detailed Answer</th>
+				<th style="width: 4%;">Delete</th>
+			</tr>
+			{{#each data.questions}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					<input type="text" name="update[{{this.id}}][question]" value="{{this.question}}">
+				</td>
+				<td><input type="text" name="update[{{this.id}}][answer]" value="{{this.answer}}"></td>
+				<td><input type="text" name="update[{{this.id}}][details]" value="{{this.details}}"></td>
+				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Answered Questions ({{data.answered.length}})</legend>
+		<table>
+			<tr>
+				<th style="width: 35%;">Question</th>
+				<th style="width: 10%;">Answer</th>
+				<th style="width: 45%;">Detailed Answer</th>
+				<th style="width: 10%;">User</th>
+			</tr>
+			{{#each data.answered}}
+			<tr>
+				<td>{{this.question}}</td>
+				<td>{{this.answer}}</td>
+				<td>{{this.details}}</td>
+				<td>{{this.user}}</td>
+			</tr>
+			{{/each}}
+		</table>
+	</fieldset>
+</form>

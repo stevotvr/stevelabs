@@ -31,4 +31,13 @@ export default class Stats {
   addUserChat(user) {
     this.app.db.db.run('INSERT INTO userstats (user, chats) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET chats = chats+1 WHERE user = ?', [ user, user ]);
   }
+
+  /**
+   * Add a trivia correct answer action to a user.
+   *
+   * @param {string} user The username
+   */
+  addUserTrivia(user) {
+    this.app.db.db.run('INSERT INTO userstats (user, trivia) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET trivia = trivia+1 WHERE user = ?', [ user, user ]);
+  }
 }
