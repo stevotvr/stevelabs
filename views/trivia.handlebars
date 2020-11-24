@@ -25,7 +25,8 @@
 		<legend>Edit Questions</legend>
 		<table>
 			<tr>
-				<th style="width: 38%;">Question</th>
+				<th style="width: 2%;">ID</th>
+				<th style="width: 36%;">Question</th>
 				<th style="width: 10%;">Answer</th>
 				<th style="width: 48%;">Detailed Answer</th>
 				<th style="width: 4%;">Delete</th>
@@ -34,8 +35,9 @@
 			<tr>
 				<td>
 					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
-					<input type="text" name="update[{{this.id}}][question]" value="{{this.question}}">
+					{{this.id}}
 				</td>
+				<td><input type="text" name="update[{{this.id}}][question]" value="{{this.question}}"></td>
 				<td><input type="text" name="update[{{this.id}}][answer]" value="{{this.answer}}"></td>
 				<td><input type="text" name="update[{{this.id}}][details]" value="{{this.details}}"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
