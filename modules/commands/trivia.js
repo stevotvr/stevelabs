@@ -41,7 +41,7 @@ export default class TriviaCommand {
       this.details = row.details;
 
       if (row) {
-        this.app.chatbot.say(`Trivia question: ${row.question}`);
+        this.app.chatbot.say(`/me Trivia time! Answer this question correctly in chat for some chat points: ${row.question}`);
       } else if (user) {
         this.app.chatbot.say(`Sorry, ${user}, we're all out of trivia!`);
       }
@@ -64,7 +64,7 @@ export default class TriviaCommand {
       if (user) {
         this.app.stats.addUserTrivia(user);
         this.db.run('UPDATE trivia SET user = ? WHERE id = ?', [ user, this.id ]);
-        this.app.chatbot.say(`That's correct, ${user}! ${this.details}`);
+        this.app.chatbot.say(`/me That's correct, ${user}! ${this.details}`);
       }
 
       this.id = null;
