@@ -109,6 +109,6 @@ export default class Commands {
       throw 'command not found';
     }
 
-    return await this[parsed[0]](userInfo ? userInfo.username : null, parsed.slice(1));
+    return await this[parsed[0]](userInfo ? userInfo.userName : null, parsed.slice(1));
   }
 }
