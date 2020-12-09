@@ -11,6 +11,7 @@
 
 import FollowageCommand from './commands/followage.js';
 import GiveawayCommand from './commands/giveaway.js';
+import LeaderboardCommand from './commands/leaderboard.js'
 import QuoteCommand from './commands/quote.js';
 import RaffleCommand from './commands/raffle.js';
 import SayCommand from './commands/say.js';
@@ -35,6 +36,7 @@ export default class Commands {
 
     new FollowageCommand(this);
     new GiveawayCommand(this);
+    new LeaderboardCommand(this);
     new QuoteCommand(this);
     new RaffleCommand(this);
     new SayCommand(this);
