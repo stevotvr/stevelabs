@@ -117,7 +117,7 @@ export default class Database {
             db.run('CREATE TABLE IF NOT EXISTS giveaway (id INTEGER PRIMARY KEY AUTOINCREMENT, groupId INTEGER NOT NULL, name TEXT NOT NULL, key TEXT NOT NULL, recipient TEXT)');
             db.run('CREATE TABLE IF NOT EXISTS giveaway_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, random INTEGER NOT NULL DEFAULT 0, raffle INTEGER NOT NULL DEFAULT 0)');
             db.run('CREATE TABLE IF NOT EXISTS redemptions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, command TEXT NOT NULL)');
-            db.run('CREATE TABLE IF NOT EXISTS userstats (user TEXT PRIMARY KEY, chats INTEGER NOT NULL DEFAULT 0, trivia INTEGER NOT NULL DEFAULT 0)');
+            db.run('CREATE TABLE IF NOT EXISTS userstats (user TEXT PRIMARY KEY, chats INTEGER NOT NULL DEFAULT 0, trivia INTEGER NOT NULL DEFAULT 0, ignore INTEGER NOT NULL DEFAULT 0)');
             db.run('CREATE TABLE IF NOT EXISTS trivia (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT NOT NULL, answer TEXT NOT NULL, details TEXT NOT NULL, user TEXT)');
           });
         });
