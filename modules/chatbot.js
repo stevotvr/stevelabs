@@ -324,7 +324,7 @@ export default class ChatBot {
       return;
     }
 
-    if (Date.now() < Math.max(trigger.timeouts.global, trigger.timeouts.user[user] || 0)) {
+    if (!msg.userInfo.isBroadcaster && Date.now() < Math.max(trigger.timeouts.global, trigger.timeouts.user[user] || 0)) {
       return;
     }
 
