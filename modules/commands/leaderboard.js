@@ -28,7 +28,7 @@ export default class LeaderboardCommand {
   }
 
   async leaderboard(user, args = []) {
-    const count = (args.length > 0 && args[0].match(/\d+/)) ? args[0] : 5;
+    const count = (args.length > 0 && args[0].match(/\d+/)) ? Math.min(25, Math.max(5, args[0])) : 5;
     this.db.all('SELECT user FROM userstats ORDER BY chats + trivia * 10 DESC LIMIT ?', count, (err, rows) => {
       if (err) {
         console.warn('error getting leaderboard data');
