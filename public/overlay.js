@@ -13,7 +13,7 @@
  * Socket
  */
 
-if (config.alerts || config.sfx || config.tts) {
+if (config.alerts || config.sfx || config.tts || config.chat) {
   // Create the socket connection
   const socket = io('//' + window.location.host);
 
@@ -39,6 +39,10 @@ if (config.alerts || config.sfx || config.tts) {
 
   socket.on('tts', (message) => {
     addTts(message);
+  });
+
+  socket.on('chat', (username, color, message) => {
+    addChatMessage(username, color, message);
   });
 }
 
@@ -361,4 +365,36 @@ function playTts(message) {
       popQueue();
     };
   })();
+}
+
+/**
+ * Add a chat message to the chat log.
+ *
+ * @param {string} username The name of the user who sent the message
+ * @param {string} color The color of the username
+ * @param {string} message The chat message
+ */
+function addChatMessage(username, color, message) {
+  if (!config.chat) {
+    return;
+  }
+
+  const chatBox = document.getElementById('chat');
+  if (!chatBox) {
+    return;
+  }
+
+  const newElem = document.createElement('div');
+
+  const nameElem = document.createElement('span');
+  nameElem.className = 'chatname';
+  nameElem.style = 'color: ' + color + ';';
+  nameElem.innerText = username + ': ';
+
+  const messageElem = document.createElement('span');
+  messageElem.innerHTML = message;
+
+  newElem.appendChild(nameElem);
+  newElem.appendChild(messageElem);
+  chatBox.appendChild(newElem);
 }

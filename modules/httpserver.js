@@ -36,6 +36,8 @@ export default class HttpServer {
     this.schedule = [];
     this.sfx = {};
 
+    this.chatMessages = [];
+
     const hbs = handlebars.create({
       helpers: {
         eq: function(p1, p2, options) {
@@ -246,6 +248,12 @@ export default class HttpServer {
         };
       }
 
+      if (req.query.chat) {
+        options.chat = true;
+        options.chathistory = this.chatMessages;
+        options.config.chat = true;
+      }
+
       new Promise((resolve, reject) => {
         if (req.query.tips) {
           options.config.tips = [];
@@ -354,5 +362,35 @@ export default class HttpServer {
    */
   sendTts(message) {
     this.io.emit('tts', message);
+  }
+
+  /**
+   * Send a new chat message to the overlay page.
+   *
+   * @param {TwitchPrivateMessage} msg The chat message
+   */
+  sendChat(msg) {
+    const parts = msg.parseEmotes();
+    if (!parts) {
+      return;
+    }
+
+    let message = '';
+    parts.forEach(p => {
+      if (p.type == 'text') {
+        message += p.text.replace(/[\u00A0-\u9999<>\&]/g, (c) => {
+          return '&#' + c.charCodeAt(0) + ';';
+       });
+      } else if (p.type == 'emote') {
+        message += `<img src="https://static-cdn.jtvnw.net/emoticons/v1/${p.id}/1.0" width="28" height="28" alt="${p.name}">`;
+      }
+    });
+
+    this.chatMessages.push({
+      username: msg.userInfo.displayName,
+      color: msg.userInfo.color,
+      message: message
+    });
+    this.io.emit('chat', msg.userInfo.displayName, msg.userInfo.color, message);
   }
 }

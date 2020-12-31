@@ -257,6 +257,8 @@ export default class ChatBot {
    * @param {TwitchPrivateMessage} msg The raw message data
    */
   async onChat(channel, user, message, msg) {
+    this.app.http.sendChat(msg);
+
     if (user === this.app.config.users.bot) {
       return;
     }

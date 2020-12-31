@@ -7,6 +7,18 @@
 	<title>Stevelabs Overlay</title>
 </head>
 <body style="display: none;">
+	{{#if chat}}
+	<div id="chat-container">
+		<div id="chat">
+		{{#each chathistory}}
+			<div>
+				<span class="chatname" style="color: {{this.color}};">{{this.username}}: </span>
+				<span class="chatmessage">{{{this.message}}}</span>
+			</div>
+		{{/each}}
+		</div>
+	</div>
+	{{/if}}
 	{{#if countdown}}
 	<div id="countdown"></div>
 	{{#if countdown_audio}}

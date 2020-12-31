@@ -87,6 +87,23 @@ body > * {
   transition: opacity 500ms ease-out;
 }
 
+#chat-container {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+#chat {
+  bottom: 0;
+  font-size: 30px;
+  position: absolute;
+  text-align: left;
+}
+
+.chatname {
+  font-weight: bold;
+}
+
 @keyframes rotation {
   from {
     transform: rotate(0deg);
