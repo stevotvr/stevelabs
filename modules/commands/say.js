@@ -23,9 +23,19 @@ export default class SayCommand {
     this.app = commands.app;
 
     commands.say = this.say;
+    commands.whisper = this.whisper;
   }
 
   async say(user, args = []) {
     this.app.chatbot.say(args.join(' '));
+  }
+
+  async whisper(user, args = []) {
+    if (args.length < 2) {
+      throw 'invalid arguments';
+    }
+
+    const targetUser = args.pop();
+    this.app.chatbot.whisper(targetUser, args.join(' '));
   }
 }
