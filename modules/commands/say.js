@@ -35,7 +35,7 @@ export default class SayCommand {
       throw 'invalid arguments';
     }
 
-    const targetUser = args.pop();
+    const targetUser = args.shift();
     this.app.chatbot.whisper(targetUser, args.join(' '));
   }
 }
