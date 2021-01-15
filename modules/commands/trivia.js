@@ -49,9 +49,9 @@ export default class TriviaCommand {
     };
 
     if (args[0] && args[0].match(/\d+/)) {
-      this.db.get('SELECT id, question, answer, details FROM trivia WHERE user IS NULL AND id = ?', args[0], cb);
+      this.db.get('SELECT id, question, answer, details FROM trivia AND id = ?', args[0], cb);
     } else {
-      this.db.get('SELECT id, question, answer, details FROM trivia WHERE user IS NULL ORDER BY RANDOM() LIMIT 1', cb);
+      this.db.get('SELECT id, question, answer, details FROM trivia ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 
@@ -64,7 +64,6 @@ export default class TriviaCommand {
     if (answer === this.answer) {
       if (user) {
         this.app.stats.addUserTrivia(user);
-        this.db.run('UPDATE trivia SET user = ? WHERE id = ?', [ user, this.id ]);
         this.app.chatbot.say(`/me That's correct, ${user}! ${this.details}`);
         this.app.http.sendTrivia(`${user} answered correctly! ${this.details}`);
       }

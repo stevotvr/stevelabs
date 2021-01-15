@@ -50,24 +50,3 @@
 		</fieldset>
 	</fieldset>
 </form>
-<form method="post" autocomplete="off">
-	<fieldset>
-		<legend>Answered Questions ({{data.answered.length}})</legend>
-		<table>
-			<tr>
-				<th style="width: 35%;">Question</th>
-				<th style="width: 10%;">Answer</th>
-				<th style="width: 45%;">Detailed Answer</th>
-				<th style="width: 10%;">User</th>
-			</tr>
-			{{#each data.answered}}
-			<tr>
-				<td>{{this.question}}</td>
-				<td>{{this.answer}}</td>
-				<td>{{this.details}}</td>
-				<td>{{this.user}}</td>
-			</tr>
-			{{/each}}
-		</table>
-	</fieldset>
-</form>

@@ -14,11 +14,8 @@
  */
 export default class TriviaBackend {
   get(resolve) {
-    this.db.all('SELECT id, question, answer, details, user FROM trivia ORDER BY id ASC', (err, rows) => {
-      resolve({
-        questions: rows.filter((v) => v.user === null),
-        answered: rows.filter((v) => v.user !== null)
-      });
+    this.db.all('SELECT id, question, answer, details FROM trivia ORDER BY id ASC', (err, rows) => {
+      resolve({ questions: rows });
     });
   }
 
