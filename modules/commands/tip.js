@@ -7,7 +7,7 @@
  * For full license information, see the LICENSE.txt file included with the source.
  */
 
-'use strict'
+'use strict';
 
 /**
  * Provides the tip commands.
