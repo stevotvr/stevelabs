@@ -13,7 +13,7 @@
  * Socket
  */
 
-if (config.alerts || config.sfx || config.tts || config.chat) {
+if (config.alerts || config.sfx || config.tts || config.chat || config.trivia) {
   // Create the socket connection
   const socket = io('//' + window.location.host);
 
@@ -43,6 +43,10 @@ if (config.alerts || config.sfx || config.tts || config.chat) {
 
   socket.on('chat', (username, color, message) => {
     addChatMessage(username, color, message);
+  });
+
+  socket.on('trivia', (text) => {
+    updateTrivia(text);
   });
 }
 
@@ -397,4 +401,22 @@ function addChatMessage(username, color, message) {
   newElem.appendChild(nameElem);
   newElem.appendChild(messageElem);
   chatBox.appendChild(newElem);
+}
+
+/**
+ * Update the trivia text.
+ *
+ * @param {string} text The new text
+ */
+function updateTrivia(text) {
+  if (!config.trivia) {
+    return;
+  }
+
+  const triviaBox = document.getElementById('trivia');
+  if (!triviaBox) {
+    return;
+  }
+
+  triviaBox.innerText = text;
 }

@@ -35,6 +35,11 @@
 		<div id="tips"></div>
 	</div>
 	{{/if}}
+	{{#if trivia}}
+	<div id="trivia-container">
+		<div id="trivia">{{triviaquestion}}</div>
+	</div>
+	{{/if}}
 	{{#each alerts}}
 	<div class="alert" id="{{@key}}">
 		{{#eq @key 'greet'}}

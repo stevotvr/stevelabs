@@ -38,6 +38,8 @@ export default class HttpServer {
 
     this.chatMessages = [];
 
+    this.trivia = '';
+
     const hbs = handlebars.create({
       helpers: {
         eq: function(p1, p2, options) {
@@ -254,6 +256,12 @@ export default class HttpServer {
         options.config.chat = true;
       }
 
+      if (req.query.trivia) {
+        options.trivia = true;
+        options.triviaquestion = this.trivia;
+        options.config.trivia = true;
+      }
+
       new Promise((resolve, reject) => {
         if (req.query.tips) {
           options.config.tips = [];
@@ -392,5 +400,15 @@ export default class HttpServer {
       message: message
     });
     this.io.emit('chat', msg.userInfo.displayName, msg.userInfo.color, message);
+  }
+
+  /**
+   * Send new trivia text.
+   *
+   * @param {string} text The new trivia text
+   */
+  sendTrivia(text) {
+    this.trivia = text;
+    this.io.emit('trivia', text);
   }
 }
