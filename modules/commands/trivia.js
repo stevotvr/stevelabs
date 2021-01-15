@@ -37,7 +37,7 @@ export default class TriviaCommand {
       }
 
       this.id = row.id;
-      this.answer = row.answer.trim().toLowerCase();
+      this.answer = new Set(row.answer.trim().toLowerCase().split('|'));
       this.details = row.details;
 
       if (row) {
@@ -60,8 +60,8 @@ export default class TriviaCommand {
       return;
     }
 
-    const answer = args[0].trim().substr(0, this.answer.length).toLowerCase();
-    if (answer === this.answer) {
+    const answer = args[0].trim().toLowerCase();
+    if (this.answer.has(answer)) {
       if (user) {
         this.app.stats.addUserTrivia(user);
         this.app.chatbot.say(`/me That's correct, ${user}! ${this.details}`);
