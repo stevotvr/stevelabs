@@ -12,6 +12,7 @@
 import { ApiClient } from 'twitch';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
+import emoticons from 'twitch-emoticons';
 import express from 'express';
 import fetch from 'node-fetch';
 import fs from 'fs';
@@ -37,6 +38,21 @@ export default class HttpServer {
     this.sfx = {};
 
     this.chatMessages = [];
+
+    const fetcher = new emoticons.EmoteFetcher();
+    fetcher.fetchBTTVEmotes(this.app.config.users.host)
+      .then(() => {
+        console.log('loaded BetterTTV emotes');
+      })
+      .catch((err) => {
+        console.warn('failed to load BetterTTV emotes');
+        console.log(err);
+      });
+
+    this.parser = new emoticons.EmoteParser(fetcher, {
+      template: '<img src="{link}" width="28" height="28" alt="{name}">',
+      match: /\b(.+?)\b/g
+    });
 
     this.trivia = '';
 
@@ -393,6 +409,8 @@ export default class HttpServer {
         message += `<img src="https://static-cdn.jtvnw.net/emoticons/v1/${p.id}/1.0" width="28" height="28" alt="${p.name}">`;
       }
     });
+
+    message = this.parser.parse(message);
 
     this.chatMessages.push({
       username: msg.userInfo.displayName,
