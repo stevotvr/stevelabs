@@ -8,7 +8,8 @@
 </head>
 <body style="display: none;">
 	{{#if chat}}
-	<div id="chat-container">
+	<fieldset id="chat-container">
+		<legend>Chat</legend>
 		<div id="chat">
 		{{#each chathistory}}
 			<div>
@@ -17,7 +18,7 @@
 			</div>
 		{{/each}}
 		</div>
-	</div>
+	</fieldset>
 	{{/if}}
 	{{#if countdown}}
 	<div id="countdown"></div>
@@ -36,9 +37,10 @@
 	</div>
 	{{/if}}
 	{{#if trivia}}
-	<div id="trivia-container">
+	<fieldset id="trivia-container">
+		<legend>Trivia</legend>
 		<div id="trivia">{{triviaquestion}}</div>
-	</div>
+	</fieldset>
 	{{/if}}
 	{{#each alerts}}
 	<div class="alert" id="{{@key}}">

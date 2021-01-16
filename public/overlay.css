@@ -1,9 +1,11 @@
 * {
   background: transparent;
+  box-sizing: inherit;
   margin: 0;
 }
 
 html, body {
+  box-sizing: border-box;
   height: 100%;
 }
 
@@ -19,6 +21,13 @@ body {
 body > * {
   position: absolute;
   width: 100%;
+}
+
+legend {
+  color: #991F1F;
+  font-family: 'Bee Four', Impact, sans-serif;
+  font-size: 60px;
+  text-transform: uppercase;
 }
 
 .alert {
@@ -102,6 +111,11 @@ body > * {
 
 .chatname {
   font-weight: bold;
+}
+
+#chat-container, #trivia-container {
+  height: 100%;
+  text-align: left;
 }
 
 @keyframes rotation {
