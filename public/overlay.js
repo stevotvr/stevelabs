@@ -418,5 +418,9 @@ function updateTrivia(text) {
     return;
   }
 
-  triviaBox.innerText = text;
+  triviaBox.style.opacity = 0;
+  setTimeout(() => {
+    triviaBox.innerText = text;
+    triviaBox.style.opacity = 1;
+  }, 300);
 }

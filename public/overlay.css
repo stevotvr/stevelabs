@@ -96,6 +96,11 @@ legend {
   transition: opacity 500ms ease-out;
 }
 
+#chat-container, #trivia-container {
+  height: 100%;
+  text-align: left;
+}
+
 #chat-container {
   height: 100%;
   overflow: hidden;
@@ -113,9 +118,9 @@ legend {
   font-weight: bold;
 }
 
-#chat-container, #trivia-container {
-  height: 100%;
-  text-align: left;
+#trivia {
+  font-size: 38px;
+  transition: opacity 300ms ease-out;
 }
 
 @keyframes rotation {
