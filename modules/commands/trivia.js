@@ -42,7 +42,7 @@ export default class TriviaCommand {
 
       if (row) {
         this.app.chatbot.say(`/me Trivia time! Answer this question correctly in chat for some chat points: ${row.question}`);
-        this.app.http.sendTrivia(row.question);
+        this.app.http.sendTrivia(`Answer in chat: ${row.question}`);
       } else if (user) {
         this.app.chatbot.say(`Sorry, ${user}, we're all out of trivia!`);
       }
