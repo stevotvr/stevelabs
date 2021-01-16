@@ -10,13 +10,15 @@
 	{{#if chat}}
 	<fieldset id="chat-container">
 		<legend>Chat</legend>
-		<div id="chat">
-		{{#each chathistory}}
-			<div>
-				<span class="chatname" style="color: {{this.color}};">{{this.username}}: </span>
-				<span class="chatmessage">{{{this.message}}}</span>
+		<div id="chat-window">
+			<div id="chat">
+			{{#each chathistory}}
+				<div>
+					<span class="chatname" style="color: {{this.color}};">{{this.username}}: </span>
+					<span class="chatmessage">{{{this.message}}}</span>
+				</div>
+			{{/each}}
 			</div>
-		{{/each}}
 		</div>
 	</fieldset>
 	{{/if}}
