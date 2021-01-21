@@ -21,7 +21,7 @@
     "express-handlebars": "^4.0.6",
     "node-fetch": "^2.6.1",
     "node-nlp": "^4.17.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "sqlite3": "^4.2.0",
     "twitch": "^4.3.8",
     "twitch-auth": "^4.3.8",
