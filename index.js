@@ -9,6 +9,7 @@
 
 'use strict';
 
+import { EventEmitter } from 'events';
 import fs from 'fs';
 
 // Modules
@@ -45,34 +46,43 @@ class App {
       // Do nothing; directory probably exists
     }
 
+    this.emitter = new EventEmitter();
+
     // Application settings
     this.settings = {};
 
     // Module instances
-    this.db = new Database(this);
     this.api = new TwitchApi(this);
+    new Backend(this);
     this.commands = new Commands(this);
+    this.charity = new Charity(this);
     this.chatbot = new ChatBot(this);
+    this.database = new Database(this);
     this.discord = new DiscordBot(this);
-    this.twitter = new TwitterBot(this);
     this.http = new HttpServer(this);
     this.redemptions = new Redemptions(this);
-    this.charity = new Charity(this);
     this.stats = new Stats(this);
-    new Backend(this);
+    this.twitter = new TwitterBot(this);
   }
 
   /**
    * Save the settings to the database.
    */
   async saveSettings() {
-    const stmt = this.db.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+    const stmt = this.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
     for (const key in this.settings) {
       stmt.run(key, this.settings[key]);
     }
 
     stmt.finalize();
+  }
+
+  /**
+   * Get the SQLite3 database object.
+   */
+  get db() {
+    return this.database.db;
   }
 }
 

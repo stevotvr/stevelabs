@@ -21,7 +21,6 @@ export default class TriviaCommand {
    */
   constructor(commands) {
     this.app = commands.app;
-    this.db = commands.app.db.db
 
     commands.trivia = this.trivia;
     commands.answerTrivia = this.answerTrivia;
@@ -49,9 +48,9 @@ export default class TriviaCommand {
     };
 
     if (args[0] && args[0].match(/\d+/)) {
-      this.db.get('SELECT id, question, answer, details FROM trivia AND id = ?', args[0], cb);
+      this.app.db.get('SELECT id, question, answer, details FROM trivia AND id = ?', args[0], cb);
     } else {
-      this.db.get('SELECT id, question, answer, details FROM trivia ORDER BY RANDOM() LIMIT 1', cb);
+      this.app.db.get('SELECT id, question, answer, details FROM trivia ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 

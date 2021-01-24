@@ -21,7 +21,6 @@ export default class GiveawayCommand {
    */
   constructor(commands) {
     this.app = commands.app;
-    this.db = commands.app.db.db;
 
     commands.giveaway = this.giveaway;
   }
@@ -34,7 +33,7 @@ export default class GiveawayCommand {
     const targetUser = args.pop();
     const targetItem = args.join(' ');
 
-    this.app.db.db.get('SELECT id, name, random FROM giveaway_groups WHERE name = ?', targetItem, (err, giveaway) => {
+    this.app.db.get('SELECT id, name, random FROM giveaway_groups WHERE name = ?', targetItem, (err, giveaway) => {
       if (err) {
         console.warn('error loading giveaways');
         console.log(err);
@@ -49,7 +48,7 @@ export default class GiveawayCommand {
       }
 
       const sql = `SELECT id, name, key FROM giveaway WHERE groupId = ? AND recipient IS NULL${giveaway.random ? ' ORDER BY RANDOM()' : ''} LIMIT 1`;
-      this.app.db.db.get(sql, giveaway.id, (err, row) => {
+      this.app.db.get(sql, giveaway.id, (err, row) => {
         if (err) {
           console.warn(`error loading item from giveaway #${giveaway.id}`);
           console.log(err);
@@ -66,7 +65,7 @@ export default class GiveawayCommand {
 
         this.app.chatbot.say(`@${targetUser} check your whispers for your key for ${row.name}!`);
         this.app.chatbot.whisper(targetUser, `Here is your key for ${row.name}: ${row.key}`);
-        this.app.db.db.run('UPDATE giveaway SET recipient = ? WHERE id = ?', targetUser, row.id);
+        this.app.db.run('UPDATE giveaway SET recipient = ? WHERE id = ?', targetUser, row.id);
 
         console.log(`key ${row.key} for ${row.name} given to ${targetUser}`);
       });

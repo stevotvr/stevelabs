@@ -39,22 +39,24 @@ export default class Backend {
 
     this.handlers = {};
 
-    this.loadHandler('alerts', new AlertsBackend());
-    this.loadHandler('autogreet', new AutogreetBackend());
-    this.loadHandler('giveaway', new GiveawayBackend());
-    this.loadHandler('quotes', new QuotesBackend());
-    this.loadHandler('raffle', new RaffleBackend());
-    this.loadHandler('redemptions', new RedemptionsBackend());
-    this.loadHandler('schedule', new ScheduleBackend());
-    this.loadHandler('settings', new SettingsBackend());
-    this.loadHandler('sfx', new SfxBackend());
-    this.loadHandler('test', new TestBackend());
-    this.loadHandler('timers', new TimersBackend());
-    this.loadHandler('tips', new TipsBackend());
-    this.loadHandler('triggers', new TriggersBackend());
-    this.loadHandler('trivia', new TriviaBackend());
+    app.emitter.on('dbready', () => {
+      this.loadHandler('alerts', new AlertsBackend());
+      this.loadHandler('autogreet', new AutogreetBackend());
+      this.loadHandler('giveaway', new GiveawayBackend());
+      this.loadHandler('quotes', new QuotesBackend());
+      this.loadHandler('raffle', new RaffleBackend());
+      this.loadHandler('redemptions', new RedemptionsBackend());
+      this.loadHandler('schedule', new ScheduleBackend());
+      this.loadHandler('settings', new SettingsBackend());
+      this.loadHandler('sfx', new SfxBackend());
+      this.loadHandler('test', new TestBackend());
+      this.loadHandler('timers', new TimersBackend());
+      this.loadHandler('tips', new TipsBackend());
+      this.loadHandler('triggers', new TriggersBackend());
+      this.loadHandler('trivia', new TriviaBackend());
 
-    this.setupRoutes(app);
+      this.setupRoutes(app);
+    });
   }
 
   setupRoutes(app) {
@@ -117,7 +119,7 @@ export default class Backend {
 
   loadHandler(name, handler) {
     handler.app = this.app;
-    handler.db = this.app.db.db;
+    handler.db = this.app.db;
     this.handlers[name] = handler;
   }
 }

@@ -21,7 +21,6 @@ export default class RaffleCommand {
    */
   constructor(commands) {
     this.app = commands.app;
-    this.db = commands.app.db.db;
 
     commands.raffle = this.raffle;
     commands.startraffle = this.startraffle;
@@ -33,7 +32,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], (err) => {
+    this.app.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], (err) => {
       if (err) {
         console.warn('error saving raffle data');
         console.log(err);
@@ -50,7 +49,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.db.get('DELETE FROM raffle', (err) => {
+    this.app.db.get('DELETE FROM raffle', (err) => {
       if (err) {
         console.warn('error deleting raffle data');
         console.log(err);
@@ -70,7 +69,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
+    this.app.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
       if (err) {
         console.warn('error retrieving raffle data');
         console.log(err);

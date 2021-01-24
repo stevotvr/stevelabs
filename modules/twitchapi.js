@@ -25,6 +25,11 @@ export default class TwitchApi {
    */
   constructor(app) {
     this.app = app;
+
+    app.emitter.on('dbready', () => {
+      this.login(app.settings.oauth_access_token, app.settings.oauth_refresh_token);
+      this.login(app.settings.bot_access_token, app.settings.bot_refresh_token);
+    });
   }
 
   async login(access_token, refresh_token) {

@@ -95,13 +95,20 @@ export default class HttpServer {
       console.log(`listening on ${app.config.host}:${app.config.port}`);
       console.log(`overlay url: ${app.config.url}/overlay`);
     });
+
+    app.emitter.on('dbready', () => {
+      this.setupHttpRoutes();
+      this.loadAlerts();
+      this.loadSchedule();
+      this.loadSfx();
+    });
   }
 
   /**
    * Load the alerts from the database.
    */
   loadAlerts() {
-    this.app.db.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts', (err, rows) => {
+    this.app.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts', (err, rows) => {
       if (err) {
         console.warn('error loading alerts from the database');
         console.log(err);
@@ -147,7 +154,7 @@ export default class HttpServer {
    * Load the schedule from the database.
    */
   loadSchedule() {
-    this.app.db.db.all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
+    this.app.db.all('SELECT day, hour, minute, length, game FROM schedule ORDER BY day, hour, minute, length', (err, rows) => {
       if (err) {
         console.warn('error loading schedule from the database');
         console.log(err);
@@ -166,7 +173,7 @@ export default class HttpServer {
    * Load the sound effects from the database.
    */
   loadSfx() {
-    this.app.db.db.all('SELECT key, file, volume FROM sfx', (err, rows) => {
+    this.app.db.all('SELECT key, file, volume FROM sfx', (err, rows) => {
       if (err) {
         console.warn('error loading sfx from the database');
         console.log(err);
@@ -282,7 +289,7 @@ export default class HttpServer {
         if (req.query.tips) {
           options.config.tips = [];
           options.tips = true;
-          this.app.db.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
+          this.app.db.all('SELECT message FROM tips ORDER BY RANDOM() LIMIT 50', (err, rows) => {
             if (err) {
               console.warn('error loading tip data');
               console.log(err);

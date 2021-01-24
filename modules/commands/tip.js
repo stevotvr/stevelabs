@@ -21,7 +21,6 @@ export default class TipCommand {
    */
   constructor(commands) {
     this.app = commands.app;
-    this.db = commands.app.db.db;
 
     commands.tip = this.tip;
     commands.addtip = this.addtip;
@@ -46,9 +45,9 @@ export default class TipCommand {
     }
 
     if (args[0] && args[0].match(/\d+/)) {
-      this.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
+      this.app.db.get('SELECT id, message FROM tips WHERE id = ?', args[0], cb);
     } else {
-      this.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cb);
+      this.app.db.get('SELECT id, message FROM tips ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 
@@ -61,7 +60,7 @@ export default class TipCommand {
       this.app.chatbot.say(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
     } else {
       const chatbot = this.app.chatbot;
-      this.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
+      this.app.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
         if (err) {
           console.warn('error saving tip data');
           console.log(err);
@@ -80,7 +79,7 @@ export default class TipCommand {
     }
 
     const message = args.slice(1).join(' ').trim();
-    this.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], (err) => {
+    this.app.db.run('UPDATE tips SET message = ? WHERE id = ?', message, args[0], (err) => {
       if (err) {
         console.warn('error saving tip data');
         console.log(err);
@@ -97,7 +96,7 @@ export default class TipCommand {
       throw 'invalid arguments';
     }
 
-    this.db.run('DELETE FROM tips WHERE id = ?', args[0], (err) => {
+    this.app.db.run('DELETE FROM tips WHERE id = ?', args[0], (err) => {
       if (err) {
         console.warn('error deleting tip data');
         console.log(err);

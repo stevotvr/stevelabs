@@ -24,7 +24,6 @@ export default class ChatBot {
    */
   constructor(app) {
     this.app = app;
-    this.db = app.db.db;
 
     this.nlp = new nlp.NlpManager({ languages: ['en'] });
     this.nlp.load('./data/model.nlp');
@@ -37,13 +36,18 @@ export default class ChatBot {
 
     this.triggers = { _keys: [] };
     this.timers = [];
+
+    app.emitter.on('dbready', () => {
+      this.loadTriggers();
+      this.loadTimers();
+    });
   }
 
   /**
    * Load the chat triggers from the database.
    */
   loadTriggers() {
-    this.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM triggers', (err, rows) => {
+    this.app.db.all('SELECT key, level, user_timeout, global_timeout, aliases, command FROM triggers', (err, rows) => {
       if (err) {
         console.warn('error loading triggers from the database');
         console.log(err);
@@ -87,7 +91,7 @@ export default class ChatBot {
    * Load the timers from the database.
    */
   loadTimers() {
-    this.db.all('SELECT command FROM timers ORDER BY pos', (err, rows) => {
+    this.app.db.all('SELECT command FROM timers ORDER BY pos', (err, rows) => {
       if (err) {
         console.warn('error loading timers from the database');
         console.log(err);
@@ -271,7 +275,7 @@ export default class ChatBot {
     if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
       this.sessionUsers.add(user);
 
-      this.app.db.db.get('SELECT 1 FROM autogreet WHERE user = ?', [ user ], async (err, row) => {
+      this.app.db.get('SELECT 1 FROM autogreet WHERE user = ?', [ user ], async (err, row) => {
         if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
           const greetUser = await this.app.api.client.kraken.users.getUser(msg.userInfo.userId);
           if (greetUser) {

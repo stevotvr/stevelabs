@@ -23,6 +23,10 @@ export default class Charity {
    */
   constructor(app) {
     this.app = app;
+
+    app.emitter.on('dbready', () => {
+      this.init();
+    });
   }
 
   /**

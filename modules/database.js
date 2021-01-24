@@ -22,9 +22,6 @@ export default class Database {
    * @param {App} app The main application
    */
   constructor(app) {
-    this.app = app;
-
-    // Create the database connection
     const db = new sqlite3.Database('./data/stevelabs.db', (err) => {
       if (err) {
         console.warn('database connection failed');
@@ -59,57 +56,25 @@ export default class Database {
 
             app.settings.raffle_active = app.settings.raffle_active === '1';
 
-            app.api.login(app.settings.oauth_access_token, app.settings.oauth_refresh_token);
-            app.api.login(app.settings.bot_access_token, app.settings.bot_refresh_token);
+            db.run('CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, message TEXT, graphic TEXT, sound TEXT, duration INTEGER NOT NULL DEFAULT 5, videoVolume INTEGER NOT NULL DEFAULT 100, soundVolume INTEGER NOT NULL DEFAULT 100)')
+              .prepare('INSERT OR IGNORE INTO alerts (key, message) VALUES (?, ?)')
+              .run('cheer', '${user} cheered ${amount} bits!')
+              .run('follower', '${user} is now following!')
+              .run('subscription', '${user} has subscribed!')
+              .run('resub', '${user} has resubscribed for ${months} months!')
+              .run('subgift', '${user} gifted a subscription to ${recipient}!')
+              .run('submysterygift', '${user} gifted subscriptions to ${subcount} lucky viewers!')
+              .run('raid', '${user} raided the channel with ${viewers} viewers!')
+              .run('host', '${user} hosted the channel with ${viewers} viewers!')
+              .run('charitydonation', '${user} donated ${amount} to charity!')
+              .run('rafflewinner', '${user} won the raffle!')
+              .run('greet', 'Welcome, ${user}!')
+              .finalize();
 
-            if (app.settings.discord_bot_token) {
-              app.discord.login(app.settings.discord_bot_token);
-            }
-
-            app.twitter.login();
-
-            app.charity.init();
-
-            app.http.setupHttpRoutes();
-
-            db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, message TEXT, graphic TEXT, sound TEXT, duration INTEGER NOT NULL DEFAULT 5, videoVolume INTEGER NOT NULL DEFAULT 100, soundVolume INTEGER NOT NULL DEFAULT 100)')
-                .prepare('INSERT OR IGNORE INTO alerts (key, message) VALUES (?, ?)')
-                .run('cheer', '${user} cheered ${amount} bits!')
-                .run('follower', '${user} is now following!')
-                .run('subscription', '${user} has subscribed!')
-                .run('resub', '${user} has resubscribed for ${months} months!')
-                .run('subgift', '${user} gifted a subscription to ${recipient}!')
-                .run('submysterygift', '${user} gifted subscriptions to ${subcount} lucky viewers!')
-                .run('raid', '${user} raided the channel with ${viewers} viewers!')
-                .run('host', '${user} hosted the channel with ${viewers} viewers!')
-                .run('charitydonation', '${user} donated ${amount} to charity!')
-                .run('rafflewinner', '${user} won the raffle!')
-                .run('greet', 'Welcome, ${user}!')
-                .finalize();
-                this.app.http.loadAlerts();
-            });
-
-            db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS triggers (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
-              this.app.chatbot.loadTriggers();
-            });
-
-            db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, command TEXT NOT NULL)');
-              this.app.chatbot.loadTimers();
-            });
-
-            db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER NOT NULL DEFAULT 0, hour INTEGER NOT NULL DEFAULT 0, minute INTEGER NOT NULL DEFAULT 0, length INTEGER NOT NULL DEFAULT 0, game TEXT NOT NULL DEFAULT \'\')');
-              this.app.http.loadSchedule();
-            });
-
-            db.serialize(() => {
-              db.run('CREATE TABLE IF NOT EXISTS sfx (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, file TEXT NOT NULL, volume INTEGER NOT NULL DEFAULT 100)');
-              this.app.http.loadSfx();
-            });
-
+            db.run('CREATE TABLE IF NOT EXISTS triggers (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
+            db.run('CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, pos INTEGER NOT NULL DEFAULT 0, command TEXT NOT NULL)');
+            db.run('CREATE TABLE IF NOT EXISTS schedule (id INTEGER PRIMARY KEY AUTOINCREMENT, day INTEGER NOT NULL DEFAULT 0, hour INTEGER NOT NULL DEFAULT 0, minute INTEGER NOT NULL DEFAULT 0, length INTEGER NOT NULL DEFAULT 0, game TEXT NOT NULL DEFAULT \'\')');
+            db.run('CREATE TABLE IF NOT EXISTS sfx (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, file TEXT NOT NULL, volume INTEGER NOT NULL DEFAULT 100)');
             db.run('CREATE TABLE IF NOT EXISTS tips (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, user TEXT NOT NULL DEFAULT \'\', message TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS raffle (user TEXT PRIMARY KEY, tickets INTEGER NOT NULL DEFAULT 1)');
             db.run('CREATE TABLE IF NOT EXISTS autogreet (user TEXT PRIMARY KEY)');
@@ -119,10 +84,28 @@ export default class Database {
             db.run('CREATE TABLE IF NOT EXISTS redemptions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, command TEXT NOT NULL)');
             db.run('CREATE TABLE IF NOT EXISTS userstats (user TEXT PRIMARY KEY, chats INTEGER NOT NULL DEFAULT 0, trivia INTEGER NOT NULL DEFAULT 0, ignore INTEGER NOT NULL DEFAULT 0)');
             db.run('CREATE TABLE IF NOT EXISTS trivia (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT NOT NULL, answer TEXT NOT NULL, details TEXT NOT NULL)');
+
+            db.close((err) => {
+              if (err) {
+                console.warn('error closing database');
+                console.log(err);
+
+                return;
+              }
+
+              this.db = new sqlite3.Database('./data/stevelabs.db', (err) => {
+                if (err) {
+                  console.warn('database connection failed');
+                  console.log(err);
+
+                  return;
+                }
+
+                app.emitter.emit('dbready');
+              });
+            });
           });
         });
       });
-
-    this.db = db;
   }
 }

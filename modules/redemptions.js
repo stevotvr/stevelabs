@@ -58,7 +58,7 @@ export default class Redemptions {
    * @param {PubSubRedemptionMessage} message The redemption data
    */
   async redemptionCallback(message) {
-    this.app.db.db.get('SELECT command FROM redemptions WHERE name = ?', message.rewardName, (err, row) => {
+    this.app.db.get('SELECT command FROM redemptions WHERE name = ?', message.rewardName, (err, row) => {
       if (err) {
         console.warn('error checking redemptions');
         console.log(err);

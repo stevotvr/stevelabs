@@ -32,7 +32,6 @@ export default class Commands {
    */
   constructor(app) {
     this.app = app;
-    this.db = app.db.db;
 
     new FollowageCommand(this);
     new GiveawayCommand(this);

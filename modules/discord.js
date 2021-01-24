@@ -30,6 +30,12 @@ export default class DiscordBot {
       this.ready = true;
       console.log('connected to Discord');
     });
+
+    app.emitter.on('dbready', () => {
+      if (app.settings.discord_bot_token) {
+        this.login(app.settings.discord_bot_token);
+      }
+    });
   }
 
   /**

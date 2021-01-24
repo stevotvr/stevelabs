@@ -21,7 +21,6 @@ export default class QuoteCommand {
    */
   constructor(commands) {
     this.app = commands.app;
-    this.db = commands.app.db.db;
 
     commands.quote = this.quote;
     commands.addquote = this.addquote;
@@ -51,9 +50,9 @@ export default class QuoteCommand {
     };
 
     if (args[0] && args[0].match(/\d+/)) {
-      this.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
+      this.app.db.get('SELECT id, date, game, message FROM quotes WHERE id = ?', args[0], cb);
     } else {
-      this.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
+      this.app.db.get('SELECT id, date, game, message FROM quotes ORDER BY RANDOM() LIMIT 1', cb);
     }
   }
 
@@ -77,7 +76,7 @@ export default class QuoteCommand {
       }
 
       const chatbot = this.app.chatbot;
-      this.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
+      this.app.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
         if (err) {
           console.warn('error saving quote data');
           console.log(err);
@@ -96,7 +95,7 @@ export default class QuoteCommand {
     }
 
     const message = args.slice(1).join(' ').trim();
-    this.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], (err) => {
+    this.app.db.run('UPDATE quotes SET message = ? WHERE id = ?', message, args[0], (err) => {
       if (err) {
         console.warn('error saving quote data');
         console.log(err);
@@ -113,7 +112,7 @@ export default class QuoteCommand {
       throw 'invalid arguments';
     }
 
-    this.db.run('DELETE FROM quotes WHERE id = ?', args[0], (err) => {
+    this.app.db.run('DELETE FROM quotes WHERE id = ?', args[0], (err) => {
       if (err) {
         console.warn('error deleting quote data');
         console.log(err);

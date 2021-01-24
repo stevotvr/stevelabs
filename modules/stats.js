@@ -29,7 +29,7 @@ export default class Stats {
    * @param {string} user The username
    */
   addUserChat(user) {
-    this.app.db.db.run('INSERT INTO userstats (user, chats) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET chats = chats+1 WHERE user = ?', [ user, user ]);
+    this.app.db.run('INSERT INTO userstats (user, chats) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET chats = chats+1 WHERE user = ?', [ user, user ]);
   }
 
   /**
@@ -38,6 +38,6 @@ export default class Stats {
    * @param {string} user The username
    */
   addUserTrivia(user) {
-    this.app.db.db.run('INSERT INTO userstats (user, trivia) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET trivia = trivia+1 WHERE user = ?', [ user, user ]);
+    this.app.db.run('INSERT INTO userstats (user, trivia) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET trivia = trivia+1 WHERE user = ?', [ user, user ]);
   }
 }
