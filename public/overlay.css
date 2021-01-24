@@ -104,12 +104,12 @@ legend {
 
 #chat-container {
   height: 100%;
-  overflow: hidden;
   position: relative;
 }
 
 #chat-window {
   height: 100%;
+  overflow: hidden;
   position: relative;
 }
 
