@@ -284,10 +284,6 @@ export default class ChatBot {
               image: greetUser.logoUrl
             });
           }
-
-          if (this.triggers.shoutout) {
-            this.app.commands.parseCommand(this.triggers.shoutout.command, [ null, user ], msg.userInfo);
-          }
         }
       });
     }

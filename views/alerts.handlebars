@@ -17,10 +17,10 @@
 			<tr>
 				<td>{{this.key}}</td>
 				<td><input type="text" name="update[{{this.key}}][message]" value="{{this.message}}"></td>
-				<td><input type="text" name="update[{{this.key}}][graphic]" value="{{this.graphic}}"{{#eq this.key 'greet'}} disabled{{/eq}}></td>
+				<td><input type="text" name="update[{{this.key}}][graphic]" value="{{this.graphic}}"{{#eq this.key 'greet'}} disabled{{/eq}}{{#eq this.key 'shoutout'}} disabled{{/eq}}></td>
 				<td><input type="text" name="update[{{this.key}}][sound]" value="{{this.sound}}"></td>
 				<td><input type="number" name="update[{{this.key}}][duration]" value="{{this.duration}}"></td>
-				<td><input type="number" name="update[{{this.key}}][videoVolume]" value="{{this.videoVolume}}" min="0" max="100"{{#eq this.key 'greet'}} disabled{{/eq}}></td>
+				<td><input type="number" name="update[{{this.key}}][videoVolume]" value="{{this.videoVolume}}" min="0" max="100"{{#eq this.key 'greet' }} disabled{{/eq}}{{#eq this.key 'shoutout'}} disabled{{/eq}}></td>
 				<td><input type="number" name="update[{{this.key}}][soundVolume]" value="{{this.soundVolume}}" min="0" max="100"></td>
 				<td><input type="button" class="testbutton" name="atest[{{this.key}}]" value="Test"></td>
 			</tr>

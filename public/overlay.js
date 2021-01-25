@@ -122,7 +122,7 @@ function showAlert(type, params, duration, videoVolume, soundVolume) {
     }
   }
 
-  if (type === 'greet') {
+  if (type === 'greet' || type === 'shoutout') {
     const imgElement = alertElem.getElementsByTagName('img');
     if (imgElement && imgElement.length) {
       imgElement[0].src = params.image;

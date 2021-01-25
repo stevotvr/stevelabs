@@ -46,7 +46,7 @@ legend {
   color: #f00;
 }
 
-.alert#greet img {
+.alert#greet img, .alert#shoutout img {
   border-radius: 50%;
 }
 

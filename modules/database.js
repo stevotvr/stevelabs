@@ -69,6 +69,7 @@ export default class Database {
               .run('charitydonation', '${user} donated ${amount} to charity!')
               .run('rafflewinner', '${user} won the raffle!')
               .run('greet', 'Welcome, ${user}!')
+              .run('shoutout', 'twitch.tv/${user}')
               .finalize();
 
             db.run('CREATE TABLE IF NOT EXISTS triggers (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, level INTEGER NOT NULL DEFAULT 0, user_timeout INTEGER NOT NULL DEFAULT 0, global_timeout INTEGER NOT NULL DEFAULT 0, aliases TEXT NOT NULL DEFAULT \'\', command TEXT NOT NULL)');
