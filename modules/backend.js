@@ -59,6 +59,11 @@ export default class Backend {
     });
   }
 
+  /**
+   * Set up the backend HTTP routes.
+   *
+   * @param {Aoo} app The main application
+   */
   setupRoutes(app) {
     app.http.express.get('/admin', (req, res) => {
       if (req.cookies.token === undefined || req.cookies.token !== app.settings.web_token) {
@@ -117,6 +122,12 @@ export default class Backend {
     });
   }
 
+  /**
+   * Add a handler for a backend page.
+   *
+   * @param {string} name The name of the page
+   * @param {Object} handler The object to handle the page
+   */
   loadHandler(name, handler) {
     handler.app = this.app;
     handler.db = this.app.db;
