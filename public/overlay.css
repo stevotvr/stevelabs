@@ -27,6 +27,7 @@ legend {
   color: #991F1F;
   font-family: 'Bee Four', Impact, sans-serif;
   font-size: 60px;
+  line-height: 60px;
   text-transform: uppercase;
 }
 
@@ -102,11 +103,6 @@ legend {
   text-align: left;
 }
 
-#chat-container {
-  height: 100%;
-  position: relative;
-}
-
 #chat-window {
   height: 100%;
   overflow: hidden;
@@ -114,10 +110,9 @@ legend {
 }
 
 #chat {
-  bottom: 0;
+  bottom: 60px;
   font-size: 30px;
   position: absolute;
-  text-align: left;
 }
 
 .chatname {
