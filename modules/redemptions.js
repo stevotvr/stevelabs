@@ -69,7 +69,7 @@ export default class Redemptions {
       if (row) {
         console.log(`processing redemption ${message.rewardName} for user ${message.userName}`);
         this.app.commands.parseCommand(row.command, message.message ? message.message.split(/\s+/) : [], {
-          username: message.userName,
+          userName: message.userName,
           displayName: message.userDisplayName
         });
       }

@@ -71,6 +71,13 @@ export default class Commands {
       return params[start];
     });
 
+    let user;
+    if (parsed.includes('${game ')) {
+      user = await this.app.api.client.kraken.users.getUserByName(userInfo.userName);
+    }
+
+    parsed = parsed.replace(/\$\{user\}/gi, userInfo.displayName);
+
     const promises = [];
     parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
       promises.push(new Promise(async (resolve) => {
@@ -87,7 +94,6 @@ export default class Commands {
               break;
             }
 
-            const user = await this.app.api.client.kraken.users.getUserByName(p);
             if (user) {
               const channel = await user.getChannel();
               if (channel && channel.game) {
