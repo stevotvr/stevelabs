@@ -76,7 +76,7 @@ export default class Commands {
       user = await this.app.api.client.kraken.users.getUserByName(userInfo.userName);
     }
 
-    parsed = parsed.replace(/\$\{user\}/gi, userInfo.displayName);
+    parsed = parsed.replace(/\$\{user\}/gi, userInfo ? userInfo.displayName : 'user');
 
     const promises = [];
     parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
