@@ -40,7 +40,7 @@ export default class TipCommand {
       if (row) {
         this.app.chatbot.say(`TIP #${row.id}: ${row.message}`);
       } else {
-        this.app.chatbot.say(`Sorry, ${user}, we're all out of tips!`);
+        this.app.chatbot.say(`Sorry, ${user.displayName}, we're all out of tips!`);
       }
     }
 
@@ -55,12 +55,12 @@ export default class TipCommand {
     const message = args.join(' ');
 
     if (message.length < 2) {
-      this.app.chatbot.say(`${user} Your tip message is too short (2 characters min, yours was ${message.length})`);
+      this.app.chatbot.say(`@${user.displayName} Your tip message is too short (2 characters min, yours was ${message.length})`);
     } else if (message.length > 80) {
-      this.app.chatbot.say(`${user} Your tip message is too long (80 characters max, yours was ${message.length})`);
+      this.app.chatbot.say(`@${user.displayName} Your tip message is too long (80 characters max, yours was ${message.length})`);
     } else {
       const chatbot = this.app.chatbot;
-      this.app.db.run('INSERT INTO tips (date, user, message) VALUES (?, ?, ?)', Date.now(), user, message, function (err) {
+      this.app.db.run('INSERT INTO tips (date, user, message) VALUES (?, (SELECT id FROM users WHERE userId = ?), ?)', Date.now(), user.userId, message, function (err) {
         if (err) {
           console.warn('error saving tip data');
           console.log(err);

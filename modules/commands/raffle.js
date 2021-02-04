@@ -32,7 +32,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.app.db.run('INSERT OR IGNORE INTO raffle (user) VALUES (?)', [ user ], (err) => {
+    this.app.db.run('UPDATE users SET raffle = 1 WHERE userId = ?', [ user.userId ], (err) => {
       if (err) {
         console.warn('error saving raffle data');
         console.log(err);
@@ -49,7 +49,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.app.db.get('DELETE FROM raffle', (err) => {
+    this.app.db.get('UPDATE users SET raffle = 0', (err) => {
       if (err) {
         console.warn('error deleting raffle data');
         console.log(err);
@@ -69,7 +69,7 @@ export default class RaffleCommand {
       throw 'raffle not active';
     }
 
-    this.app.db.get('SELECT user FROM raffle ORDER BY RANDOM() LIMIT 1', (err, row) => {
+    this.app.db.get('SELECT displayName FROM users WHERE raffle > 0 ORDER BY RANDOM() LIMIT 1', (err, row) => {
       if (err) {
         console.warn('error retrieving raffle data');
         console.log(err);
@@ -79,8 +79,8 @@ export default class RaffleCommand {
         this.app.settings.raffle_active = false;
         this.app.saveSettings();
 
-        this.app.http.sendAlert('rafflewinner', { user: row.user });
-        this.app.chatbot.say(row ? args.join(' ').replace('${winner}', row.user) : '');
+        this.app.http.sendAlert('rafflewinner', { user: row.displayName });
+        this.app.chatbot.say(row ? args.join(' ').replace('${winner}', row.displayName) : '');
       }
     });
   }

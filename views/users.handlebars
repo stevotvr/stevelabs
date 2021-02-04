@@ -1,0 +1,33 @@
+<h2>Users</h2>
+<form method="post" autocomplete="off">
+	<fieldset>
+		<legend>Edit Users</legend>
+		<table>
+			<tr>
+				<th style="width: 25%;">User</th>
+				<th style="width: 15%;">Chat Messages</th>
+				<th style="width: 15%;">Trivia Answers</th>
+				<th style="width: 15%;">Raffle Tickets</th>
+				<th style="width: 15%;">Ignore Stats</th>
+				<th style="width: 15%;">Auto Greet</th>
+			</tr>
+			{{#each data.users}}
+			<tr>
+				<td>
+					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
+					{{this.displayName}}
+				</td>
+				<td><input type="number" name="update[{{this.id}}][chats]" value="{{this.chats}}" min="0"></td>
+				<td><input type="number" name="update[{{this.id}}][trivia]" value="{{this.trivia}}" min="0"></td>
+				<td><input type="number" name="update[{{this.id}}][raffle]" value="{{this.raffle}}" min="0"></td>
+				<td><input type="checkbox" name="update[{{this.id}}][ignoreStats]"{{#if this.ignoreStats}} checked{{/if}}></td>
+				<td><input type="checkbox" name="update[{{this.id}}][autoGreet]"{{#if this.autoGreet}} checked{{/if}}></td>
+			</tr>
+			{{/each}}
+		</table>
+		<fieldset class="buttons">
+			<input type="reset" value="Reset">
+			<input type="submit" value="Save">
+		</fieldset>
+	</fieldset>
+</form>

@@ -14,7 +14,7 @@
  */
 export default class QuotesBackend {
   get(resolve) {
-    this.db.all('SELECT id, date, user, game, message FROM quotes ORDER BY id ASC', (err, rows) => {
+    this.db.all('SELECT id, date, (SELECT displayName FROM users WHERE id = user) AS displayName, game, message FROM quotes ORDER BY id ASC', (err, rows) => {
       resolve({ quotes: rows });
     });
   }
@@ -22,7 +22,6 @@ export default class QuotesBackend {
   post(resolve, req) {
     const filter = (input) => {
       const params = [];
-      params.push(input.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
       params.push(input.game)
       params.push(input.message);
 
@@ -61,7 +60,7 @@ export default class QuotesBackend {
     }
 
     if (Array.isArray(req.body.update)) {
-      const stmt = this.db.prepare('UPDATE quotes SET user = ?, game = ?, message = ? WHERE id = ?');
+      const stmt = this.db.prepare('UPDATE quotes SET game = ?, message = ? WHERE id = ?');
 
       req.body.update.forEach((row) => {
         const params = filter(row);
@@ -81,7 +80,7 @@ export default class QuotesBackend {
       const params = filter(req.body);
       params.push(Date.now());
 
-      this.db.run('INSERT INTO quotes (user, game, message, date) VALUES (?, ?, ?, ?)', params, () => {
+      this.db.run('INSERT INTO quotes (game, message, date) VALUES (?, ?, ?)', params, () => {
         if (!--count) {
           resolve();
         }

@@ -5,11 +5,9 @@
 		<legend>Add Tip</legend>
 		<table>
 			<tr>
-				<th style="width: 15%;">User</th>
-				<th style="width: 75%;">Message</th>
+				<th>Message</th>
 			</tr>
 			<tr>
-				<td><input type="text" name="user"></td>
 				<td><input type="text" name="message"></td>
 			</tr>
 		</table>
@@ -36,7 +34,7 @@
 					{{this.id}}
 				</td>
 				<td>{{this.date}}</td>
-				<td><input type="text" name="update[{{this.id}}][user]" value="{{this.user}}"></td>
+				<td>{{this.displayName}}</td>
 				<td><input type="text" name="update[{{this.id}}][message]" value="{{this.message}}"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
 			</tr>

@@ -10,10 +10,8 @@
 'use strict';
 
 import AlertsBackend from './backend/alerts.js';
-import AutogreetBackend from './backend/autogreet.js';
 import GiveawayBackend from './backend/giveaway.js';
 import QuotesBackend from './backend/quotes.js';
-import RaffleBackend from './backend/raffle.js';
 import RedemptionsBackend from './backend/redemptions.js';
 import ScheduleBackend from './backend/schedule.js';
 import SettingsBackend from './backend/settings.js';
@@ -23,6 +21,7 @@ import TimersBackend from './backend/timers.js';
 import TipsBackend from './backend/tips.js';
 import TriggersBackend from './backend/triggers.js';
 import TriviaBackend from './backend/trivia.js';
+import UsersBackend from './backend/users.js';
 
 /**
  * Provides the backend interface.
@@ -41,10 +40,8 @@ export default class Backend {
 
     app.emitter.on('dbready', () => {
       this.loadHandler('alerts', new AlertsBackend());
-      this.loadHandler('autogreet', new AutogreetBackend());
       this.loadHandler('giveaway', new GiveawayBackend());
       this.loadHandler('quotes', new QuotesBackend());
-      this.loadHandler('raffle', new RaffleBackend());
       this.loadHandler('redemptions', new RedemptionsBackend());
       this.loadHandler('schedule', new ScheduleBackend());
       this.loadHandler('settings', new SettingsBackend());
@@ -54,6 +51,7 @@ export default class Backend {
       this.loadHandler('tips', new TipsBackend());
       this.loadHandler('triggers', new TriggersBackend());
       this.loadHandler('trivia', new TriviaBackend());
+      this.loadHandler('users', new UsersBackend());
 
       this.setupRoutes(app);
     });

@@ -82,9 +82,6 @@ export default class Commands {
     parsed.replace(/\$\{([a-z][0-9a-z]*)(?: (.+?))?\}/gi, (match, fn, p) => {
       promises.push(new Promise(async (resolve) => {
         switch (fn) {
-          case 'user':
-            resolve(userInfo ? userInfo.displayName : 'user');
-            break;
           case 'channel':
             resolve(p.toLowerCase());
             break;
@@ -116,6 +113,6 @@ export default class Commands {
       throw 'command not found';
     }
 
-    return await this[parsed[0]](userInfo ? userInfo.userName : null, parsed.slice(1));
+    return await this[parsed[0]](userInfo, parsed.slice(1));
   }
 }

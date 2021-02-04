@@ -269,14 +269,12 @@ export default class ChatBot {
 
     this.chatLines++;
 
-    this.app.stats.addUserChat(user);
-    this.app.commands.answerTrivia(user, [ message ]);
-
     if (!this.sessionUsers.has(user) && !msg.userInfo.isBroadcaster) {
       this.sessionUsers.add(user);
+      this.app.db.run('INSERT INTO users (userId, userName, displayName) VALUES (?, ?, ?) ON CONFLICT (userId) DO UPDATE SET userName = ?, displayName = ? WHERE userId = ?', [ msg.userInfo.userId, msg.userInfo.userName, msg.userInfo.displayName, msg.userInfo.userName, msg.userInfo.displayName, msg.userInfo.userId ]);
 
-      this.app.db.get('SELECT 1 FROM autogreet WHERE user = ?', [ user ], async (err, row) => {
-        if (row || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
+      this.app.db.get('SELECT autoGreet FROM users WHERE userId = ?', [ msg.userInfo.userId ], async (err, row) => {
+        if (row.autoGreet || msg.userInfo.isSubscriber || msg.userInfo.isVip) {
           const greetUser = await this.app.api.client.kraken.users.getUser(msg.userInfo.userId);
           if (greetUser) {
             this.app.http.sendAlert('greet', {
@@ -289,6 +287,9 @@ export default class ChatBot {
     }
 
     message = message.trim();
+
+    this.app.stats.addUserChat(msg.userInfo.userId);
+    this.app.commands.answerTrivia(msg.userInfo, [ message ]);
 
     if (msg.isCheer) {
       this.onCheer(user, msg.totalBits, message);

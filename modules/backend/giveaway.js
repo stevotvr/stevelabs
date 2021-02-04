@@ -23,7 +23,7 @@ export default class GiveawayBackend {
           return;
         }
 
-        this.db.all('SELECT id, name, key, recipient FROM giveaway WHERE groupId = ? ORDER BY name ASC', row.id, (err, rows) => {
+        this.db.all('SELECT id, name, key, (SELECT displayName FROM users WHERE id = recipient) AS recipient FROM giveaway WHERE groupId = ? ORDER BY name ASC', row.id, (err, rows) => {
           resolve({
             group: row,
             items: rows.filter((v) => v.recipient === null),

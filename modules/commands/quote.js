@@ -44,8 +44,8 @@ export default class QuoteCommand {
 
         const message = row.message[0] === '"' ? row.message : `"${row.message}"`;
         this.app.chatbot.say(`Quote #${row.id}: ${message} ${endTag}`);
-      } else {
-        this.app.chatbot.say(`Sorry, ${user}, we're all out of quotes!`);
+      } else if (user) {
+        this.app.chatbot.say(`Sorry, ${user.displayName}, we're all out of quotes!`);
       }
     };
 
@@ -60,23 +60,13 @@ export default class QuoteCommand {
     const message = args.join(' ').trim();
 
     if (!this.app.islive) {
-      this.app.chatbot.say(`${user} You can only add a quote when the channel is live`);
+      this.app.chatbot.say(`@${user.displayName} You can only add a quote when the channel is live`);
     } else if (message.length < 2) {
-      this.app.chatbot.say(`${user} Your quote message is too short (2 characters min, yours was ${message.length})`);
+      this.app.chatbot.say(`@${user.displayName} Your quote message is too short (2 characters min, yours was ${message.length})`);
     } else {
-      let game = '';
-      try {
-        const channel = await this.app.api.client.kraken.channels.getMyChannel();
-        if (channel) {
-          game = channel.game;
-        }
-      } catch (err) {
-        console.warn('quote: error getting game info');
-        console.log(err);
-      }
-
+      const game = this.app.api.game;
       const chatbot = this.app.chatbot;
-      this.app.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, ?, ?, ?)', Date.now(), user, game, message, function (err) {
+      this.app.db.run('INSERT INTO quotes (date, user, game, message) VALUES (?, (SELECT id FROM users WHERE userId = ?), ?, ?)', Date.now(), user.userId, game, message, function (err) {
         if (err) {
           console.warn('error saving quote data');
           console.log(err);

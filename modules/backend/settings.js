@@ -48,6 +48,8 @@ export default class SettingsBackend {
     this.app.settings.tts_voice = req.body.tts_voice;
     this.app.settings.tts_volume = Math.max(0, Math.min(100, req.body.tts_volume));
 
+    this.app.settings.raffle_active = !!req.body.raffle_active;
+
     this.app.saveSettings();
 
     resolve();

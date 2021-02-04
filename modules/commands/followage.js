@@ -26,7 +26,11 @@ export default class FollowageCommand {
   }
 
   async followage(user, args = []) {
-    const target = args[0] ? args[0] : user;
+    const target = args[0] ? args[0] : (user ? user.userName : null);
+    if (target === null) {
+      return;
+    }
+
     const targetUser = await this.app.api.client.kraken.users.getUserByName(target);
     if (targetUser) {
       const follow = await targetUser.getFollowTo(this.app.api.userId);

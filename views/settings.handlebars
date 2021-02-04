@@ -39,6 +39,10 @@
 		</select></label><br>
 		<label>TTS Volume: <input type="number" name="tts_volume" value="{{data.tts_volume}}" min="0" max="100"></label>
 	</fieldset>
+	<fieldset>
+		<legend>Raffle</legend>
+		<label>Raffle Active: <input type="checkbox" name="raffle_active"{{#if data.raffle_active}} checked{{/if}}></label>
+	</fieldset>
 	<fieldset class="buttons">
 		<input type="reset" value="Reset">
 		<input type="submit" value="Save">

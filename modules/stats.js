@@ -26,18 +26,18 @@ export default class Stats {
   /**
    * Add a chat action to a user.
    *
-   * @param {string} user The username
+   * @param {string} userId The Twitch user ID
    */
-  addUserChat(user) {
-    this.app.db.run('INSERT INTO userstats (user, chats) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET chats = chats+1 WHERE user = ?', [ user, user ]);
+  addUserChat(userId) {
+    this.app.db.run('UPDATE users SET chats = chats+1 WHERE userId = ?', [ userId ]);
   }
 
   /**
    * Add a trivia correct answer action to a user.
    *
-   * @param {string} user The username
+   * @param {string} userId The Twitch user ID
    */
-  addUserTrivia(user) {
-    this.app.db.run('INSERT INTO userstats (user, trivia) VALUES (?, 1) ON CONFLICT (user) DO UPDATE SET trivia = trivia+1 WHERE user = ?', [ user, user ]);
+  addUserTrivia(userId) {
+    this.app.db.run('UPDATE users SET trivia = trivia+1 WHERE userId = ?', [ userId ]);
   }
 }

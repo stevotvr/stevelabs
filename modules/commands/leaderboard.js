@@ -29,7 +29,7 @@ export default class LeaderboardCommand {
 
   async leaderboard(user, args = []) {
     const count = (args.length > 0 && args[0].match(/\d+/)) ? Math.min(25, Math.max(5, args[0])) : 5;
-    this.app.db.all('SELECT user FROM userstats WHERE ignore = 0 ORDER BY chats + trivia * 10 DESC LIMIT ?', count, (err, rows) => {
+    this.app.db.all('SELECT displayName FROM users WHERE ignoreStats = 0 ORDER BY chats + trivia * 10 DESC LIMIT ?', count, (err, rows) => {
       if (err) {
         console.warn('error getting leaderboard data');
         console.log(err);
@@ -37,14 +37,18 @@ export default class LeaderboardCommand {
         return;
       }
 
-      const names = rows.map((e) => e.user);
+      const names = rows.map((e) => e.displayName);
       this.app.chatbot.say(`/me Top ${count} users: ${names.join(', ')}.`);
     });
   }
 
   async rank(user, args = []) {
-    const target = args[0] ? args[0] : user;
-    this.app.db.get('SELECT COUNT(user) AS rank FROM userstats WHERE ignore = 0 AND chats + trivia * 10 >= (SELECT chats + trivia * 10 FROM userstats WHERE ignore = 0 AND user = ?)', target.toLowerCase(), (err, row) => {
+    const target = args[0] ? args[0] : (user ? user.displayName : null);
+    if (target === null) {
+      return;
+    }
+
+    this.app.db.get('SELECT COUNT(id) AS rank FROM users WHERE ignoreStats = 0 AND chats + trivia * 10 >= (SELECT chats + trivia * 10 FROM users WHERE ignoreStats = 0 AND userName = ?)', [ target.toLowerCase() ], (err, row) => {
       if (err) {
         console.warn('error getting leaderboard rank data');
         console.log(err);
@@ -72,7 +76,7 @@ export default class LeaderboardCommand {
     const target = args[0].toLowerCase();
     const value = args[1] !== '0';
     const chatbot = this.app.chatbot;
-    this.app.db.run('UPDATE userstats SET ignore = ? WHERE user = ?', value, target, function (err) {
+    this.app.db.run('UPDATE users SET ignoreStats = ? WHERE userName = ?', [ value, target.toLowerCase() ], function (err) {
       if (err) {
         console.warn('error updating stats ignore status');
         console.log(err);
@@ -81,7 +85,7 @@ export default class LeaderboardCommand {
       }
 
       if (this.changes > 0) {
-        chatbot.say(`${user ? `@${user} ` : ''}Set ${target}'s stats status to ${value ? '' : 'not '}ignored.`)
+        chatbot.say(`${user ? `@${user.displayName} ` : ''}Set ${target}'s stats status to ${value ? '' : 'not '}ignored.`)
       }
     });
   }

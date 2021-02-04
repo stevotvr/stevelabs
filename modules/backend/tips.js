@@ -14,7 +14,7 @@
  */
 export default class TipsBackend {
   get(resolve) {
-    this.db.all('SELECT id, date, user, message FROM tips ORDER BY id ASC', (err, rows) => {
+    this.db.all('SELECT id, date, (SELECT displayName FROM users WHERE id = user) AS displayName, message FROM tips ORDER BY id ASC', (err, rows) => {
       resolve({ tips: rows });
     });
   }
@@ -22,7 +22,6 @@ export default class TipsBackend {
   post(resolve, req) {
     const filter = (input) => {
       const params = [];
-      params.push(input.user.replace(/[^a-z\d_]/ig, '').toLowerCase());
       params.push(input.message);
 
       return params;
@@ -60,7 +59,7 @@ export default class TipsBackend {
     }
 
     if (Array.isArray(req.body.update)) {
-      const stmt = this.db.prepare('UPDATE tips SET user = ?, message = ? WHERE id = ?');
+      const stmt = this.db.prepare('UPDATE tips SET message = ? WHERE id = ?');
 
       req.body.update.forEach((row) => {
         const params = filter(row);
@@ -80,7 +79,7 @@ export default class TipsBackend {
       const params = filter(req.body);
       params.push(Date.now());
 
-      this.db.run('INSERT INTO tips (user, message, date) VALUES (?, ?, ?)', params, () => {
+      this.db.run('INSERT INTO tips (message, date) VALUES (?, ?)', params, () => {
         if (!--count) {
           resolve();
         }

@@ -43,7 +43,7 @@ export default class TriviaCommand {
         this.app.chatbot.say(`/me Trivia time! Answer this question correctly in chat for some chat points: ${row.question}`);
         this.app.http.sendTrivia(`Answer in chat: ${row.question}`);
       } else if (user) {
-        this.app.chatbot.say(`Sorry, ${user}, we're all out of trivia!`);
+        this.app.chatbot.say(`Sorry, ${user.displayName}, we're all out of trivia!`);
       }
     };
 
@@ -62,9 +62,9 @@ export default class TriviaCommand {
     const answer = args[0].trim().toLowerCase();
     if (this.answer.has(answer)) {
       if (user) {
-        this.app.stats.addUserTrivia(user);
-        this.app.chatbot.say(`/me That's correct, ${user}! ${this.details}`);
-        this.app.http.sendTrivia(`${user} answered correctly! ${this.details}`);
+        this.app.stats.addUserTrivia(user.userId);
+        this.app.chatbot.say(`/me That's correct, ${user.displayName}! ${this.details}`);
+        this.app.http.sendTrivia(`${user.displayName} answered correctly! ${this.details}`);
       }
 
       this.id = null;
