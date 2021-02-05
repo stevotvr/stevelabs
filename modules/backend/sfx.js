@@ -9,13 +9,18 @@
 
 'use strict';
 
+import fs from 'fs';
+
 /**
  * Handler for the sfx backend.
  */
 export default class SfxBackend {
   get(resolve) {
     this.db.all('SELECT id, key, file, volume FROM sfx ORDER BY key ASC', (err, rows) => {
-      resolve({ sfx: rows });
+      resolve({
+        sfx: rows,
+        files: fs.readdirSync('./public/media').filter((e) => e.match(/\.(mp3|mp4|ogg|wav|webm)$/gi)),
+      });
     });
   }
 

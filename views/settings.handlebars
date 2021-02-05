@@ -27,7 +27,14 @@
 	</fieldset>
 	<fieldset>
 		<legend>Countdown Music</legend>
-		<label>Audio File: <input type="text" name="countdown_audio" value="{{data.countdown_audio}}"></label>
+		<label>Audio File:
+			<select name="countdown_audio">
+				<option></option>
+				{{#each data.files}}
+				<option value="{{this}}"{{#eq this ../data.countdown_audio}} selected{{/eq}}>{{this}}</option>
+				{{/each}}
+			</select>
+		</label>
 		<label>Volume: <input type="number" name="countdown_audio_volume" value="{{data.countdown_audio_volume}}" min="0" max="100"></label>
 	</fieldset>
 	<fieldset>

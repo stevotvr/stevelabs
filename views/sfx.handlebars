@@ -37,7 +37,14 @@
 					<input type="hidden" name="update[{{this.id}}][id]" value="{{this.id}}">
 					<input type="text" name="update[{{this.id}}][key]" value="{{this.key}}">
 				</td>
-				<td><input type="text" name="update[{{this.id}}][file]" value="{{this.file}}"></td>
+				<td>
+					<select name="update[{{this.id}}][file]">
+						<option></option>
+						{{#each ../data.files}}
+						<option value="{{this}}"{{#eq this ../file}} selected{{/eq}}>{{this}}</option>
+						{{/each}}
+					</select>
+				</td>
 				<td><input type="number" name="update[{{this.id}}][volume]" value="{{this.volume}}" min="0" max="100"></td>
 				<td><input type="checkbox" name="delete[i{{this.id}}]"></td>
 				<td><input type="button" class="testbutton" name="stest[{{this.key}}]" value="Test"></td>

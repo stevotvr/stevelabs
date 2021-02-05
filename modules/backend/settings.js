@@ -9,12 +9,16 @@
 
 'use strict';
 
+import fs from 'fs';
+
 /**
  * Handler for the settings backend.
  */
 export default class SettingsBackend {
   get(resolve) {
-    resolve(this.app.settings);
+    const data = Object.assign({}, this.app.settings);
+    data.files = fs.readdirSync('./public/media').filter((e) => e.match(/\.(mp3|mp4|ogg|wav|webm)$/gi));
+    resolve(data);
   }
 
   post(resolve, req) {

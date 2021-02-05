@@ -9,13 +9,20 @@
 
 'use strict';
 
+import fs from 'fs';
+
 /**
  * Handler for the alerts backend.
  */
 export default class AlertsBackend {
   get(resolve) {
     this.db.all('SELECT key, message, graphic, sound, duration, videoVolume, soundVolume FROM alerts ORDER BY key ASC', (err, rows) => {
-      resolve({ alerts: rows });
+      const files = fs.readdirSync('./public/media');
+      resolve({
+        alerts: rows,
+        audio: files.filter((e) => e.match(/\.(mp3|mp4|ogg|wav|webm)$/gi)),
+        video: files.filter((e) => e.match(/\.(bmp|gif|jpg|jpeg|mp4|png|webm|webp)$/gi)),
+      });
     });
   }
 
